@@ -1,39 +1,18 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no"/>
-  <meta name="theme-color" content="#0A0A0A"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="apple-mobile-web-app-title" content="Plan90"/>
-  <meta name="description" content="Système de transformation comportementale sur 90 jours"/>
-  <link rel="manifest" href="/manifest.json"/>
-  <link rel="apple-touch-icon" href="/icon-192.png"/>
-  <link rel="icon" type="image/png" href="/icon-192.png"/>
-  <title>Mon Plan de Vie 90 Jours</title>
-  <style>
-    #loader {
-      position: fixed; inset: 0; background: #0A0A0A;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      z-index: 99999; gap: 1.2rem;
-    }
-    #loader-star { font-size: 2.5rem; color: #C9A84C; }
-    #loader-title { font-size: 1rem; color: #C9A84C; letter-spacing: 0.25em; font-family: serif; }
-    #loader-bar { width: 100px; height: 1px; background: #1A1A1A; }
-    #loader-progress { height: 100%; width: 0; background: #C9A84C; animation: prog 2.5s ease forwards; }
-    @keyframes prog { to { width: 100%; } }
-  </style>
-</head>
-<body style="margin:0;background:#0A0A0A;">
-  <div id="loader">
-    <div id="loader-star">✦</div>
-    <div id="loader-title">MON PLAN 90</div>
-    <div id="loader-bar"><div id="loader-progress"></div></div>
-  </div>
-  <div id="root"></div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script type="module" src="/main.jsx"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#0A0A0A" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Plan 90" />
+    <meta name="description" content="Système de transformation comportementale 90 jours — par Lamine Diabaté" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Mon Plan de Vie 90 Jours</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>

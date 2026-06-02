@@ -1,12 +1,16 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "installCommand": "npm install",
-  "framework": "vite",
   "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "crons": [
     {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
+      "path": "/api/cron",
+      "schedule": "0 7 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "api/generate.js": { "maxDuration": 30 },
+    "api/subscribe.js": { "maxDuration": 10 },
+    "api/cron.js":      { "maxDuration": 60 }
+  }
 }

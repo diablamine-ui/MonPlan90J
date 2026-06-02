@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import ReactDOM from 'react-dom/client';
+const { useState, useEffect, useRef, useCallback } = React;
 
 // ══════════════════════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════════════════════
 const CODES = ["LD-MAI26","LD-TEST1","LD-BETA2","LD-VIP01","LD-AMIS5","LD-VIP06"];
 const STORAGE_KEY = "plan90_v10";
+const WEEKLY_KEY = "plan90_weekly_v1";
 const FONT = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Jost:wght@200;300;400;500&display=swap";
 const SHEETJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
 
@@ -188,246 +188,204 @@ const SEGMENTS_FINANCES = [
   { id:"identite", label:"IDENTITÉ", icon:"◈", subtitle:"Qui tu es financièrement", questions:[
     {id:"q_profil",label:"Ton prénom, ton âge et ton activité principale ?",type:"text",ph:"Kofi, 32 ans, vendeur en ligne",minLen:5,
      reward:"Chaque phrase de ton plan sera personnalisée à ta réalité.",
-     aide:{quoi:"Ces 3 infos personnalisent tout le plan.",ex:"Fatou, 28 ans, employée RH et vendeuse le week-end",evite:"Ne mets pas que le prénom.",erreur:"Indique ton prénom, ton âge et ton activité."}},
-    {id:"q_domaine_principal",label:"Quel est le domaine que tu veux transformer en 90 jours ?",type:"select",
+     aide:{ex:"Fatou, 28 ans, employée RH et vendeuse le week-end."}},
+    {id:"q_domaine_principal",label:"Quel domaine veux-tu transformer en 90 jours ?",type:"select",
      opts:["Finances","Comportement","Mental"],
-     reward:"✦ Ton parcours est maintenant 100% dédié à ta situation financière.",
-     aide:{quoi:"Confirme ton choix — tout le questionnaire est calibré pour les Finances.",ex:"Finances — revenus, indépendance, entrepreneuriat.",evite:"",erreur:"Sélectionne ton domaine."}},
-    {id:"q_frustration",label:"Aujourd'hui, qu'est-ce qui te frustre le plus dans ta situation financière ?",type:"textarea",ph:"Je travaille beaucoup mais je n'arrive pas à dépasser un certain seuil. Je vois les autres progresser et je stagne.",minLen:15,
-     reward:"Cette frustration est maintenant le moteur de ton plan.",
-     aide:{quoi:"La vraie frustration — pas la version acceptable.",ex:"Je gagne de l'argent mais je ne sais pas où il part. Je n'arrive pas à épargner.",evite:"Pas 'je veux gagner plus' — qu'est-ce qui te frustre concrètement ?",erreur:"Décris ta frustration financière réelle."}},
-    {id:"q_profil_financier",label:"Lequel décrit le mieux ta réalité financière actuelle ?",type:"select",
+     reward:"✦ Ton parcours est 100% dédié à ta situation financière.",
+     aide:{ex:"Finances — revenus, indépendance, entrepreneuriat."}},
+    {id:"q_frustration",label:"Qu'est-ce qui te frustre le plus dans ta situation financière aujourd'hui ?",type:"textarea",ph:"Je travaille sans cesse mais mon compte reste vide. Je vois les autres avancer et je stagne depuis 2 ans.",minLen:15,
+     reward:"Cette frustration devient le moteur de ton plan.",
+     aide:{ex:"Je génère de l'argent mais je ne sais pas où il part."}},
+    {id:"q_profil_financier",label:"Lequel décrit le mieux ta réalité financière aujourd'hui ?",type:"select",
      opts:["Je travaille beaucoup sans vraie progression","Je suis instable financièrement","Je procrastine les actions importantes","Je suis dispersé sur trop de projets","Je manque de clients ou d'opportunités","J'ai peur de vendre ou de me montrer","Je commence beaucoup mais termine peu","Je ne sais plus quoi essayer"],
-     reward:"Ce profil est maintenant au cœur de ton diagnostic financier.",
-     aide:{quoi:"Choisis ce qui te ressemble le plus — pas ce qui semble le mieux.",ex:"Si tu lances des projets sans les finir, c'est 'Je commence beaucoup mais termine peu'.",evite:"Pas ce que tu voudrais être — ce que tu es vraiment.",erreur:"Sélectionne le profil le plus proche de ta réalité."}},
-    {id:"q_visibilite",label:"Quand il faut vendre, proposer ou te rendre visible — que se passe-t-il dans ta tête ? Et concrètement, as-tu peur de déranger ou de demander de l'argent ?",type:"textarea",ph:"Je remets toujours à plus tard. J'ai peur du refus et du jugement. Je n'ose pas relancer mes clients ni augmenter mes prix.",minLen:15,
-     reward:"Ce mécanisme est identifié. Le plan est construit pour le désamorcer concrètement.",
-     aide:{quoi:"Ta réaction quand tu dois vendre + ton rapport à la demande d'argent.",ex:"Je me sens mal à l'aise pour demander de l'argent. Je préfère baisser mes prix plutôt que de négocier.",evite:"Pas 'ça dépend' — ta réaction dominante + ton vrai rapport à l'argent.",erreur:"Décris ta réaction face à la vente ET ton rapport à la demande d'argent."}},
+     reward:"Ce profil est au cœur de ton diagnostic.",
+     aide:{ex:"Si tu lances des projets sans les finir → 'Je commence beaucoup mais termine peu'."}},
+    {id:"q_visibilite",label:"Quand tu dois vendre ou te rendre visible — que se passe-t-il dans ta tête ?",type:"textarea",ph:"Je remets à plus tard. J'ai peur du refus. Je n'ose pas relancer mes clients ou augmenter mes prix.",minLen:15,
+     reward:"Ce mécanisme est identifié. Le plan le désamorce concrètement.",
+     aide:{ex:"Je préfère baisser mes prix plutôt que de négocier."}},
   ]},
   { id:"objectif", label:"OBJECTIF", icon:"✦", subtitle:"Ce que tu veux changer concrètement", questions:[
-    {id:"q_objectif",label:"Quel résultat financier concret doit absolument changer dans les 90 prochains jours — et pourquoi c'est devenu urgent maintenant et pas dans 2 ans ?",type:"textarea",ph:"Atteindre 300 000 FCFA/mois. C'est urgent maintenant parce que mes dettes augmentent et ma famille attend depuis trop longtemps.",minLen:20,
-     reward:"Objectif et urgence ancrés. Toutes les 12 semaines pointent vers ça.",
-     aide:{quoi:"Un résultat précis + la raison émotionnelle du MAINTENANT.",ex:"Générer 500 000 FCFA/mois pour quitter mon emploi — maintenant parce que j'ai 35 ans et chaque année qui passe me coûte.",evite:"Pas 'gagner plus' — un résultat précis ET pourquoi maintenant.",erreur:"Indique l'objectif ET explique pourquoi c'est urgent maintenant et pas dans 2 ans."}},
-    {id:"q_activite_repoussee",label:"Quelle activité pourrait réellement augmenter tes revenus — mais que tu repousses constamment ?",type:"textarea",ph:"Je sais que je dois prospecter sur les réseaux mais je remets ça à chaque semaine. Je sais que je dois augmenter mes prix mais j'ai peur.",minLen:15,
-     reward:"Le levier principal est identifié. Le plan va t'y forcer concrètement.",
-     aide:{quoi:"L'action que tu sais devoir faire mais que tu évites.",ex:"Créer du contenu, appeler des prospects, lancer ma boutique en ligne.",evite:"Pas 'je manque de temps' — quelle activité précise repousses-tu ?",erreur:"Nomme l'activité que tu repousses et pourquoi."}},
-    {id:"q_si_pas",label:"Si tu continues exactement comme aujourd'hui pendant 3 ans — où seront tes finances ?",type:"textarea",ph:"Je serai encore dans les mêmes dettes. Peut-être pire. Ma famille sera toujours dans l'attente. Rien n'aura changé.",minLen:20,
-     reward:"Cette image est maintenant ton levier anti-abandon le plus puissant.",
-     aide:{quoi:"Une projection réaliste — pas dramatique, juste honnête.",ex:"Dans 3 ans, même salaire, mêmes dettes, même frustration.",evite:"Pas de catastrophisme excessif — juste la réalité si rien ne change.",erreur:"Décris concrètement où tu seras dans 3 ans si rien ne change."}},
-    {id:"q_niveaux_revenus",label:"Quel revenu mensuel représenterait pour toi : 1. la survie stable ? 2. le confort ? 3. la liberté ?",type:"textarea",ph:"Survie : 200 000 FCFA. Confort : 500 000 FCFA. Liberté : 1 500 000 FCFA.",minLen:10,
-     reward:"Ces 3 niveaux sont maintenant dans le plan — ils calibrent les semaines.",
-     aide:{quoi:"Des chiffres réels basés sur TA vie — pas ce qui impressionne.",ex:"Survie : 150 000 FCFA/mois. Confort : 400 000. Liberté : 1 000 000.",evite:"Pas des chiffres pour impressionner — tes vrais seuils.",erreur:"Indique les 3 montants : survie, confort et liberté."}},
+    {id:"q_objectif",label:"Quel résultat financier concret doit changer en 90 jours ?",type:"text",ph:"Ex : Atteindre 300 000 FCFA/mois en revenus nets",minLen:10,
+     reward:"Objectif ancré. Toutes les 12 semaines pointent vers ça.",
+     aide:{ex:"Générer 500 000 FCFA/mois. Avoir 3 clients réguliers."}},
+    {id:"q_urgence",label:"Pourquoi c'est urgent maintenant — et pas dans 2 ans ?",type:"textarea",ph:"Parce que mes dettes augmentent. Parce que ma famille attend depuis trop longtemps. Chaque mois qui passe coûte.",minLen:15,
+     reward:"Cette urgence tient quand la motivation lâche.",
+     aide:{ex:"Parce que j'ai déjà perdu 3 ans à procrastiner."}},
+    {id:"q_activite_repoussee",label:"Quelle action pourrait augmenter tes revenus — mais que tu repousses constamment ?",type:"textarea",ph:"Je sais que je dois prospecter mais je remets chaque semaine. Je sais que je dois augmenter mes prix mais j'ai peur.",minLen:15,
+     reward:"Le levier principal est identifié. Le plan va t'y forcer.",
+     aide:{ex:"Créer du contenu, appeler des prospects, lancer ma boutique."}},
+    {id:"q_cout_statu_quo",label:"Si rien ne change dans 3 ans — que vas-tu perdre concrètement ? Et à qui cela fera-t-il du tort ?",type:"textarea",ph:"Je serai encore dans les mêmes dettes. Ma famille continuera d'attendre. Je perdrai leur confiance.",minLen:20,
+     reward:"Ce coût réel est ton levier anti-abandon le plus puissant.",
+     aide:{ex:"Dans 3 ans : même salaire, mêmes dettes. Ma famille aura perdu confiance en moi."}},
   ]},
   { id:"blocages", label:"BLOCAGES", icon:"⚠", subtitle:"Ce qui freine vraiment ta progression", questions:[
-    {id:"q_mensonge",label:"Quel mensonge ton cerveau utilise-t-il le plus souvent pour éviter d'agir ?",type:"select",
-     opts:["Je ne suis pas encore prêt","Je manque de capital pour commencer","Je vais commencer bientôt","Ce n'est pas le bon moment","Je dois encore apprendre","Les conditions ne sont pas réunies","Je n'ai pas le temps","Autre"],
-     reward:"Ce mensonge est maintenant nommé. Il perd son pouvoir sur toi.",
-     aide:{quoi:"La justification que ton cerveau utilise — elle est toujours fausse.",ex:"'Je vais commencer quand j'aurai économisé assez.' / 'Je dois d'abord finir ma formation.'",evite:"Pas 'je n'ai pas de mensonge' — il y en a toujours un.",erreur:"Choisis le mensonge que tu te répètes le plus souvent."}},
-    {id:"q_perte_succes",label:"Si tu réussissais vraiment ces 90 jours — qu'est-ce que tu risques de perdre ? Et quelle ancienne relation à l'argent refuses-tu de continuer après ça ?",type:"textarea",ph:"Je perdrais l'excuse de ne pas avoir réussi. Et je refuse de continuer à finir le mois à zéro et à éviter de regarder mes comptes.",minLen:15,
-     reward:"Les résistances au succès sont identifiées. Ta ligne rouge finale est posée.",
-     aide:{quoi:"Ce que tu perdrais si tu réussissais + la limite que tu poses définitivement.",ex:"Je perdrais le confort de me plaindre. Je refuse de continuer à dépenser avant d'épargner.",evite:"Ne dis pas 'rien' pour la perte — il y en a toujours une. Sois précis sur ta limite.",erreur:"Réponds aux deux : ce que tu perdrais ET ce que tu refuses de continuer."}},
-    {id:"q_echec_historique",label:"Quel échec financier t'a le plus fragilisé — et quelle conclusion as-tu tirée sur toi-même après ça ?",type:"textarea",ph:"En 2021 j'ai lancé un business qui a échoué. J'ai conclu que je n'étais pas fait pour entreprendre. Depuis j'hésite à tout.",minLen:20,
+    {id:"q_mensonge",label:"Quel mensonge ton cerveau utilise-t-il pour éviter d'agir ?",type:"select",
+     opts:["Je ne suis pas encore prêt","Je manque de capital","Ce n'est pas le bon moment","Je dois encore apprendre","Je n'ai pas le temps","Les conditions ne sont pas réunies","Je vais commencer bientôt","Autre"],
+     reward:"Ce mensonge est nommé. Il perd son pouvoir.",
+     aide:{ex:"'Je vais commencer quand j'aurai économisé.' / 'Je dois d'abord finir ma formation.'"}},
+    {id:"q_perte_succes",label:"Si tu réussissais vraiment ces 90 jours — que risques-tu de perdre ? Et quelle relation à l'argent refuses-tu de continuer après ça ?",type:"textarea",ph:"Je perdrais l'excuse de ne pas avoir réussi. Et je refuse de continuer à finir le mois à zéro.",minLen:15,
+     reward:"Les résistances au succès sont identifiées. Ta ligne rouge est posée.",
+     aide:{ex:"Je perdrais le confort de me plaindre. Je refuse de dépenser avant d'épargner."}},
+    {id:"q_echec_historique",label:"La dernière fois que tu as échoué financièrement — que s'est-il passé exactement et quelle conclusion as-tu tirée sur toi ?",type:"textarea",ph:"En 2021 j'ai lancé un business qui a échoué. J'ai conclu que je n'étais pas fait pour entreprendre. Depuis j'hésite à tout.",minLen:20,
      reward:"Ce schéma est identifié. Le plan est construit pour le désamorcer.",
-     aide:{quoi:"L'échec précis + la conclusion que tu en as tirée sur toi.",ex:"Mon projet a échoué. J'ai pensé : 'Je suis nul en gestion.'",evite:"Pas 'j'ai eu des difficultés' — l'échec précis et la pensée exacte après.",erreur:"Décris l'échec et la conclusion que tu as tirée sur toi-même."}},
+     aide:{ex:"Mon projet a échoué. J'ai pensé : 'Je suis nul en gestion.' C'est depuis que j'évite de recommencer."}},
   ]},
-  { id:"environnement", label:"ÉNERGIE", icon:"◉", subtitle:"Tes habitudes et ton énergie financière", questions:[
-    {id:"q_argent_signifie",label:"Que représente réellement l'argent pour toi ? Sécurité, liberté, pouvoir, validation, survie ou autre ?",type:"textarea",ph:"Pour moi l'argent c'est la liberté de ne plus dépendre de personne. Mais aussi une source de stress et de honte.",minLen:10,
-     reward:"Ta relation émotionnelle à l'argent est maintenant dans le diagnostic.",
-     aide:{quoi:"Ce que l'argent représente émotionnellement pour toi — pas la réponse noble.",ex:"L'argent = sécurité. Sans argent je me sens inférieur.",evite:"Pas 'un outil' — ce que tu ressens vraiment face à l'argent.",erreur:"Décris ce que l'argent représente pour toi émotionnellement."}},
-    {id:"q_stress_financier",label:"Quand tu es stressé financièrement — que fais-tu immédiatement ?",type:"select",
-     opts:["Je scrolle les réseaux sociaux","Je dors ou j'évite d'y penser","Je travaille dans tous les sens sans stratégie","Je mange pour compenser","Je procrastine et je remets à demain","Je regarde des vidéos ou séries","Je disparais et je coupe les contacts","Je cherche une solution immédiatement"],
-     reward:"Ce comportement de fuite est maintenant dans le protocole anti-rechute.",
-     aide:{quoi:"Ta réaction réflexe face au stress financier — pas celle que tu voudrais avoir.",ex:"Quand j'ai des problèmes d'argent, je scrolle Instagram pendant des heures.",evite:"Pas la réponse idéale — ce que tu fais vraiment.",erreur:"Choisis ta réaction réelle face au stress financier."}},
-    {id:"q_habitude_destructrice",label:"Quelle habitude détruit silencieusement tes résultats financiers actuels ?",type:"textarea",ph:"Je dépense impulsivement quand je reçois de l'argent. Je ne fais pas de suivi de mes dépenses. Je paie les autres avant de me payer.",minLen:15,
-     reward:"Cette habitude est identifiée. Le plan inclut un protocole pour la remplacer.",
-     aide:{quoi:"L'habitude que tu sais destructrice mais que tu continues.",ex:"Dépenses impulsives. Pas d'épargne. Je fais confiance sans contrat.",evite:"Pas 'je dépense trop' — quelle habitude précise détruit tes finances ?",erreur:"Nomme l'habitude financière destructrice que tu connais mais continues."}},
-    {id:"q_environnement",label:"Ton environnement actuel — entourage, mentalité, habitudes — ralentit-il ta croissance financière ?",type:"textarea",ph:"Mon entourage ne parle jamais d'argent ou d'investissement. On me décourage souvent quand j'ai de nouvelles idées.",minLen:15,
-     reward:"L'impact de ton environnement est maintenant dans les stratégies du plan.",
-     aide:{quoi:"L'influence réelle de ton entourage sur tes finances — pas ce que tu voudrais.",ex:"Mes proches pensent que vouloir beaucoup d'argent c'est être avare.",evite:"Pas d'idéalisation — même l'entourage bienveillant peut freiner.",erreur:"Décris l'impact réel de ton environnement sur tes finances."}},
+  { id:"energie", label:"ÉNERGIE", icon:"◉", subtitle:"Ta relation à l'argent et ton environnement", questions:[
+    {id:"q_argent_env",label:"Que représente l'argent pour toi — et ton entourage te pousse-t-il vers la richesse ou la limitation ?",type:"textarea",ph:"L'argent c'est la liberté. Mais mon entourage pense que vouloir beaucoup d'argent c'est être avare.",minLen:15,
+     reward:"Ta relation à l'argent et ton environnement sont dans le diagnostic.",
+     aide:{ex:"L'argent = sécurité. Mais mes proches me découragent quand j'ai des idées."}},
+    {id:"q_stress_financier",label:"Quand tu es stressé financièrement — que fais-tu en premier ?",type:"select",
+     opts:["Je scrolle les réseaux sociaux","Je dors ou j'évite d'y penser","Je travaille dans tous les sens sans stratégie","Je mange pour compenser","Je procrastine et remets à demain","Je regarde des vidéos ou séries","Je coupe les contacts","Je cherche une solution immédiatement"],
+     reward:"Ce comportement de fuite est dans le protocole anti-rechute.",
+     aide:{ex:"Quand j'ai des problèmes d'argent, je scrolle Instagram pendant des heures."}},
   ]},
   { id:"execution", label:"EXÉCUTION", icon:"▶", subtitle:"Ton engagement concret sur 90 jours", questions:[
-    {id:"q_consommation_vs_construction",label:"Combien de temps passes-tu à consommer (réseaux, vidéos, contenus) comparé au temps passé à construire chaque jour ?",type:"textarea",ph:"Je passe 3-4h sur les réseaux par jour. Je construis peut-être 30 minutes. C'est honnêtement embarrassant.",minLen:10,
-     reward:"Ce ratio est maintenant dans le plan. Les premières semaines vont le corriger.",
-     aide:{quoi:"Une estimation honnête — pas celle que tu voudrais avoir.",ex:"3h de consommation pour 20 minutes de production réelle.",evite:"Pas 'ça dépend' — une estimation réelle de ton ratio consommation/construction.",erreur:"Donne une estimation honnête de ton temps consommation vs construction."}},
-    {id:"q_pari",label:"Si tu devais parier sur ta réussite financière dans 90 jours — combien sur 100 ? Pourquoi pas plus ? Pourquoi pas moins ?",type:"textarea",ph:"60/100. Pas plus parce que j'ai déjà essayé et abandonné. Pas moins parce que cette fois j'ai un vrai système.",minLen:20,
-     reward:"Ton niveau de conviction réel est calibré. Le plan anti-abandon est construit dessus.",
-     aide:{quoi:"Un chiffre honnête + les deux raisons.",ex:"65/100. Pas plus : j'ai échoué avant. Pas moins : je suis plus préparé que jamais.",evite:"Pas 95/100 pour paraître confiant — la vérité est plus utile.",erreur:"Donne le chiffre ET réponds pourquoi pas plus ET pourquoi pas moins."}},
-    {id:"q_rythme",label:"Combien de minutes peux-tu protéger chaque jour — même les mauvais jours ? Et ton moment naturel.",type:"dual_select",
-     selects:[{id:"heures",label:"Minutes protégées / jour",opts:["15 à 30 minutes","30 à 60 minutes","1 à 2 heures","Plus de 2 heures"]},{id:"moment",label:"Moment naturel",opts:["Matin (avant 12h)","Après-midi (12h–18h)","Soir (après 20h)","Variable"]}],
+    {id:"q_pari",label:"Tu paries combien sur 100 que tu réussis ces 90 jours — et pourquoi pas plus, pourquoi pas moins ?",type:"textarea",ph:"65/100. Pas plus parce que j'ai déjà essayé et abandonné. Pas moins parce que cette fois j'ai un vrai système.",minLen:20,
+     reward:"Ton niveau de conviction est calibré. Le plan anti-abandon est construit dessus.",
+     aide:{ex:"60/100. Pas plus : j'ai échoué avant. Pas moins : je suis plus préparé qu'avant."}},
+    {id:"q_rythme",label:"Combien de minutes peux-tu protéger chaque jour — même les mauvais jours ?",type:"dual_select",
+     selects:[{id:"heures",label:"Minutes / jour",opts:["15 à 30 minutes","30 à 60 minutes","1 à 2 heures","Plus de 2 heures"]},{id:"moment",label:"Moment naturel",opts:["Matin (avant 12h)","Après-midi (12h–18h)","Soir (après 20h)","Variable"]}],
      reward:"Les actions du plan sont calées sur ton minimum réel.",
-     aide:{quoi:"Pas le temps idéal — le minimum que tu peux tenir même épuisé.",ex:"30 minutes le soir après 20h, même les jours difficiles.",evite:"Ne mets pas ce que tu voudrais — ce que tu peux réellement protéger.",erreur:"Sélectionne les deux : minutes disponibles et moment naturel."}},
-    {id:"q_revenu_actuel",label:"Quel est ton revenu mensuel actuel ?",type:"text",ph:"Ex : 150 000 FCFA / mois — ou variable",minLen:3,
-     reward:"L'écart entre ta réalité et ton objectif calibre les 12 semaines.",
-     aide:{quoi:"Ton revenu réel — pas ce que tu voudrais avoir.",ex:"80 000 FCFA fixe + 50 000 FCFA variable selon les mois",evite:"Pas un chiffre idéalisé — le vrai montant.",erreur:"Indique ton revenu mensuel actuel."}},
-    {id:"q_montant",label:"Quel montant mensuel changerait concrètement ta vie ?",type:"text",ph:"Ex : 500 000 FCFA / mois",minLen:3,
-     reward:"Cet ancrage financier est dans le plan. Les semaines sont construites pour t'y amener.",
-     aide:{quoi:"Le chiffre qui changerait vraiment ta vie — pas pour impressionner.",ex:"300 000 FCFA me permettrait de quitter mon emploi.",evite:"Pas un chiffre excessif — le vrai chiffre libérateur.",erreur:"Indique le montant mensuel qui changerait concrètement ta vie."}},
+     aide:{ex:"30 minutes le soir après 20h, même épuisé."}},
+    {id:"q_montant",label:"Quel revenu mensuel exact changerait concrètement ta vie ?",type:"text",ph:"Ex : 450 000 FCFA / mois",minLen:3,
+     reward:"Cet ancrage calibre toutes les 12 semaines.",
+     aide:{ex:"300 000 FCFA me permettrait de quitter mon emploi et vivre sereinement."}},
   ]},
 ];
-
 const SEGMENTS_COMPORTEMENT = [
   { id:"identite", label:"IDENTITÉ", icon:"◈", subtitle:"Ton schéma comportemental actuel", questions:[
     {id:"q_profil",label:"Ton prénom, ton âge et ton activité principale ?",type:"text",ph:"Aminata, 27 ans, assistante commerciale",minLen:5,
      reward:"Chaque recommandation sera ancrée dans ta réalité concrète.",
-     aide:{quoi:"Ces 3 infos personnalisent tout le plan.",ex:"Moussa, 34 ans, enseignant",evite:"Ne mets pas que le prénom.",erreur:"Indique ton prénom, ton âge et ton activité."}},
-    {id:"q_domaine_principal",label:"Quel est le domaine que tu veux transformer en 90 jours ?",type:"select",
+     aide:{ex:"Moussa, 34 ans, enseignant et entrepreneur le week-end."}},
+    {id:"q_domaine_principal",label:"Quel domaine veux-tu transformer en 90 jours ?",type:"select",
      opts:["Finances","Comportement","Mental"],
-     reward:"✦ Ton parcours est maintenant 100% dédié à ta transformation comportementale.",
-     aide:{quoi:"Confirme ton choix.",ex:"Comportement — habitudes, discipline, relations.",evite:"",erreur:"Sélectionne ton domaine."}},
-    {id:"q_comportement_reccurent",label:"Quel comportement revient toujours malgré tes promesses — et lequel te fait perdre le plus de respect envers toi-même ?",type:"textarea",ph:"Je procrastine constamment malgré mes promesses. Et je me déçois le plus quand je cède à mon téléphone au lieu de travailler.",minLen:15,
-     reward:"Ce schéma et cette auto-trahison sont maintenant au centre du diagnostic.",
-     aide:{quoi:"Le comportement récurrent + celui qui te fait le plus honte.",ex:"Je commence puis j'abandonne. Et je perds le plus de respect quand je promets et ne tiens pas.",evite:"Pas 'je manque de discipline' — deux comportements précis.",erreur:"Décris le comportement récurrent ET celui qui détruit le plus ton respect envers toi."}},
+     reward:"✦ Ton parcours est 100% dédié à ta transformation comportementale.",
+     aide:{ex:"Comportement — habitudes, discipline, relations, impulsions."}},
+    {id:"q_comportement_reccurent",label:"Quel comportement revient malgré tes promesses — et lequel te fait perdre le plus de respect envers toi-même ?",type:"textarea",ph:"Je procrastine constamment malgré mes promesses. Et je me déçois le plus quand je cède à mon téléphone au lieu de travailler.",minLen:15,
+     reward:"Ce schéma et cette auto-trahison sont au centre du diagnostic.",
+     aide:{ex:"Je commence puis j'abandonne. Et je perds le plus de respect quand je promets et ne tiens pas."}},
     {id:"q_profil_comportemental",label:"Lequel décrit le mieux ton fonctionnement actuel ?",type:"select",
      opts:["Je procrastine beaucoup","Je manque de constance","Je commence puis j'abandonne","Je me disperse facilement","Je manque de discipline","Je fuis l'inconfort","Je retombe toujours dans les mêmes habitudes"],
      reward:"Ce profil comportemental est au cœur de ton diagnostic.",
-     aide:{quoi:"Choisis ce qui te ressemble le plus.",ex:"Si tu lances des projets sans les finir, c'est 'Je commence puis j'abandonne'.",evite:"Pas ce que tu voudrais être — ce que tu es vraiment.",erreur:"Sélectionne le profil le plus proche de ta réalité."}},
+     aide:{ex:"Si tu lances des projets sans les finir → 'Je commence puis j'abandonne'."}},
   ]},
   { id:"objectif", label:"OBJECTIF", icon:"✦", subtitle:"La transformation que tu veux vraiment", questions:[
-    {id:"q_objectif",label:"Quel comportement précis veux-tu transformer dans les 90 prochains jours ?",type:"textarea",ph:"Arrêter de procrastiner mes tâches importantes. Tenir mes engagements envers moi-même. Installer une routine quotidienne.",minLen:20,
+    {id:"q_objectif",label:"Quel comportement précis veux-tu transformer en 90 jours ?",type:"textarea",ph:"Arrêter de procrastiner mes tâches importantes. Tenir mes engagements envers moi-même. Installer une routine quotidienne.",minLen:20,
      reward:"Objectif comportemental ancré. Les 12 semaines sont construites pour l'y amener.",
-     aide:{quoi:"Un comportement précis — pas une ambition floue.",ex:"Travailler 2h sans téléphone chaque matin. Tenir mon planning sans exception.",evite:"Pas 'être plus discipliné' — quel comportement précis ?",erreur:"Nomme le comportement précis à transformer."}},
-    {id:"q_sacrifice",label:"Qu'es-tu prêt à supprimer ou limiter fortement pendant 90 jours pour changer réellement ?",type:"textarea",ph:"Limiter les réseaux à 30 minutes par jour. Arrêter de regarder des séries en semaine. Réduire les sorties inutiles.",minLen:15,
+     aide:{ex:"Travailler 2h sans téléphone chaque matin. Tenir mon planning sans exception."}},
+    {id:"q_urgence_projection",label:"Pourquoi c'est urgent maintenant — et si rien ne change dans 3 ans, qu'est-ce qui se dégradera le plus dans ta vie ?",type:"textarea",ph:"Urgent parce que j'ai perdu trop d'opportunités. Dans 3 ans : mêmes schémas, projets inachevés, confiance en moi perdue.",minLen:20,
+     reward:"Ce déclencheur et cette projection sont dans le plan anti-abandon.",
+     aide:{ex:"Urgent : j'ai 30 ans et rien ne change. Dans 3 ans : mêmes regrets, même immobilisme."}},
+    {id:"q_cout_inaction",label:"La dernière fois que tu as abandonné un engagement — c'était quand, où, et qu'est-ce qui s'est passé juste avant ?",type:"textarea",ph:"Il y a 2 mois, un lundi soir. J'étais fatigué après le travail. J'ai regardé mon téléphone et je n'ai plus rien fait.",minLen:20,
+     reward:"Ce moment précis est maintenant dans ton protocole anti-rechute.",
+     aide:{ex:"Il y a 3 semaines, un mercredi. J'avais eu une mauvaise journée et j'ai tout arrêté."}},
+    {id:"q_sacrifice",label:"Qu'es-tu prêt à supprimer ou limiter fortement pendant 90 jours pour changer réellement ?",type:"textarea",ph:"Limiter les réseaux à 30 minutes par jour. Arrêter les séries en semaine. Réduire les sorties inutiles.",minLen:15,
      reward:"Ton niveau de conviction réel est dans le plan.",
-     aide:{quoi:"Ce que tu vas vraiment abandonner — pas ce qui sonne bien.",ex:"Supprimer Netflix pendant 30 jours. Couper les notifications pendant les heures de travail.",evite:"Pas 'je sacrifierai tout' — sois précis sur ce que tu supprimes.",erreur:"Nomme ce que tu supprimes ou limites concrètement."}},
-    {id:"q_pourquoi_maintenant",label:"Pourquoi est-ce devenu urgent maintenant ?",type:"textarea",ph:"Parce que j'ai perdu trop d'opportunités à cause de ma procrastination. Parce que je me déçois moi-même depuis trop longtemps.",minLen:15,
-     reward:"Ce déclencheur est dans le plan. C'est lui qui tient quand la motivation lâche.",
-     aide:{quoi:"La vraie raison de l'urgence — pas la version noble.",ex:"Parce que j'ai 30 ans et mes habitudes ne changent pas malgré mes promesses.",evite:"Pas 'c'est le bon moment' — la vraie raison.",erreur:"Explique pourquoi maintenant et pas dans 2 ans."}},
-    {id:"q_si_pas",label:"Si rien ne change dans 3 ans — qu'est-ce qui risque de se dégrader le plus dans ta vie ?",type:"textarea",ph:"Je serai encore dans les mêmes schémas. Mes projets seront toujours inachevés. Je perdrai confiance en moi.",minLen:20,
-     reward:"Cette projection est maintenant ton levier anti-abandon.",
-     aide:{quoi:"Une projection réaliste — pas dramatique.",ex:"Dans 3 ans, mêmes habitudes, mêmes regrets, même immobilisme.",evite:"Pas de catastrophisme excessif — juste la réalité si rien ne change.",erreur:"Décris ce qui se dégradera si tu ne changes pas."}},
-    {id:"q_comportement_ideal",label:"Quel comportement positif, s'il devenait automatique, transformerait le plus ta vie ?",type:"textarea",ph:"Si je travaillais 2h concentré chaque matin sans exception, tout changerait. Si je tenais mes engagements envers moi-même.",minLen:15,
-     reward:"Ce comportement cible est au cœur des semaines 7 à 12.",
-     aide:{quoi:"L'habitude clé qui changerait tout si elle était automatique.",ex:"Me lever à 6h. Faire du sport 3x par semaine. Planifier ma semaine le dimanche soir.",evite:"Pas plusieurs — lequel en premier ?",erreur:"Nomme le comportement qui changerait le plus ta vie s'il devenait automatique."}},
+     aide:{ex:"Supprimer Netflix 30 jours. Couper les notifications pendant les heures de travail."}},
   ]},
   { id:"blocages", label:"BLOCAGES", icon:"⚠", subtitle:"Tes mécanismes de sabotage", questions:[
-    {id:"q_mensonge",label:"Quel mensonge utilises-tu le plus souvent pour justifier tes mauvaises habitudes ?",type:"select",
+    {id:"q_mensonge",label:"Quel mensonge utilises-tu pour justifier tes mauvaises habitudes ?",type:"select",
      opts:["Je changerai quand ma situation s'améliorera","C'est plus fort que moi — c'est ma nature","J'ai essayé mais ça ne marche pas pour moi","Je n'ai pas le temps","Je manque de volonté","C'est à cause de mon entourage","Je le ferai demain","Autre"],
      reward:"Ce mensonge est nommé. Il perd son pouvoir.",
-     aide:{quoi:"La justification que tu te répètes — elle est toujours fausse.",ex:"'Je changerai quand j'aurai moins de stress.' / 'Je suis comme ça de nature.'",evite:"Pas 'je n'ai pas de mensonge' — il y en a toujours un.",erreur:"Choisis le mensonge que tu te répètes le plus souvent."}},
-    {id:"q_perte_succes",label:"Si tu changeais vraiment ce comportement — qu'est-ce que tu risques de perdre ?",type:"textarea",ph:"Je perdrais le confort de me plaindre. Je ne pourrais plus blâmer mes habitudes pour mes échecs. Certains amis ne me reconnaîtraient plus.",minLen:10,
-     reward:"Les résistances inconscientes au changement sont identifiées.",
-     aide:{quoi:"Changer de comportement menace toujours quelque chose.",ex:"Je perdrais la familiarité du chaos. Je devrais prendre mes responsabilités.",evite:"Ne dis pas 'je ne perdrais rien' — il y a toujours quelque chose.",erreur:"Nomme ce que tu perdrais vraiment si tu changeais."}},
-    {id:"q_echec_historique",label:"Quand tu abandonnes une habitude importante — quelle est généralement la vraie raison derrière ?",type:"textarea",ph:"Dès que c'est inconfortable je cherche une excuse. Dès que je ne vois pas de résultats rapides je décroche. Un événement extérieur me sert de prétexte.",minLen:20,
-     reward:"Ce schéma d'abandon est identifié. Le plan inclut un protocole de reprise.",
-     aide:{quoi:"La vraie raison — pas la version acceptable.",ex:"Je m'ennuie après 2-3 semaines. Je cède dès qu'une émotion forte arrive.",evite:"Pas 'manque de motivation' — le mécanisme précis d'abandon.",erreur:"Décris le mécanisme réel de tes abandons."}},
+     aide:{ex:"'Je changerai quand j'aurai moins de stress.' / 'Je suis comme ça de nature.'"}},
+    {id:"q_resistance_abandon",label:"Si tu changeais vraiment — que perdrais-tu ? Et quelle est la vraie raison derrière tes abandons ?",type:"textarea",ph:"Je perdrais le confort de me plaindre. Et j'abandonne toujours quand c'est inconfortable ou quand je ne vois pas de résultats rapides.",minLen:15,
+     reward:"Les résistances inconscientes et le mécanisme d'abandon sont identifiés.",
+     aide:{ex:"Je perdrais la familiarité du chaos. J'abandonne quand une émotion forte arrive."}},
     {id:"q_emotion_declencheur",label:"Quelle émotion déclenche le plus souvent tes comportements destructeurs ?",type:"select",
      opts:["Stress et pression","Ennui et vide","Solitude","Frustration","Anxiété","Fatigue","Colère","Honte ou culpabilité"],
-     reward:"Ce déclencheur émotionnel est maintenant dans le protocole anti-saboteur.",
-     aide:{quoi:"L'émotion qui précède tes comportements que tu veux changer.",ex:"Quand je suis stressé je procrastine. Quand je m'ennuie je mange.",evite:"Pas plusieurs — laquelle en premier ?",erreur:"Choisis l'émotion qui déclenche le plus souvent tes mauvais comportements."}},
+     reward:"Ce déclencheur émotionnel est dans le protocole anti-saboteur.",
+     aide:{ex:"Quand je suis stressé je procrastine. Quand je m'ennuie je mange."}},
   ]},
-  { id:"environnement", label:"ÉNERGIE", icon:"◉", subtitle:"Tes déclencheurs et ton environnement", questions:[
-    {id:"q_phrase_neg",label:"Quelle phrase négative te répètes-tu le plus souvent dans ta tête — celle que personne n'entend ?",type:"textarea",ph:"'Je n'arrive jamais à finir ce que je commence.' Ou : 'Je suis comme ça, je ne changerai jamais.'",minLen:10,
-     reward:"Ton autosuggestion sera l'exact opposé de cette phrase.",
-     aide:{quoi:"La voix intérieure critique — exactement ce qu'elle dit.",ex:"'Je suis faible.' / 'Je ne tiens jamais mes engagements.'",evite:"Pas une belle réponse — la phrase exacte, même si elle fait mal.",erreur:"Écris la phrase négative exacte, pas une description d'elle."}},
-    {id:"q_fuite",label:"Vers quoi ton cerveau fuit-il automatiquement quand tu te sens mal ou stressé ?",type:"textarea",ph:"Je sors mon téléphone. Je mange. Je dors. Je regarde des séries. Je cherche une distraction immédiate.",minLen:10,
-     reward:"Ce comportement de fuite est maintenant dans le protocole anti-rechute.",
-     aide:{quoi:"Le réflexe automatique face à l'inconfort.",ex:"Instagram. YouTube. Nourriture. Sommeil. Conversations inutiles.",evite:"Pas 'ça dépend' — le réflexe le plus fréquent.",erreur:"Nomme vers quoi tu fuis automatiquement quand tu te sens mal."}},
+  { id:"energie", label:"ÉNERGIE", icon:"◉", subtitle:"Tes déclencheurs et ton environnement", questions:[
+    {id:"q_voix_neg_fuite",label:"Quelle phrase négative tourne en boucle dans ta tête — et vers quoi tu fuis automatiquement quand tu te sens mal ?",type:"textarea",ph:"Je me dis 'je n'arrive jamais à finir ce que je commence'. Et je fuis vers mon téléphone ou la nourriture.",minLen:15,
+     reward:"Ton autosuggestion sera l'opposé exact de cette phrase. Ta fuite est dans le protocole anti-rechute.",
+     aide:{ex:"Phrase : 'Je suis faible.' Fuite : Instagram ou dormir."}},
     {id:"q_moment_fuite",label:"À quel moment de la journée es-tu le plus vulnérable à l'auto-sabotage ?",type:"select",
      opts:["Le matin — j'ai du mal à démarrer","Après le déjeuner — l'après-midi je décroche","Le soir — je cède aux distractions","Dès que quelque chose devient difficile","Quand je suis seul face à une tâche importante"],
      reward:"Le rituel sera calé pour contrer exactement ce moment.",
-     aide:{quoi:"Le moment précis où tu perds le plus ta discipline.",ex:"Le soir après 20h — je sais que je vais procrastiner.",evite:"Pas 'tout le temps' — le moment dominant.",erreur:"Choisis le moment où tu es le plus vulnérable."}},
-    {id:"q_environnement",label:"Quel environnement renforce le plus tes mauvaises habitudes ?",type:"textarea",ph:"Quand je suis à la maison sans structure je procrastine tout. Mon entourage a les mêmes habitudes que moi.",minLen:15,
+     aide:{ex:"Le soir après 20h — je sais que je vais procrastiner."}},
+    {id:"q_environnement",label:"Quel environnement renforce le plus tes mauvaises habitudes ?",type:"textarea",ph:"À la maison sans structure je procrastine tout. Mon entourage a les mêmes habitudes que moi.",minLen:15,
      reward:"L'environnement est maintenant dans les stratégies du plan.",
-     aide:{quoi:"L'environnement qui active tes comportements que tu veux changer.",ex:"Le salon avec la télé allumée. Mon téléphone posé sur le bureau.",evite:"Pas d'idéalisation — l'environnement réel qui te sabote.",erreur:"Décris l'environnement qui renforce le plus tes mauvaises habitudes."}},
+     aide:{ex:"Le salon avec la télé. Mon téléphone sur le bureau. Mes amis qui ne font rien le week-end."}},
   ]},
   { id:"execution", label:"EXÉCUTION", icon:"▶", subtitle:"Ton engagement concret", questions:[
-    {id:"q_discipline_reelle",label:"Que fais-tu quand personne ne te regarde ? Et quelle est la dernière discipline que tu as tenue sérieusement plus de 30 jours ?",type:"textarea",ph:"Quand personne ne me regarde je procrastine. Dernière discipline tenue : le sport pendant 6 semaines en 2023 — puis j'ai arrêté.",minLen:15,
-     reward:"Ton vrai niveau de discipline est maintenant dans le plan.",
-     aide:{quoi:"Ce que tu fais réellement sans témoin — et ta dernière vraie discipline.",ex:"Sans témoin je fuis. Dernière discipline : lever tôt pendant 3 semaines.",evite:"Pas la version flatteuse — la vérité.",erreur:"Réponds aux deux : que fais-tu sans témoin + dernière discipline tenue."}},
-    {id:"q_pari",label:"Si tu devais parier sur ta réussite dans 90 jours — combien sur 100 ? Pourquoi pas plus ? Pourquoi pas moins ?",type:"textarea",ph:"55/100. Pas plus parce que j'ai déjà échoué plusieurs fois. Pas moins parce que cette fois j'ai un vrai système.",minLen:20,
+    {id:"q_pari",label:"Tu paries combien sur 100 que tu réussis ces 90 jours — et pourquoi pas plus, pourquoi pas moins ?",type:"textarea",ph:"60/100. Pas plus parce que j'ai déjà échoué plusieurs fois. Pas moins parce que cette fois j'ai un vrai système.",minLen:20,
      reward:"Ton niveau de conviction est calibré. Le plan anti-abandon est construit dessus.",
-     aide:{quoi:"Un chiffre honnête + les deux raisons.",ex:"60/100. Pas plus : rechutes fréquentes. Pas moins : meilleure compréhension de mes schémas.",evite:"Pas 95/100 — la vérité est plus utile.",erreur:"Donne le chiffre ET réponds pourquoi pas plus ET pourquoi pas moins."}},
+     aide:{ex:"55/100. Pas plus : rechutes fréquentes. Pas moins : meilleure compréhension de mes schémas."}},
     {id:"q_rythme",label:"Combien de minutes peux-tu protéger chaque jour — même les mauvais jours ?",type:"dual_select",
-     selects:[{id:"heures",label:"Minutes protégées / jour",opts:["15 à 30 minutes","30 à 60 minutes","1 à 2 heures","Plus de 2 heures"]},{id:"moment",label:"Moment naturel",opts:["Matin (avant 12h)","Après-midi (12h–18h)","Soir (après 20h)","Variable"]}],
-     reward:"Les actions du plan sont calées sur ton minimum réel.",
-     aide:{quoi:"Pas le temps idéal — le minimum même épuisé.",ex:"20 minutes le matin, même les mauvais jours.",evite:"Ne mets pas ce que tu voudrais — ce que tu peux tenir.",erreur:"Sélectionne les deux : minutes disponibles et moment naturel."}},
-    {id:"q_engagement",label:"Si ce comportement devenait automatique dans 90 jours — qu'est-ce que ça changerait concrètement dans ta vie ? Et quel comportement ne toléreras-tu plus jamais chez toi ?",type:"textarea",ph:"Si je tenais mes engagements automatiquement, tout changerait : mes projets aboutiraient, ma confiance exploserait. Je ne tolérerai plus de promettre sans tenir.",minLen:20,
-     reward:"La vision et ta ligne rouge sont posées. C'est ce qu'on relit au moment de tout lâcher.",
-     aide:{quoi:"Ce que ça changerait concrètement + la limite définitive.",ex:"Si j'arrêtais de procrastiner, j'aurais lancé mon projet depuis longtemps. Je refuse de continuer à promettre et ne pas tenir.",evite:"Pas 'je serai mieux' — des conséquences concrètes ET une limite précise.",erreur:"Décris ce qui changerait concrètement ET ce que tu ne tolèreras plus."}},
+     selects:[{id:"heures",label:"Minutes / jour",opts:["15 à 30 minutes","30 à 60 minutes","1 à 2 heures","Plus de 2 heures"]},{id:"moment",label:"Moment naturel",opts:["Matin (avant 12h)","Après-midi (12h–18h)","Soir (après 20h)","Variable"]}],
+     reward:"Les actions sont calées sur ton minimum réel.",
+     aide:{ex:"20 minutes le matin, même épuisé."}},
+    {id:"q_engagement",label:"Si ce comportement devenait automatique dans 90 jours — qu'est-ce qui changerait concrètement dans ta vie ? Qui es-tu quand tu obtiens ça ?",type:"textarea",ph:"Si je tenais mes engagements, mes projets aboutiraient, ma confiance exploserait. Je suis quelqu'un qui finit ce qu'il commence et qui ne se ment plus.",minLen:20,
+     reward:"La vision et l'identité future sont posées. C'est ce qu'on relit au moment de tout lâcher.",
+     aide:{ex:"Si j'arrêtais de procrastiner, j'aurais lancé mon projet. Je suis quelqu'un de discipliné qui agit même sans motivation."}},
   ]},
 ];
-
 const SEGMENTS_MENTAL = [
   { id:"identite", label:"IDENTITÉ", icon:"◈", subtitle:"Ton état mental actuel", questions:[
     {id:"q_profil",label:"Ton prénom, ton âge et ton activité principale ?",type:"text",ph:"Ibrahim, 29 ans, ingénieur",minLen:5,
      reward:"Chaque recommandation sera ancrée dans ta réalité.",
-     aide:{quoi:"Ces 3 infos personnalisent tout le plan.",ex:"Mariama, 31 ans, infirmière",evite:"Ne mets pas que le prénom.",erreur:"Indique ton prénom, ton âge et ton activité."}},
-    {id:"q_domaine_principal",label:"Quel est le domaine que tu veux transformer en 90 jours ?",type:"select",
+     aide:{ex:"Mariama, 31 ans, infirmière et mère de famille."}},
+    {id:"q_domaine_principal",label:"Quel domaine veux-tu transformer en 90 jours ?",type:"select",
      opts:["Finances","Comportement","Mental"],
-     reward:"✦ Ton parcours est maintenant 100% dédié à ta transformation mentale.",
-     aide:{quoi:"Confirme ton choix.",ex:"Mental — clarté, paix intérieure, confiance.",evite:"",erreur:"Sélectionne ton domaine."}},
-    {id:"q_pensee_dominante",label:"Quelle pensée revient le plus souvent quand tu es seul — et quel mensonge ton cerveau utilise-t-il pour rester dans cet état ?",type:"textarea",ph:"La pensée : 'Je ne suis pas à la hauteur.' Le mensonge : 'Ça va aller avec le temps, ce n'est pas si grave.'",minLen:20,
-     reward:"Cette pensée et ce mécanisme d'évitement sont maintenant dans le diagnostic et l'autosuggestion.",
-     aide:{quoi:"La pensée dominante + le mensonge que ton cerveau utilise pour ne pas changer.",ex:"Pensée : 'Je suis en retard sur tout le monde.' Mensonge : 'Je gère, c'est la vie.'",evite:"Pas ce que tu voudrais penser — ce qui revient vraiment + le vrai mensonge.",erreur:"Écris la pensée dominante ET le mensonge que tu te répètes."}},
-    {id:"q_etat_mental",label:"Lequel décrit le mieux ton état mental actuel ?",type:"select",
+     reward:"✦ Ton parcours est 100% dédié à ta transformation mentale.",
+     aide:{ex:"Mental — clarté, paix intérieure, confiance, stabilité."}},
+    {id:"q_pensee_dominante",label:"Quelle pensée revient le plus souvent quand tu es seul — et quel mensonge ton cerveau utilise-t-il pour rester dans cet état ?",type:"textarea",ph:"La pensée : 'Je ne suis pas à la hauteur.' Le mensonge : 'Ça va aller avec le temps, c'est pas si grave.'",minLen:20,
+     reward:"Cette pensée et ce mécanisme sont dans le diagnostic et l'autosuggestion.",
+     aide:{ex:"Pensée : 'Je suis en retard sur tout le monde.' Mensonge : 'Je gère, c'est la vie.'"}},
+    {id:"q_etat_mental",label:"Lequel décrit le mieux ton état mental en ce moment ?",type:"select",
      opts:["Anxieux en permanence","Épuisé mentalement","Dispersé — du mal à me concentrer","Perdu — je ne sais plus où j'en suis","Sous pression constante","Démotivé et vide","Émotionnellement instable","Mentalement fatigué de tout"],
-     reward:"Cet état est maintenant au cœur du diagnostic.",
-     aide:{quoi:"L'état qui domine — pas celui que tu voudrais avoir.",ex:"Si tu te réveilles déjà fatigué, c'est 'Épuisé mentalement'.",evite:"Pas ce que tu voudrais être — ce que tu ressens vraiment.",erreur:"Sélectionne l'état qui te ressemble le plus en ce moment."}},
-    {id:"q_peur_dominante",label:"Quelle peur influence silencieusement la majorité de tes décisions aujourd'hui ?",type:"textarea",ph:"La peur d'échouer. La peur du jugement des autres. La peur de décevoir ma famille. La peur de ne pas être à la hauteur.",minLen:15,
-     reward:"Cette peur est maintenant identifiée dans le diagnostic. Le plan est construit pour la désarmer.",
-     aide:{quoi:"La peur qui dirige sans que tu le réalises vraiment.",ex:"Peur du rejet. Peur d'être insuffisant. Peur de me tromper.",evite:"Pas 'j'ai peur d'échouer' en généralité — de quoi précisément ?",erreur:"Décris la peur qui influence le plus tes décisions."}},
+     reward:"Cet état est au cœur du diagnostic.",
+     aide:{ex:"Si tu te réveilles déjà fatigué → 'Épuisé mentalement'."}},
+    {id:"q_peur_dominante",label:"Quelle peur influence silencieusement la majorité de tes décisions aujourd'hui ?",type:"textarea",ph:"La peur d'échouer. La peur du jugement. La peur de décevoir ma famille. La peur de ne pas être à la hauteur.",minLen:15,
+     reward:"Cette peur est identifiée. Le plan est construit pour la désarmer.",
+     aide:{ex:"Peur du rejet. Peur d'être insuffisant. Peur de prendre la mauvaise décision."}},
   ]},
   { id:"objectif", label:"OBJECTIF", icon:"✦", subtitle:"La transformation intérieure que tu veux", questions:[
-    {id:"q_objectif",label:"Quelle transformation mentale ou émotionnelle veux-tu réellement vivre dans les 90 prochains jours ?",type:"textarea",ph:"Retrouver la paix intérieure. Arrêter d'être gouverné par mes pensées négatives. Avoir plus de clarté sur ma vie.",minLen:20,
-     reward:"Objectif de transformation intérieure ancré. Les 12 semaines pointent vers ça.",
-     aide:{quoi:"La transformation intérieure précise — pas un état général.",ex:"Arrêter de ruminer. Développer ma confiance. Trouver un calme intérieur stable.",evite:"Pas 'être heureux' — une transformation concrète et observable.",erreur:"Décris la transformation mentale précise que tu veux vivre."}},
-    {id:"q_sacrifice",label:"Qu'es-tu prêt à changer concrètement dans ton quotidien pour retrouver plus de paix mentale ?",type:"textarea",ph:"Réduire les réseaux sociaux. Arrêter de ruminer avant de dormir. Arrêter de comparer ma vie à celle des autres.",minLen:15,
-     reward:"Ces changements concrets sont dans le plan.",
-     aide:{quoi:"Ce que tu vas changer réellement — pas ce qui sonne bien.",ex:"Éteindre mon téléphone à 21h. Méditer 5 minutes le matin. Limiter les conversations négatives.",evite:"Pas 'je ferai des efforts' — des changements précis.",erreur:"Nomme ce que tu vas changer concrètement."}},
-    {id:"q_pourquoi_maintenant",label:"Pourquoi est-ce devenu important maintenant ?",type:"textarea",ph:"Parce que je n'arrive plus à fonctionner normalement. Parce que mon mental affecte tout — mon travail, mes relations, ma santé.",minLen:15,
-     reward:"Ce déclencheur est dans le plan.",
-     aide:{quoi:"La raison réelle de l'urgence.",ex:"Parce que je fais des crises d'anxiété. Parce que je n'arrive plus à dormir.",evite:"Pas 'c'est important' — pourquoi MAINTENANT ?",erreur:"Explique pourquoi c'est urgent maintenant."}},
-    {id:"q_si_pas",label:"Si rien ne change dans 3 ans — qu'est-ce qui t'épuisera le plus mentalement ?",type:"textarea",ph:"Je serai encore dans la même anxiété. Mes pensées me contrôleront toujours. Je n'aurai pas avancé malgré ma souffrance.",minLen:20,
-     reward:"Cette projection est ton levier anti-abandon.",
-     aide:{quoi:"Une projection réaliste de ton état mental dans 3 ans.",ex:"Dans 3 ans, même épuisement, même anxiété, même paralysie.",evite:"Pas de catastrophisme — juste la réalité si rien ne change.",erreur:"Décris ton état mental dans 3 ans si rien ne change."}},
-    {id:"q_version_stable",label:"À quoi ressemblerait une version mentalement stable de toi-même au quotidien ?",type:"textarea",ph:"Je me lèverais sans anxiété. Je prendrais des décisions sans me torturer. Je dormirais bien. Je serais présent.",minLen:15,
-     reward:"Cette vision est maintenant dans ton identité future.",
-     aide:{quoi:"Une description concrète de ta version mentalement stable.",ex:"Je gère les critiques sans m'effondrer. Je reste calme sous pression.",evite:"Pas 'je serai heureux' — des comportements observables.",erreur:"Décris concrètement à quoi ressemble ta version mentalement stable."}},
+    {id:"q_objectif",label:"Quelle transformation mentale ou émotionnelle veux-tu vivre en 90 jours ?",type:"textarea",ph:"Retrouver la paix intérieure. Arrêter d'être gouverné par mes pensées négatives. Avoir plus de clarté.",minLen:20,
+     reward:"Objectif de transformation intérieure ancré.",
+     aide:{ex:"Arrêter de ruminer. Développer ma confiance. Trouver un calme stable."}},
+    {id:"q_urgence_version_stable",label:"Pourquoi c'est urgent maintenant — et à quoi ressemble ta version mentalement stable au quotidien ?",type:"textarea",ph:"Urgent parce que mon mental affecte tout. Version stable : je me lève sans anxiété, je décide sans me torturer, je dors bien.",minLen:20,
+     reward:"Ce déclencheur et cette vision sont dans le plan.",
+     aide:{ex:"Urgent : je n'arrive plus à fonctionner. Version stable : je reste calme sous pression."}},
+    {id:"q_cout_statu_quo",label:"Si rien ne change dans 3 ans — qu'est-ce qui t'épuisera le plus ? Et à qui cela fera-t-il du tort ?",type:"textarea",ph:"Je serai encore dans la même anxiété. Mes relations vont se dégrader. Ma famille souffrira de mon état.",minLen:20,
+     reward:"Ce coût réel est ton levier anti-abandon le plus puissant.",
+     aide:{ex:"Dans 3 ans : même épuisement, même anxiété. Et mes proches en pâtiront."}},
   ]},
   { id:"blocages", label:"BLOCAGES", icon:"⚠", subtitle:"Ce qui pèse réellement", questions:[
-    {id:"q_perte_succes",label:"Si tu trouvais vraiment la paix intérieure — qu'est-ce que tu risques de perdre ?",type:"textarea",ph:"Je perdrais l'identité de celui qui souffre. Je n'aurais plus d'excuse pour ne pas avancer. Certains ne me reconnaîtraient plus.",minLen:10,
-     reward:"Les résistances inconscientes à la paix sont identifiées.",
-     aide:{quoi:"La paix intérieure menace toujours quelque chose.",ex:"Je perdrais la familiarité de mon anxiété. Je devrais vraiment avancer.",evite:"Ne dis pas 'rien' — il y a toujours quelque chose.",erreur:"Nomme ce que tu perdrais si tu trouvais vraiment la paix."}},
-    {id:"q_echec_historique",label:"Quel échec ou quelle période t'a le plus fragilisé mentalement — et quelle conclusion as-tu tirée sur toi-même ?",type:"textarea",ph:"En 2020 j'ai tout perdu en même temps. J'ai conclu que je n'étais pas fait pour réussir. Depuis je sabote tout inconsciemment.",minLen:20,
-     reward:"Ce schéma est identifié. Le plan est construit pour le dépasser.",
-     aide:{quoi:"La période précise + la conclusion que tu en as tirée.",ex:"Mon divorce. J'ai conclu que je ne méritais pas d'être aimé.",evite:"Pas 'j'ai eu des difficultés' — la période précise et la pensée après.",erreur:"Décris la période et la conclusion que tu as tirée sur toi-même."}},
+    {id:"q_resistance_perte",label:"Si tu trouvais la paix intérieure — que risques-tu de perdre ? Et quel échec t'a le plus fragilisé mentalement ?",type:"textarea",ph:"Je perdrais l'identité de celui qui souffre. Et en 2020 quand tout s'est effondré, j'ai conclu que je n'étais pas fait pour réussir.",minLen:20,
+     reward:"Les résistances inconscientes et le schéma fragilisant sont identifiés.",
+     aide:{ex:"Je perdrais la familiarité de mon anxiété. Échec : mon divorce, conclusion : je ne mérite pas mieux."}},
     {id:"q_reaction_pression",label:"Quand tu es sous pression — tu deviens plutôt ?",type:"select",
      opts:["Silencieux et fermé — je me retire","Agressif — je m'énerve facilement","Anxieux et agité — je n'arrive plus à me calmer","Dispersé — je saute d'une chose à l'autre","Paralysé — je ne fais plus rien","Hyperactif — je m'occupe pour ne pas penser","Irritable — tout m'agace"],
      reward:"Ce comportement sous pression est dans le protocole anti-rechute.",
-     aide:{quoi:"Ta réaction dominante face à la pression.",ex:"Sous pression je deviens silencieux et je ferme tous les contacts.",evite:"Pas ce que tu voudrais être — ce que tu fais réellement.",erreur:"Choisis ta réaction dominante sous pression."}},
-  ]},
-  { id:"environnement", label:"ÉNERGIE", icon:"◉", subtitle:"Ta charge mentale et tes habitudes", questions:[
+     aide:{ex:"Sous pression je deviens silencieux et je ferme tous les contacts."}},
     {id:"q_croyance_limitante",label:"Quelle croyance sur toi-même aimerais-tu enfin arrêter de porter ?",type:"textarea",ph:"'Je ne suis pas assez bien.' / 'Je suis en retard sur tout le monde.' / 'Je ne mérite pas mieux que ça.'",minLen:10,
-     reward:"Cette croyance est dans le diagnostic. L'autosuggestion est construite comme son opposé exact.",
-     aide:{quoi:"La croyance négative la plus profonde sur toi-même.",ex:"'Je suis une déception.' / 'Je n'arriverai jamais à rien.'",evite:"Pas une belle réponse — la croyance exacte, même si elle fait mal.",erreur:"Écris la croyance que tu portes sur toi-même."}},
-    {id:"q_fuite",label:"Vers quoi ton cerveau fuit-il automatiquement quand tu te sens mentalement mal ?",type:"textarea",ph:"Je sors mon téléphone. Je dors excessivement. Je mange. Je me noie dans les séries ou les réseaux.",minLen:10,
-     reward:"Ce comportement de fuite est dans le protocole anti-rechute.",
-     aide:{quoi:"Le réflexe automatique face à la douleur mentale.",ex:"Instagram. Nourriture. Sommeil. Isolement. Alcool.",evite:"Pas 'ça dépend' — le réflexe le plus fréquent.",erreur:"Nomme vers quoi tu fuis automatiquement."}},
+     reward:"Cette croyance est dans le diagnostic. L'autosuggestion en est l'opposé exact.",
+     aide:{ex:"'Je suis une déception.' / 'Je n'arriverai jamais à rien.'"}},
+  ]},
+  { id:"energie", label:"ÉNERGIE", icon:"◉", subtitle:"Ta charge mentale et tes habitudes", questions:[
+    {id:"q_fuite_charge",label:"Qu'est-ce qui surcharge le plus ton esprit — et vers quoi tu fuis automatiquement quand c'est trop lourd ?",type:"textarea",ph:"Des décisions en attente et des conflits non résolus. Je fuis vers mon téléphone ou je dors.",minLen:15,
+     reward:"Ta charge mentale et ta fuite sont dans le rituel et le protocole anti-rechute.",
+     aide:{ex:"Charge : un problème financier. Fuite : Instagram ou isolement."}},
     {id:"q_moment_fuite",label:"À quel moment de la journée ton mental devient-il le plus fragile ?",type:"select",
      opts:["Le matin — je me réveille déjà épuisé","Après le déjeuner — je décroche","Le soir — les pensées s'intensifient","Dès que je suis inactif","Quand je suis seul face au silence"],
      reward:"Le rituel sera calé pour contrer exactement ce moment.",
-     aide:{quoi:"Le moment où ton mental est le plus vulnérable.",ex:"Le soir après 20h — les pensées négatives arrivent.",evite:"Pas 'tout le temps' — le moment dominant.",erreur:"Choisis le moment où ton mental est le plus fragile."}},
-    {id:"q_charge_mentale",label:"Qu'est-ce qui surcharge actuellement le plus ton esprit au quotidien ?",type:"textarea",ph:"Des décisions en attente. Des conflits non résolus. La peur de l'avenir. Des regrets du passé.",minLen:15,
-     reward:"Ta charge mentale réelle est dans le plan. Le rituel sera calibré dessus.",
-     aide:{quoi:"Ce qui tourne en fond de tête en permanence.",ex:"Un problème financier. Une relation difficile. Une décision que j'évite.",evite:"Pas ce qui te préoccupe en surface — ce qui pèse vraiment.",erreur:"Nomme ce qui occupe vraiment ton espace mental."}},
+     aide:{ex:"Le soir après 20h — les pensées négatives arrivent."}},
+    {id:"q_habitude_calmante",label:"Quelle habitude calme vraiment ton cerveau — et quand l'as-tu pratiquée pour la dernière fois ?",type:"textarea",ph:"La marche me calme. Mais je ne l'ai pas faite depuis 3 semaines. La prière aussi — mais j'ai arrêté.",minLen:15,
+     reward:"Cette habitude calmante entre dans le rituel quotidien.",
+     aide:{ex:"La méditation. Le sport. La lecture. Dernière fois : il y a 2 semaines."}},
   ]},
   { id:"execution", label:"EXÉCUTION", icon:"▶", subtitle:"Ton engagement concret", questions:[
-    {id:"q_habitude_calmante",label:"Quelle habitude aide le plus ton cerveau à se calmer naturellement ? Et la dernière fois que tu l'as vraiment pratiquée ?",type:"textarea",ph:"La marche me calme. Mais je ne l'ai pas faite depuis 3 semaines. La prière aussi — mais j'ai arrêté.",minLen:15,
-     reward:"Cette habitude calmante est dans le rituel quotidien.",
-     aide:{quoi:"L'habitude qui calme vraiment ton mental — et quand tu l'as faite pour la dernière fois.",ex:"La méditation. Le sport. La lecture. La prière. — Dernière fois : il y a 2 semaines.",evite:"Pas 'je devrais méditer' — ce qui fonctionne vraiment pour toi.",erreur:"Nomme l'habitude calmante et quand tu l'as pratiquée."}},
-    {id:"q_pari",label:"Si tu devais parier sur ta transformation mentale dans 90 jours — combien sur 100 ? Pourquoi pas plus ? Pourquoi pas moins ?",type:"textarea",ph:"60/100. Pas plus parce que mon mental résiste depuis longtemps. Pas moins parce que je comprends enfin pourquoi.",minLen:20,
+    {id:"q_pari",label:"Tu paries combien sur 100 que tu vis cette transformation en 90 jours — et pourquoi pas plus, pourquoi pas moins ?",type:"textarea",ph:"62/100. Pas plus parce que mon mental résiste depuis longtemps. Pas moins parce que je comprends enfin pourquoi.",minLen:20,
      reward:"Ton niveau de conviction est calibré.",
-     aide:{quoi:"Un chiffre honnête + les deux raisons.",ex:"65/100. Pas plus : rechutes émotionnelles fréquentes. Pas moins : meilleure lucidité.",evite:"Pas 95/100 — la vérité est plus utile.",erreur:"Donne le chiffre ET réponds pourquoi pas plus ET pourquoi pas moins."}},
-    {id:"q_rythme",label:"Combien de minutes peux-tu protéger chaque jour pour travailler sur ton équilibre mental ?",type:"dual_select",
-     selects:[{id:"heures",label:"Minutes protégées / jour",opts:["15 à 30 minutes","30 à 60 minutes","1 à 2 heures","Plus de 2 heures"]},{id:"moment",label:"Moment naturel",opts:["Matin (avant 12h)","Après-midi (12h–18h)","Soir (après 20h)","Variable"]}],
-     reward:"Les pratiques du plan sont calées sur ton minimum réel.",
-     aide:{quoi:"Pas le temps idéal — le minimum que tu peux tenir.",ex:"15 minutes le matin avant que la journée commence.",evite:"Ne mets pas ce que tu voudrais — ce que tu peux tenir.",erreur:"Sélectionne les deux : minutes et moment naturel."}},
-        {id:"q_engagement",label:"Si tu retrouvais un vrai équilibre mental dans 90 jours — qu'est-ce qui changerait concrètement dans ta vie ? Et quelle souffrance refuses-tu de continuer à porter ?",type:"textarea",ph:"Si j'étais stable mentalement, je prendrais des décisions sereinement, mes relations s'amélioreraient, je dormirais enfin bien. Je refuse de continuer à me lever avec la peur dans le ventre.",minLen:15,
-     reward:"Ta ligne rouge finale est posée.",
-     aide:{quoi:"La souffrance mentale que tu refuses de continuer — pas ce que tu espères.",ex:"Je refuse de continuer à me lever avec cette peur dans le ventre.",evite:"Pas 'je serai heureux' — une souffrance précise que tu refuses.",erreur:"Nomme la souffrance mentale que tu refuses de continuer à porter."}},
+     aide:{ex:"65/100. Pas plus : rechutes émotionnelles fréquentes. Pas moins : meilleure lucidité."}},
+    {id:"q_rythme",label:"Combien de minutes peux-tu protéger chaque jour pour ton équilibre mental ?",type:"dual_select",
+     selects:[{id:"heures",label:"Minutes / jour",opts:["15 à 30 minutes","30 à 60 minutes","1 à 2 heures","Plus de 2 heures"]},{id:"moment",label:"Moment naturel",opts:["Matin (avant 12h)","Après-midi (12h–18h)","Soir (après 20h)","Variable"]}],
+     reward:"Les pratiques sont calées sur ton minimum réel.",
+     aide:{ex:"15 minutes le matin avant que la journée commence."}},
   ]},
 ];
-
 function getSegments(domaine) {
   if(domaine==="Finances") return SEGMENTS_FINANCES;
   if(domaine==="Comportement") return SEGMENTS_COMPORTEMENT;
@@ -493,6 +451,14 @@ function flatAnswers(answers) {
     a.q_heures = sanitize(answers.q_rythme.heures);
     a.q_moment = sanitize(answers.q_rythme.moment);
   }
+  // Fusionner les 3 questions pari en un bloc narratif
+  if (answers.q_pari && answers.q_pari_plus && answers.q_pari_moins) {
+    a.q_pari_complet = `${answers.q_pari}/100. Pas plus : ${sanitize(answers.q_pari_plus)}. Pas moins : ${sanitize(answers.q_pari_moins)}.`;
+  }
+  // Fusionner urgence + projection si q_urgence_projection existe
+  if (answers.q_urgence && answers.q_cout_statu_quo) {
+    a.q_projection_urgence = `Urgent : ${sanitize(answers.q_urgence)}. Coût inaction : ${sanitize(answers.q_cout_statu_quo)}`;
+  }
   // q_montant est maintenant une question text standalone
   if (!a.q_montant && answers.q_ancrage) {
     a.q_montant = sanitize(answers.q_ancrage.montant);
@@ -522,22 +488,25 @@ ${g('q_profil')}
 DOMAINE: ${domaine}
 Frustration/État: ${g('q_frustration')||g('q_comportement_reccurent')||g('q_pensee_dominante')||g('q_etat_now')}
 Profil: ${g('q_profil_financier')||g('q_profil_comportemental')||g('q_etat_mental')||g('q_version_dominante')}
-Objectif: ${g('q_objectif')} | Urgence: ${g('q_pourquoi_maintenant')}
-Activité repoussée/Sacrifice: ${g('q_activite_repoussee')||g('q_sacrifice')}
-Si rien ne change: ${g('q_si_pas')}
+Objectif: ${g('q_objectif')} | Urgence: ${g('q_urgence')||g('q_urgence_projection')||g('q_urgence_version_stable')||g('q_pourquoi_maintenant')}
+Sacrifice/Action repoussée: ${g('q_sacrifice')||g('q_activite_repoussee')}
+Coût inaction: ${g('q_cout_statu_quo')||g('q_cout_inaction')||g('q_si_pas')}
 Niveaux revenus: ${g('q_niveaux_revenus')||''}
 Mensonge: ${g('q_mensonge')} | Perte si succès: ${g('q_perte_succes')}
-Echec historique: ${g('q_echec_historique')}
-Rapport vente/Emotion déclencheur/Réaction pression: ${g('q_rapport_vente')||g('q_emotion_declencheur')||g('q_reaction_pression')}
-Phrase négative/Croyance: ${g('q_phrase_neg')||g('q_croyance_limitante')||g('q_argent_signifie')}
-Fuite: ${g('q_fuite')||g('q_stress_financier')} | Moment: ${g('q_moment_fuite')}
-Habitude destructrice: ${g('q_habitude_destructrice')||g('q_respect_soi')}
-Environnement: ${g('q_environnement')} | Charge mentale: ${g('q_charge_mentale')||''}
+Ligne rouge: ${g('q_ligne_rouge')||g('q_engagement')||''}
+Echec historique/Abandon: ${g('q_echec_historique')||g('q_cout_inaction')||''}
+Résistance abandon: ${g('q_resistance_abandon')||''}
+Emotion déclencheur/Réaction pression: ${g('q_emotion_declencheur')||g('q_reaction_pression')||''}
+Phrase négative+Fuite: ${g('q_voix_neg_fuite')||g('q_phrase_neg')||g('q_croyance_limitante')} | Argent: ${g('q_argent_env')||g('q_argent_signifie')||''}
+Fuite: ${g('q_fuite')||g('q_fuite_charge')||g('q_stress_financier')} | Moment: ${g('q_moment_fuite')}
+Habitude destructrice: ${g('q_habitude_destructrice')||''} | Environnement: ${g('q_environnement')||''}
+Charge mentale+Fuite: ${g('q_fuite_charge')||''} | Croyance limitante: ${g('q_croyance_limitante')||''}
 Peur dominante: ${g('q_peur_dominante')||''} | Visibilité: ${g('q_visibilite')||''}
 Consommation vs construction: ${g('q_consommation_vs_construction')||''} | Discipline réelle: ${g('q_discipline_reelle')||''}
 Habitude calmante: ${g('q_habitude_calmante')||''}
-Pari: ${g('q_pari')} | Temps: ${g('q_heures')} | Moment: ${g('q_moment')}
-Revenu actuel: ${g('q_revenu_actuel')||''} | Montant libérateur: ${g('q_montant')} | Engagement: ${g('q_engagement')}
+Identité cible: ${g('q_identite_cible')||''} | Croyance transformée: ${g('q_croyance_transformation')||''}
+Pari: ${g('q_pari_complet')||g('q_pari')||''} | Temps: ${g('q_heures')} | Moment: ${g('q_moment')}
+Montant libérateur: ${g('q_montant')||''} | Engagement: ${g('q_engagement')||''}
 
 Génère ce JSON valide EXACTEMENT — sans texte avant ni après, sans backticks :
 {"nom_guerre":"string — surnom puissant lié à son profil PRÉCIS, pas générique","pourquoi_ce_nom":"string — explication directe en 1-2 phrases qui fait mouche","identite_future":{"comment_pense":"string — pensée concrète liée au domaine","comment_agit":"string — comportement observable","ne_tolere_plus":"string — lié à ses réponses réelles","nouveaux_standards":"string — ancré dans son objectif"},"diagnostic":{"resume":"3 phrases MAX. Confrontantes. Basées sur VERSION DOMINANTE + COMPORTEMENT D'ÉVITEMENT. Impossible à donner à quelqu'un d'autre.","bloquant_central":"1 seule phrase. Doit faire légèrement mal parce qu'elle est vraie.","schema_sabotage":"Mécanisme précis. Commence par 'Quand tu...' ou 'Dès que...'","lecon_echec":"Ce que l'échec passé révèle sur le mécanisme de sabotage FUTUR.","qualites_cachees":"2 forces réelles cachées derrière les blocages déclarés."},"scorecard":{"discipline":{"score":55,"lecture":"string — 1 phrase confrontante liée au profil"},"focus":{"score":50,"lecture":"string"},"energie":{"score":60,"lecture":"string"},"clarte":{"score":45,"lecture":"string"},"constance":{"score":40,"lecture":"string"},"risque_abandon":"Modéré","facteur_risque":"string — circonstance précise d'abandon probable","levier_principal":"string — point fort exploitable immédiatement","mission_centrale":"string — 1 phrase personnelle qui donne envie d'agir"},"citations_personnelles":["phrase construite à partir de SES PROPRES MOTS des réponses — reconnaissable par lui","phrase — liée à son objectif précis","phrase — liée à sa peur profonde transformée en force"]}
@@ -635,14 +604,16 @@ ${hist}
 Question : ${question}
 
 RÈGLES ABSOLUES :
-— Tu es interactif — réponds à TOUTE question, même générale sur ton rôle
-— Si on te demande qui tu es : "Je suis ton coach IA — je connais ton profil, tes patterns et ton plan. Pose-moi n'importe quelle question sur ta progression ou ton plan."
-— Jamais "crois en toi" / "tu peux le faire" / encouragements génériques
-— Si données disponibles : commence par nommer ce que tu OBSERVES
-— Si pattern détecté → nomme-le directement
-— Termine par UNE action concrète avec heure et durée
-— Ton : direct, humain, stratégique
-— 3-5 phrases maximum`;
+— Tu es un coach comportemental socratique — tu POSES UNE QUESTION avant de donner un conseil
+— Exception : si l'utilisateur pose une question directe sur son plan ou ses données, réponds directement
+— Si on te demande qui tu es : présente-toi comme coach qui connaît les patterns et le plan
+— JAMAIS "crois en toi" / "tu peux le faire" / encouragements génériques
+— JAMAIS de conseil immédiat sans d'abord diagnostiquer : "Qu'est-ce qui s'est passé exactement ?" / "Quand précisément ?" / "Qu'est-ce que tu ressentais juste avant ?"
+— Si pattern détecté → nomme-le directement sans diplomatie
+— Si énergie < 3 sur 3 jours consécutifs → anticipe la rechute : "Ton énergie est basse depuis 3 jours. Qu'est-ce qui se passe ?"
+— Termine toujours par UNE action concrète avec heure et durée
+— Ton : direct, stratégique, parfois confrontant — pas thérapeute
+— 3-4 phrases maximum. 1 question. 1 action.`;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -717,6 +688,33 @@ const clear=()=>{try{localStorage.removeItem(STORAGE_KEY);}catch(e){}};
 
 const todayKey=()=>new Date().toISOString().split('T')[0];
 const dayNum=(sd)=>{if(!sd)return 1;return Math.max(1,Math.floor((Date.now()-new Date(sd))/(864e5))+1);};
+
+function computeScore4(dailyLogs, plan) {
+  const logs = Object.values(dailyLogs||{}).sort((a,b)=>a.day-b.day);
+  if(logs.length === 0) return {execution:0, identite:0, coherence:0, progression:0, global:0};
+
+  // Score Exécution — actions faites / jours tracés
+  const execution = logs.length > 0 ? Math.round((logs.filter(l=>l.action_done).length/logs.length)*100) : 0;
+
+  // Score Identité — rituels faits (comportements alignés à l'identité cible)
+  const identite = logs.length > 0 ? Math.round((logs.filter(l=>l.rituel_done).length/logs.length)*100) : 0;
+
+  // Score Cohérence — jours sans rechute / total jours
+  const coherence = logs.length > 0 ? Math.round(((logs.length-logs.filter(l=>l.rechute).length)/logs.length)*100) : 100;
+
+  // Score Progression — basé sur streak actuel vs historique
+  const streak = computeStreak(Object.fromEntries(logs.map(l=>[l.date,l])));
+  const maxStreak = Math.max(...logs.reduce((acc,l,i)=>{
+    const prev = i>0&&logs[i-1].action_done;
+    if(l.action_done) acc[acc.length-1]=(acc[acc.length-1]||0)+1;
+    else acc.push(0);
+    return acc;
+  },[0]), streak);
+  const progression = maxStreak > 0 ? Math.min(100, Math.round((streak/Math.max(maxStreak,1))*100)) : 0;
+
+  const global = Math.round((execution+identite+coherence+progression)/4);
+  return {execution, identite, coherence, progression, global};
+}
 
 function computeStreak(logs) {
   if(!logs||!Object.keys(logs).length)return 0;
@@ -1167,13 +1165,16 @@ function RituelTimer({steps, onComplete, nomGuerre}){
 }
 
 
-function DailyTracker({dayNum,todayLog,onSave}){
+function DailyTracker({dayNum,todayLog,onSave,logs={}}){
   const [humeur,setHumeur]=useState(todayLog?.humeur||null);
   const [energie,setEnergie]=useState(todayLog?.energie||null);
   const [focus,setFocus]=useState(todayLog?.focus||null);
   const [action,setAction]=useState(todayLog?.action_done??null);
   const [rituel,setRituel]=useState(todayLog?.rituel_done??false);
   const [rechute,setRechute]=useState(todayLog?.rechute??false);
+  const [showRelapseDiag,setShowRelapseDiag]=useState(false);
+  const [relapseCause,setRelapseCause]=useState('');
+  const [relapseLesson,setRelapseLesson]=useState('');
   const [temps,setTemps]=useState(todayLog?.temps||0);
   const [saved,setSaved]=useState(!!todayLog);
   const score=Math.max(0,Math.round((((humeur||0)+(energie||0)+(focus||0))/15)*50+((action?30:0)+(rituel?15:0)+(rechute?-10:0))));
@@ -1202,7 +1203,7 @@ function DailyTracker({dayNum,todayLog,onSave}){
       </div>
     </div>
     <div style={{display:"flex",gap:"0.5rem",marginBottom:"0.8rem"}}>
-      {[[rituel,setRituel,"Rituel",C.gold],[rechute,setRechute,"Rechute",C.red]].map(([val,set,lbl,color])=><label key={lbl} style={{flex:1,padding:"0.45rem 0.6rem",background:val?`${color}12`:"transparent",border:`1px solid ${val?color:C.border}`,cursor:"pointer",display:"flex",gap:"0.4rem",alignItems:"center",fontSize:"0.78rem",color:val?color:C.textMid}} onClick={()=>set(p=>!p)}>
+      {[[rituel,setRituel,"Rituel",C.gold],[rechute,setRechute,"Rechute",C.red]].map(([val,set,lbl,color])=><label key={lbl} style={{flex:1,padding:"0.45rem 0.6rem",background:val?`${color}12`:"transparent",border:`1px solid ${val?color:C.border}`,cursor:"pointer",display:"flex",gap:"0.4rem",alignItems:"center",fontSize:"0.78rem",color:val?color:C.textMid}} onClick={()=>{set(p=>!p);if(lbl==="Rechute"&&!val)setShowRelapseDiag(true);}}>
         <span style={{fontSize:"0.58rem"}}>{val?"◉":"◎"}</span>{lbl}
       </label>)}
     </div>
@@ -1210,9 +1211,36 @@ function DailyTracker({dayNum,todayLog,onSave}){
       <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>TEMPS INVESTI</div>
       <div style={{display:"flex",gap:"0.3rem"}}>{[0,15,30,45,60,90].map(n=><button key={n} onClick={()=>setTemps(n)} style={{flex:1,padding:"0.38rem 0.1rem",background:temps===n?`${C.gold}18`:"transparent",border:`1px solid ${temps===n?C.gold:C.border}`,color:temps===n?C.gold:C.textMid,...MN,fontSize:"0.7rem",cursor:"pointer"}}>{n===0?"0":n+"'"}</button>)}</div>
     </div>
-    <button onClick={()=>{if(!ready)return;onSave({day:dayNum,humeur,energie,focus,action_done:action,rituel_done:rituel,rechute,temps,score,date:todayKey()});setSaved(true);}} disabled={!ready} style={{width:"100%",padding:"0.82rem",background:ready?C.gold:C.bg3,border:"none",color:ready?C.bg:C.textDim,fontSize:"0.73rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,opacity:ready?1:0.5,transition:"all 0.25s",cursor:ready?"pointer":"not-allowed"}}>
+    {showRelapseDiag&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.9)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"1.5rem"}}>
+      <div style={{background:C.bg2,border:`1px solid ${C.red}`,borderTop:`3px solid ${C.red}`,padding:"1.5rem",maxWidth:"380px",width:"100%"}}>
+        <div style={{fontSize:"0.55rem",color:C.red,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.8rem"}}>Diagnostic Rechute</div>
+        <div style={{fontSize:"0.9rem",color:C.gold,marginBottom:"1rem",fontFamily:"Georgia,serif"}}>Qu'est-ce qui s'est passé ?</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:"0.4rem",marginBottom:"1rem"}}>
+          {["Fatigue","Stress","Distraction","Émotion difficile","Environnement","Manque de temps","Ennui","Autre"].map(c=>(
+            <button key={c} onClick={()=>setRelapseCause(c)} style={{padding:"0.35rem 0.75rem",background:relapseCause===c?`${C.red}20`:"transparent",border:`1px solid ${relapseCause===c?C.red:C.border}`,color:relapseCause===c?C.red:C.textMid,fontSize:"0.72rem",cursor:"pointer"}}>{c}</button>
+          ))}
+        </div>
+        <div style={{fontSize:"0.78rem",color:C.textMid,marginBottom:"0.5rem"}}>Qu'est-ce que tu retiens de cette rechute ?</div>
+        <textarea value={relapseLesson} onChange={e=>setRelapseLesson(e.target.value)} placeholder="Ce que j'apprends de cette rechute..." style={{width:"100%",background:C.bg3,border:`1px solid ${C.border}`,color:C.text,padding:"0.6rem",fontSize:"0.78rem",minHeight:"60px",resize:"none",boxSizing:"border-box",marginBottom:"0.8rem"}}/>
+        <button onClick={()=>setShowRelapseDiag(false)} style={{width:"100%",padding:"0.7rem",background:C.red,border:"none",color:"#fff",fontSize:"0.72rem",letterSpacing:"0.1em",cursor:"pointer"}}>Enregistrer et continuer</button>
+      </div>
+    </div>}
+    <button onClick={()=>{if(!ready)return;onSave({day:dayNum,humeur,energie,focus,action_done:action,rituel_done:rituel,rechute,temps,score,date:todayKey(),rechute_cause:relapseCause,rechute_lecon:relapseLesson});setSaved(true);}} disabled={!ready} style={{width:"100%",padding:"0.82rem",background:ready?C.gold:C.bg3,border:"none",color:ready?C.bg:C.textDim,fontSize:"0.73rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,opacity:ready?1:0.5,transition:"all 0.25s",cursor:ready?"pointer":"not-allowed"}}>
       Enregistrer{score>0?` · Score ${score}/100`:""}
     </button>
+    {saved&&<div style={{textAlign:"center",padding:"0.75rem 0",animation:"fadeIn 0.4s ease"}}>
+      <div style={{color:C.green,fontSize:"0.82rem",marginBottom:"0.2rem"}}>✓ Enregistré</div>
+      {(()=>{
+        const streak=computeStreak(logs)||1;
+        const msg=streak>=30?"🔥 30 jours. Top 5% mondial.":
+          streak>=21?"⚡ 21 jours. Ton cerveau recâble.":
+          streak>=14?"💪 14 jours. La plupart ont abandonné.":
+          streak>=7?"✦ 7 jours. Le mouvement est lancé.":
+          streak>=3?`◈ ${streak} jours consécutifs. Continue.`:
+          "Chaque jour compte. Même celui-ci.";
+        return <div style={{fontSize:"0.74rem",color:C.goldD,fontStyle:"italic",...SF}}>{msg}</div>;
+      })()}
+    </div>}
   </div>;
 }
 
@@ -1324,9 +1352,20 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekDone, prevWeekNum, nom
 }
 
 function CoachChat({plan,plan2,weeks,dailyLogs}){
-  const [msgs,setMsgs]=useState([{role:"assistant",content:`${plan?.nom_guerre} — je connais ton plan en détail. Pose-moi n'importe quelle question.`}]);
+  // Mémoire persistante localStorage
+  const COACH_KEY = `coach_history_${plan?.nom_guerre||'user'}`;
+  const savedHistory = React.useMemo(()=>{
+    try{ const h=localStorage.getItem(COACH_KEY); return h?JSON.parse(h):null; }catch{return null;}
+  },[]);
+
+  const [msgs,setMsgs]=useState(savedHistory||[{role:"assistant",content:`${plan?.nom_guerre} — je connais ton profil, tes patterns et ton plan. Quelle question tu as ?`}]);
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
+
+  // Sauvegarder l'historique à chaque nouveau message
+  useEffect(()=>{
+    try{ localStorage.setItem(COACH_KEY, JSON.stringify(msgs.slice(-20))); }catch{}
+  },[msgs]);
   const endRef=useRef(null);
   useEffect(()=>endRef.current?.scrollIntoView({behavior:"smooth"}),[msgs]);
   const send=async()=>{
@@ -1334,10 +1373,13 @@ function CoachChat({plan,plan2,weeks,dailyLogs}){
     const q=input.trim();setInput("");setMsgs(m=>[...m,{role:"user",content:q}]);setLoading(true);
     try{
       const res=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({prompt:buildPromptCoach(plan,plan2,weeks,dailyLogs,q,msgs),maxTokens:500,type:"coach"})});
+        body:JSON.stringify({prompt:buildPromptCoach(plan,plan2,weeks,dailyLogs,q,msgs),system:"Tu es un coach comportemental socratique. Tu poses UNE question avant de donner un conseil. Direct, humain, 3-4 phrases max.",max_tokens:500})});
+      if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error?.message||`HTTP ${res.status}`);}
       const data=await res.json();
-      setMsgs(m=>[...m,{role:"assistant",content:typeof data.result==="string"?data.result:data.result?.text||"Erreur."}]);
-    }catch(e){setMsgs(m=>[...m,{role:"assistant",content:"Erreur de connexion."}]);}
+      const txt=data.content;
+      if(!txt)throw new Error("Réponse vide");
+      setMsgs(m=>[...m,{role:"assistant",content:txt}]);
+    }catch(e){setMsgs(m=>[...m,{role:"assistant",content:`[Erreur coach: ${e.message}]`}]);}
     finally{setLoading(false);}
   };
   return <Card accent>
@@ -1619,6 +1661,21 @@ function EngagementTab({plan, plan2, firstName}){
   );
 }
 
+// ── Composant Victory hebdomadaire — extrait de l'IIFE pour respecter les Rules of Hooks ──
+function WeeklyVictory({logs}){
+  const wk=Math.ceil((Object.keys(logs||{}).length||1)/7);
+  const vKey=`victory_w${wk}`;
+  const [vic,setVic]=useState(()=>{try{return localStorage.getItem(vKey)||'';}catch{return '';}});
+  const [saved,setSaved]=useState(false);
+  const save=()=>{try{localStorage.setItem(vKey,vic);setSaved(true);setTimeout(()=>setSaved(false),2000);}catch{}};
+  return <div>
+    <textarea value={vic} onChange={e=>{setVic(e.target.value);setSaved(false);}} placeholder="Cette semaine, j'ai prouvé que je suis capable de... Un changement que j'ai observé chez moi..." style={{width:"100%",background:"#161616",border:"1px solid #2A2A2A",color:"#F0EAD6",padding:"0.75rem",fontSize:"0.82rem",minHeight:"80px",resize:"none",boxSizing:"border-box",lineHeight:1.6,marginBottom:"0.5rem"}}/>
+    <button onClick={save} style={{width:"100%",padding:"0.6rem",background:saved?"#27AE60":"#C9A84C",border:"none",color:"#080808",fontSize:"0.7rem",letterSpacing:"0.12em",cursor:"pointer",transition:"all 0.3s"}}>
+      {saved?"✓ Sauvegardé":"Enregistrer ma victoire"}
+    </button>
+  </div>;
+}
+
 export default function App(){
   const [screen,setScreen]=useState("landing");
   const [si,setSi]=useState(0); // segment index
@@ -1692,8 +1749,13 @@ export default function App(){
     setScreen("intro");
   };
 
-  const [showTransition, setShowTransition] = useState(false);
+  const [showEmailPopup, setShowEmailPopup] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailDismissed, setEmailDismissed] = useState(false);
   const [transitionData, setTransitionData] = useState(null);
+  const [showTransition, setShowTransition] = useState(false);
 
   // ── QUIZ VALIDATION & NAVIGATION ──
   const trigQError=(msg)=>{setQError(msg);setQShake(true);setTimeout(()=>setQShake(false),500);setTimeout(()=>setQError(""),3000);};
@@ -1762,12 +1824,13 @@ export default function App(){
     const timers=LOAD_STEPS.map((_,i)=>setTimeout(()=>setLoadStep(i),i*4200));
     const call=async(prompt,max)=>{
       const res=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({prompt,maxTokens:max,type:"plan"})});
-      if(!res.ok){const d=await res.json();throw new Error(d.error?.message||`Erreur API ${res.status}`);}
+        body:JSON.stringify({prompt:prompt+"\n\nRAPPEL : commence par { immédiatement.",system:"Tu es un générateur de JSON strict. RÈGLE ABSOLUE : ta réponse commence IMMÉDIATEMENT par { et se termine par }. Zéro texte avant. Zéro backtick.",max_tokens:max})});
+      if(!res.ok){const d=await res.json().catch(()=>({}));throw new Error(d.error?.message||`Erreur API ${res.status}`);}
       const data=await res.json();
-      if(data.error)throw new Error(data.error);
-      if(!data.result)throw new Error("Réponse vide");
-      return data.result;
+      const rawC=data.content||"";
+      const parsedC=repairJSON(rawC);
+      if(!parsedC)throw new Error("JSON invalide — réessaie");
+      return parsedC;
     };
     try{
       // Appel 1 — identité + diagnostic + scorecard
@@ -1778,6 +1841,7 @@ export default function App(){
       timers.forEach(clearTimeout);
       setPlan(p1);setPlan2(p2);
       setStartDate(new Date().toISOString().split('T')[0]);
+      setShowEmailPopup(true); // Afficher popup email avant home
       setScreen("home");
     }catch(e){
       timers.forEach(clearTimeout);
@@ -1795,11 +1859,11 @@ export default function App(){
     const tryLoad=async(attempt=1)=>{
       try{
         const res=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({prompt:buildPromptWeeks(answers,ng),maxTokens:4000,type:"weeks"})});
-        if(!res.ok)throw new Error(`HTTP ${res.status}`);
+          body:JSON.stringify({prompt:buildPromptWeeks(answers,ng)+"\n\nCommence par { immédiatement.",system:"Tu es un générateur de JSON strict. Commence IMMÉDIATEMENT par {.",max_tokens:4000})});
+        if(!res.ok)throw new Error(`Erreur API ${res.status}`);
         const data=await res.json();
-        if(data.error)throw new Error(data.error);
-        const parsed=data.result;
+        const rawW=data.content||"";
+        const parsed=repairJSON(rawW);
         if(!parsed||(!parsed.semaines&&!parsed.plan_semaines)){
           if(attempt<3){await new Promise(r=>setTimeout(r,2000*attempt));return tryLoad(attempt+1);}
           throw new Error("Semaines invalides");
@@ -1960,6 +2024,63 @@ export default function App(){
       </div>
     </div>
   );}
+
+  // ── EMAIL POPUP ──
+  const handleEmailSubscribe = async () => {
+    if (!emailInput || !emailInput.includes('@')) return;
+    setEmailLoading(true);
+    try {
+      await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: emailInput,
+          nom_guerre: plan?.nom_guerre || '',
+          domaine: answers?.q_domaine_principal || '',
+          autosuggestion: plan2?.rituel?.autosuggestion || ''
+        })
+      });
+      setEmailSent(true);
+      setTimeout(() => setShowEmailPopup(false), 2000);
+    } catch (e) {
+      setShowEmailPopup(false);
+    }
+    setEmailLoading(false);
+  };
+
+  if (showEmailPopup && plan) return (
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.92)',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center',padding:'1.5rem',animation:'fadeIn 0.3s ease'}}>
+      <div style={{background:C.bg2,border:`1px solid ${C.goldD}`,borderTop:`4px solid ${C.gold}`,padding:'2rem 1.5rem',maxWidth:'420px',width:'100%',animation:'popIn 0.4s ease'}}>
+        {emailSent ? (
+          <div style={{textAlign:'center',padding:'1rem'}}>
+            <div style={{fontSize:'2rem',marginBottom:'0.8rem'}}>✓</div>
+            <div style={{...SF,fontSize:'1.1rem',color:C.green}}>Inscription confirmée !</div>
+            <div style={{fontSize:'0.8rem',color:C.textDim,marginTop:'0.5rem'}}>Vérifie ta boîte mail.</div>
+          </div>
+        ) : (
+          <>
+            <div style={{fontSize:'0.55rem',color:C.goldD,letterSpacing:'0.2em',textTransform:'uppercase',...MN,marginBottom:'0.6rem'}}>Rester dans le mouvement</div>
+            <div style={{...SF,fontSize:'1.2rem',color:C.gold,marginBottom:'0.8rem'}}>Reçois ton plan + tes rappels quotidiens</div>
+            <p style={{fontSize:'0.82rem',color:C.textMid,lineHeight:1.7,marginBottom:'1.2rem'}}>J1, J3, J7, J14, J30, J60, J90 — des messages personnalisés pour tenir jusqu'au bout.</p>
+            <input
+              type="email"
+              placeholder="ton@email.com"
+              value={emailInput}
+              onChange={e=>setEmailInput(e.target.value)}
+              onKeyDown={e=>e.key==='Enter'&&handleEmailSubscribe()}
+              style={{width:'100%',padding:'0.8rem',background:C.bg3,border:`1px solid ${C.goldD}`,color:C.text,fontSize:'0.85rem',marginBottom:'0.8rem',outline:'none',boxSizing:'border-box'}}
+            />
+            <button onClick={handleEmailSubscribe} disabled={emailLoading} style={{width:'100%',padding:'0.85rem',background:C.gold,border:'none',color:C.bg,fontSize:'0.75rem',letterSpacing:'0.15em',fontWeight:500,cursor:'pointer',marginBottom:'0.6rem'}}>
+              {emailLoading ? 'Envoi...' : 'JE M\'INSCRIS →'}
+            </button>
+            <button onClick={()=>setShowEmailPopup(false)} style={{width:'100%',padding:'0.4rem',background:'transparent',border:'none',color:C.textDim,fontSize:'0.68rem',cursor:'pointer'}}>
+              Non merci, continuer sans email
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
 
   if(screen==="landing")return(
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",overflowX:"hidden"}}>
@@ -2627,7 +2748,7 @@ export default function App(){
             <SH icon="📈" label={`Tracker — Jour ${dn}`} sub={todayLog?"✓ Enregistré aujourd'hui":"Enregistre ta journée"}/>
             <span style={{color:C.textDim,fontSize:"0.95rem",marginTop:"-0.7rem"}}>{trackerOpen?"−":"+"}</span>
           </div>
-          {trackerOpen&&<DailyTracker dayNum={dn} todayLog={todayLog} onSave={log=>{saveLog(log);setTrackerOpen(false);}}/>}
+          {trackerOpen&&<DailyTracker dayNum={dn} todayLog={todayLog} onSave={log=>{saveLog(log);setTrackerOpen(false);}} logs={logs}/>}
         </Card>
         </div>
         {/* Rituel */}
@@ -2696,12 +2817,36 @@ export default function App(){
               <div style={{padding:"0.68rem",background:`${C.green}0A`,border:`1px solid ${C.green}35`}}><div style={{fontSize:"0.54rem",color:C.green,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Levier principal</div><div style={{fontSize:"0.77rem",color:C.textMid,lineHeight:1.4}}>{sc.levier_principal}</div></div>
             </div>
             <div style={{marginTop:"0.5rem",padding:"0.75rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}35`,borderLeft:`3px solid ${C.gold}`}}><div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Mission centrale</div><div style={{...SF,fontSize:"0.92rem",color:C.goldL,lineHeight:1.5}}>{sc.mission_centrale}</div></div>
+
+            {/* 4 SCORES DE PROGRESSION */}
+            {stats.total>0&&(()=>{
+              const s4=computeScore4(logs,plan);
+              return <div style={{marginTop:"0.75rem",padding:"0.75rem",background:C.bg3,border:`1px solid ${C.border}`}}>
+                <div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.6rem"}}>Progression réelle — Jour {stats.total}</div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.4rem"}}>
+                  {[["⚡ Exécution",s4.execution,C.gold,"Actions réalisées"],[" Identité",s4.identite,C.green,"Rituels accomplis"],["◈ Cohérence",s4.coherence,C.blue,"Jours sans rechute"],["▶ Progression",s4.progression,C.goldL,"Distance parcourue"]].map(([lbl,val,col,sub])=>(
+                    <div key={lbl} style={{padding:"0.55rem",background:`${col}08`,border:`1px solid ${col}22`}}>
+                      <div style={{fontSize:"0.6rem",color:col,letterSpacing:"0.08em",...MN}}>{lbl}</div>
+                      <div style={{...SF,fontSize:"1.3rem",color:col,margin:"0.15rem 0"}}>{val}<span style={{fontSize:"0.6rem"}}>%</span></div>
+                      <div style={{fontSize:"0.58rem",color:C.textDim}}>{sub}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{marginTop:"0.5rem",padding:"0.45rem",background:`${C.gold}08`,borderLeft:`2px solid ${C.gold}`,fontSize:"0.72rem",color:C.goldL}}>
+                  Score global : <strong>{s4.global}%</strong>
+                </div>
+              </div>;
+            })()}
           </Card>
           {stats.total>0&&<Card><SH icon="🏆" label="Ce que tu as déjà prouvé"/>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.45rem"}}>
               {[[`${stats.streak}j consécutifs`,"de continuité",stats.streak>=3?C.green:C.gold],[`${stats.done} actions`,"exécutées",C.gold],[`${stats.relapses} rechute${stats.relapses!==1?"s":""}`, "récupérée${stats.relapses!==1?'s':''}",C.green],[`${Math.round(stats.totalMins/60*10)/10}h`,"investies",C.blue]].map(([v,l,c])=><div key={l} style={{padding:"0.65rem",background:`${c}0A`,border:`1px solid ${c}22`}}><div style={{...SF,fontSize:"1.05rem",color:c,marginBottom:"0.1rem"}}>{v}</div><div style={{fontSize:"0.62rem",color:C.textDim,lineHeight:1.3}}>{l}</div></div>)}
             </div>
           </Card>}
+          <Card><SH icon="🏆" label="Ma victoire de la semaine" sub="Le cerveau oublie ses progrès — écris le tien"/>
+            <WeeklyVictory logs={logs}/>
+          </Card>
+
           {s.citations_personnelles?.length>0&&<Card><SH icon="✦" label="Phrases personnelles" sub="Générées à partir de ton profil"/>
             {s.citations_personnelles.map((c,i)=><div key={i} style={{padding:"0.65rem 0.85rem",borderLeft:`2px solid ${C.goldD}`,marginBottom:"0.45rem",background:C.bg3}}><div style={{...SF,fontSize:"0.92rem",color:C.goldL,fontStyle:"italic",lineHeight:1.55}}>{c}</div></div>)}
           </Card>}
@@ -2802,10 +2947,4 @@ export default function App(){
 }
 
 
-const hideLoader = () => {
-  const l = document.getElementById('loader');
-  if (l) { l.style.opacity='0'; l.style.transition='opacity 0.4s'; setTimeout(()=>l.remove(),400); }
-};
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(React.createElement(App));
-setTimeout(hideLoader, 100);
+export default App;

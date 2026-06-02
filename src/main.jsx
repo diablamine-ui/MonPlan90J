@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import ReactDOM from 'react-dom/client';
 
 // ══════════════════════════════════════════════════════════════
 // CONFIG
@@ -2945,3 +2946,4 @@ export default function App(){
 
   return null;
 }
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);

@@ -1,4 +1,4 @@
-const { useState, useEffect, useRef, useCallback } = React;
+import React, { useState, useEffect, useRef, useCallback } = from 'react';
 
 // ══════════════════════════════════════════════════════════════
 // CONFIG

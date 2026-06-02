@@ -1,91 +1,55 @@
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
-};
+// api/generate.js — Proxy Groq pour MonPlan90
+// Reçoit : { prompt, system, max_tokens }
+// Renvoie : { content: "texte brut" }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-  const API_KEY = process.env.GROQ_API_KEY;
-  if (!API_KEY) return res.status(500).json({ error: 'Clé API non configurée' });
+  const { prompt, system, max_tokens = 2000 } = req.body;
 
-  const body = req.body || {};
-  const prompt = body.prompt || body.Prompt || '';
-  const maxTokens = body.maxTokens || 2000;
-  const type = body.type || 'plan';
+  if (!prompt) {
+    return res.status(400).json({ error: 'prompt requis' });
+  }
 
-  if (!prompt) return res.status(400).json({ error: 'Prompt manquant', body: JSON.stringify(body).slice(0,100) });
+  const GROQ_API_KEY = process.env.GROQ_API_KEY;
+  if (!GROQ_API_KEY) {
+    return res.status(500).json({ error: 'GROQ_API_KEY non configurée' });
+  }
 
-  const isJSON = type !== 'coach';
-  const system = isJSON
-    ? "Tu es un générateur de JSON strict. RÈGLE ABSOLUE : ta réponse commence IMMÉDIATEMENT par { et se termine par }. Zéro texte avant. Zéro backtick. Uniquement du JSON valide et complet."
-    : "Tu es un coach comportemental expert. 3-4 phrases max. Direct, stratégique. Toujours une action concrète.";
+  try {
+    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: Math.min(max_tokens, 8000),
+        temperature: 0.7,
+        messages: [
+          ...(system ? [{ role: 'system', content: system }] : []),
+          { role: 'user', content: prompt },
+        ],
+      }),
+    });
 
-  const call = async (attempt = 1) => {
-    try {
-      const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          max_tokens: maxTokens,
-          messages: [
-            { role: 'system', content: system },
-            { role: 'user', content: isJSON ? prompt + '\n\nRAPPEL : commence par { immédiatement.' : prompt }
-          ]
-        })
-      });
-
-      if (!r.ok) {
-        const e = await r.json().catch(() => ({}));
-        throw new Error(e.error?.message || `Erreur Groq ${r.status}`);
-      }
-
-      const data = await r.json();
-      const text = data.choices?.[0]?.message?.content || '';
-      if (!text) throw new Error('Réponse vide');
-
-      if (type === 'coach') return res.status(200).json({ result: text.trim() });
-
-      const parsed = parseJSON(text);
-      if (parsed) return res.status(200).json({ result: parsed });
-
-      if (attempt < 3) { await new Promise(x => setTimeout(x, 1500 * attempt)); return call(attempt + 1); }
-      return res.status(500).json({ error: 'JSON invalide', preview: text.slice(0, 200) });
-
-    } catch (e) {
-      if (attempt < 3) { await new Promise(x => setTimeout(x, 1500 * attempt)); return call(attempt + 1); }
-      return res.status(500).json({ error: e.message });
+    if (!groqRes.ok) {
+      const err = await groqRes.json().catch(() => ({}));
+      const msg = err.error?.message || `Groq HTTP ${groqRes.status}`;
+      console.error('Groq error:', msg);
+      return res.status(groqRes.status).json({ error: msg });
     }
-  };
 
-  return call();
-}
+    const data = await groqRes.json();
+    const content = data.choices?.[0]?.message?.content || '';
 
-function parseJSON(str) {
-  let s = str.trim();
-  if (s.startsWith('```')) s = s.replace(/^```json?\n?/, '').replace(/\n?```$/, '').trim();
-  const start = s.indexOf('{');
-  if (start > 0) s = s.slice(start);
-  try { return JSON.parse(s); } catch {}
-  try {
-    let o = 0, c = 0;
-    for (const ch of s) { if (ch === '{') o++; if (ch === '}') c++; }
-    let f = s; while (o > c) { f += '}'; c++; }
-    return JSON.parse(f);
-  } catch {}
-  try {
-    return JSON.parse(s.replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ').replace(/,\s*}/g, '}').replace(/,\s*]/g, ']'));
-  } catch {}
-  return null;
+    return res.status(200).json({ content });
+
+  } catch (e) {
+    console.error('generate.js crash:', e);
+    return res.status(500).json({ error: e.message || 'Erreur serveur' });
+  }
 }

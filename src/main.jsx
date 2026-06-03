@@ -560,7 +560,7 @@ Génère ce JSON valide EXACTEMENT — sans texte avant ni après, sans backtick
 Français direct. Aucun texte hors du JSON.`;
 }
 
-function buildPromptWeeks(answers, nom_guerre) {
+function _weeksContext(answers, nom_guerre) {
   const a = flatAnswers(answers);
   const g = id => a[id] || "?";
   const domaine = answers.q_domaine_principal || "Finances";
@@ -568,16 +568,25 @@ function buildPromptWeeks(answers, nom_guerre) {
   const heure = moment==='matin'?'07h00':'20h00';
   const heureDim = moment==='matin'?'09h00':'17h00';
   const dur = g('q_heures')||'30 min';
+  return { g, domaine, moment, heure, heureDim, dur, nom_guerre };
+}
 
-  return `Génère un plan 12 semaines JSON pour ${nom_guerre}. Domaine: ${domaine}. Objectif: ${g('q_objectif')}. Bloquant: ${g('q_bloquants')||g('q_mensonge')}. Sacrifice: ${g('q_sacrifice')}. Temps: ${dur} le ${moment}.
+function buildPromptWeeksA(answers, nom_guerre) {
+  const {g,domaine,moment,heure,heureDim,dur} = _weeksContext(answers, nom_guerre);
+  return `Plan 90j pour ${nom_guerre}. Domaine: ${domaine}. Objectif: ${g('q_objectif')}. Bloquant: ${g('q_bloquants')||g('q_mensonge')}. Temps: ${dur} le ${moment}.
+4 jours/semaine: Lundi(lancement), Mercredi(milieu), Vendredi(consolidation), Dimanche(bilan+brainstorming). Tâches: verbe+durée+contexte. Seuil:6.
+Génère UNIQUEMENT S1 à S6. JSON strict commence par {:
+{"semaines":[{"s":1,"ph":"ÉVEIL","t":"titre percutant","o":"objectif","seuil":6,"lundi":{"h":"${heure}","dur":"${dur}","tache":"tâche concrète"},"mercredi":{"h":"${heure}","dur":"${dur}","tache":"tâche concrète"},"vendredi":{"h":"${heure}","dur":"${dur}","tache":"tâche concrète"},"dimanche":{"h":"${heureDim}","dur":"45 min","tache":"Bilan S1 + planifier S2"},"m":"métrique","r":"risque","v":"victoire"},{"s":2,"ph":"ÉVEIL",...},{"s":3,"ph":"ÉVEIL",...},{"s":4,"ph":"ÉVEIL",...},{"s":5,"ph":"CONSTRUCTION",...},{"s":6,"ph":"CONSTRUCTION",...}]}
+Exactement 6 semaines S1-S6. Français concis.`
+}
 
-STRUCTURE: S1-4=ÉVEIL, S5-8=CONSTRUCTION, S9-12=RÉCOLTE. 4 jours/semaine: Lundi(action lancement), Mercredi(action milieu), Vendredi(consolidation), Dimanche(bilan+brainstorming).
-Chaque tâche: verbe+durée+contexte précis. Titre percutant. Seuil déblocage: 6.
-
-JSON strict, commence par {:
-{"semaines":[{"s":1,"ph":"ÉVEIL","t":"titre court percutant","o":"objectif semaine","seuil":6,"lundi":{"h":"${heure}","dur":"${dur}","tache":"action lundi concrète"},"mercredi":{"h":"${heure}","dur":"${dur}","tache":"action mercredi concrète"},"vendredi":{"h":"${heure}","dur":"${dur}","tache":"action vendredi concrète"},"dimanche":{"h":"${heureDim}","dur":"45 min","tache":"Bilan S1 : score actions/énergie/rechutes. Planifier 3 priorités S2."},"m":"métrique","r":"risque","v":"victoire"},{"s":2,"ph":"ÉVEIL","t":"...","o":"...","seuil":6,"lundi":{...},"mercredi":{...},"vendredi":{...},"dimanche":{...},"m":"...","r":"...","v":"..."},{"s":3,...},{"s":4,...},{"s":5,"ph":"CONSTRUCTION",...},{"s":6,...},{"s":7,...},{"s":8,...},{"s":9,"ph":"RÉCOLTE",...},{"s":10,...},{"s":11,...},{"s":12,...}]}
-
-12 semaines exactement. Chaque champ renseigné. Français concis.`
+function buildPromptWeeksB(answers, nom_guerre) {
+  const {g,domaine,moment,heure,heureDim,dur} = _weeksContext(answers, nom_guerre);
+  return `Plan 90j pour ${nom_guerre}. Domaine: ${domaine}. Objectif: ${g('q_objectif')}. Bloquant: ${g('q_bloquants')||g('q_mensonge')}. Temps: ${dur} le ${moment}.
+4 jours/semaine: Lundi(lancement), Mercredi(milieu), Vendredi(consolidation), Dimanche(bilan+brainstorming). Tâches: verbe+durée+contexte. Seuil:6.
+Génère UNIQUEMENT S7 à S12. JSON strict commence par {:
+{"semaines":[{"s":7,"ph":"CONSTRUCTION","t":"titre percutant","o":"objectif","seuil":6,"lundi":{"h":"${heure}","dur":"${dur}","tache":"tâche concrète"},"mercredi":{"h":"${heure}","dur":"${dur}","tache":"tâche concrète"},"vendredi":{"h":"${heure}","dur":"${dur}","tache":"tâche concrète"},"dimanche":{"h":"${heureDim}","dur":"45 min","tache":"Bilan S7 + planifier S8"},"m":"métrique","r":"risque","v":"victoire"},{"s":8,"ph":"CONSTRUCTION",...},{"s":9,"ph":"RÉCOLTE",...},{"s":10,"ph":"RÉCOLTE",...},{"s":11,"ph":"RÉCOLTE",...},{"s":12,"ph":"RÉCOLTE",...}]}
+Exactement 6 semaines S7-S12. Français concis.`
 }
 
 function buildPromptCoach(plan, plan2, weeks, dailyLogs, question, history) {
@@ -2010,29 +2019,40 @@ export default function App(){
   const generateWeeks=async(p1)=>{
     if(weeks||weeksLoading)return;setWeeksLoading(true);
     const ng=p1?.nom_guerre||"";
-    const norm=w=>({semaine:w.semaine??w.s,phase:w.phase??w.ph,role:w.role||WEEK_ROLES[w.semaine??w.s]||"",titre:w.titre??w.t,objectif:w.objectif??w.o,actions:w.actions??w.a??[],metrique:w.metrique??w.m,risque:w.risque??w.r,victoire:w.victoire??w.v});
-
-    const tryLoad=async(attempt=1)=>{
-      try{
-        const res=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({prompt:buildPromptWeeks(answers,ng)+"\n\nCommence par { immédiatement.",system:"Tu es un générateur de JSON strict. Commence IMMÉDIATEMENT par {.",max_tokens:6000})});
-        if(!res.ok)throw new Error(`Erreur API ${res.status}`);
-        const data=await res.json();
-        const rawW=data.content||"";
-        const parsed=repairJSON(rawW);
-        if(!parsed||(!parsed.semaines&&!parsed.plan_semaines)){
-          if(attempt<3){await new Promise(r=>setTimeout(r,2000*attempt));return tryLoad(attempt+1);}
-          throw new Error("Semaines invalides");
-        }
-        const all=(parsed.semaines||parsed.plan_semaines||[]).map(norm).filter(w=>w.semaine).sort((a,b)=>a.semaine-b.semaine);
-        setWeeks(all.length>0?all:[]);
-      }catch(e){
-        if(attempt<3){await new Promise(r=>setTimeout(r,2000*attempt));return tryLoad(attempt+1);}
-        console.error("Semaines échec:",e);
-        setWeeks([]);
-      }finally{if(attempt>=3||true)setWeeksLoading(false);}
+    const norm=w=>({
+      semaine:w.semaine??w.s, phase:w.phase??w.ph,
+      titre:w.titre??w.t, objectif:w.objectif??w.o,
+      lundi:w.lundi||null, mercredi:w.mercredi||null,
+      vendredi:w.vendredi||null, dimanche:w.dimanche||null,
+      actions:w.actions??w.a??[], metrique:w.metrique??w.m,
+      risque:w.risque??w.r, victoire:w.victoire??w.v, seuil:w.seuil||6
+    });
+    const callAPI=async(prompt,attempt=1)=>{
+      const res=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({prompt:prompt+"\n\nCommence par { immédiatement.",system:"Tu es un générateur de JSON strict. Commence IMMÉDIATEMENT par {.",max_tokens:3000})});
+      if(!res.ok)throw new Error(`HTTP ${res.status}`);
+      const data=await res.json();
+      const parsed=repairJSON(data.content||"");
+      if(!parsed?.semaines){
+        if(attempt<3){await new Promise(r=>setTimeout(r,2000*attempt));return callAPI(prompt,attempt+1);}
+        throw new Error("JSON invalide après 3 tentatives");
+      }
+      return parsed.semaines;
     };
-    tryLoad();
+    try{
+      // Appel 1 : S1-S6
+      const part1=await callAPI(buildPromptWeeksA(answers,ng));
+      // Appel 2 : S7-S12 (avec délai pour éviter rate limit)
+      await new Promise(r=>setTimeout(r,1500));
+      const part2=await callAPI(buildPromptWeeksB(answers,ng));
+      const all=[...part1,...part2].map(norm).filter(w=>w.semaine).sort((a,b)=>a.semaine-b.semaine);
+      setWeeks(all.length>0?all:[]);
+    }catch(e){
+      console.error("Semaines échec:",e);
+      setWeeks([]);
+    }finally{
+      setWeeksLoading(false);
+    }
   };
 
   const toggleCheck=(k,v)=>setChecks(p=>({...p,[k]:v}));

@@ -37,6 +37,57 @@ const FONT = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,w
 const SHEETJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
 
 // ══════════════════════════════════════════════════════════════
+// SUPABASE CONFIG
+// ══════════════════════════════════════════════════════════════
+const SB_URL = "https://mjsqkejxnanexokfdfca.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qc3FrZWp4bmFuZXhva2ZkZmNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDM5NTYsImV4cCI6MjA5NDcxOTk1Nn0.KRSdylbMaBwkFYWG441IOGjlTXDlodBE4R-UhdA9OZY";
+const sbHeaders = {"Content-Type":"application/json","apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`};
+
+// Sauvegarde cloud Supabase (upsert)
+const sbSave = async(userKey, domain, data) => {
+  try{
+    const payload = {
+      user_key: userKey,
+      domain: domain,
+      data: JSON.stringify(data),
+      updated_at: new Date().toISOString()
+    };
+    await fetch(`${SB_URL}/rest/v1/plans`, {
+      method: "POST",
+      headers: {...sbHeaders, "Prefer": "resolution=merge-duplicates"},
+      body: JSON.stringify(payload)
+    });
+  }catch(e){ console.warn("Supabase save error:", e); }
+};
+
+// Chargement cloud Supabase
+const sbLoad = async(userKey, domain) => {
+  try{
+    const res = await fetch(
+      `${SB_URL}/rest/v1/plans?user_key=eq.${encodeURIComponent(userKey)}&domain=eq.${encodeURIComponent(domain)}&select=data`,
+      { headers: sbHeaders }
+    );
+    const rows = await res.json();
+    if(rows?.length > 0) return JSON.parse(rows[0].data);
+    return null;
+  }catch(e){ console.warn("Supabase load error:", e); return null; }
+};
+
+// Charger tous les domaines depuis Supabase
+const sbLoadAll = async(userKey) => {
+  try{
+    const res = await fetch(
+      `${SB_URL}/rest/v1/plans?user_key=eq.${encodeURIComponent(userKey)}&select=domain,data`,
+      { headers: sbHeaders }
+    );
+    const rows = await res.json();
+    const result = {};
+    (rows||[]).forEach(r => { try{ result[r.domain] = JSON.parse(r.data); }catch{} });
+    return result;
+  }catch(e){ console.warn("Supabase loadAll error:", e); return {}; }
+};
+
+// ══════════════════════════════════════════════════════════════
 // PALETTE
 // ══════════════════════════════════════════════════════════════
 const C = {
@@ -1846,42 +1897,61 @@ export default function App(){
   const [trackerOpen,setTrackerOpen]=useState(false);
   const [foc,setFoc]=useState({});
 
-  // ── HYDRATION MULTI-PLANS ──
+  // ── HYDRATION MULTI-PLANS (local + cloud) ──
   useEffect(()=>{
-    const lastDomain = getLastDomain();
-    const allDomains = loadAllDomains();
-    const hasDomains = Object.keys(allDomains).length > 0;
-    if(hasDomains && lastDomain && allDomains[lastDomain]){
-      // Charger le dernier domaine utilisé directement
-      const saved = allDomains[lastDomain];
-      setActiveDomain(lastDomain);
-      setPlan(saved.plan);if(saved.plan2)setPlan2(saved.plan2);
-      if(saved.weeks)setWeeks(saved.weeks);if(saved.answers)setAnswers(saved.answers);
-      if(saved.checks)setChecks(saved.checks);if(saved.logs)setLogs(saved.logs);
-      if(saved.startDate)setStartDate(saved.startDate);if(saved.nom)setNom(saved.nom);
-      setScreen("home");
-    } else {
-      // Fallback ancien storage
-      const saved=load();
-      if(!saved)return;
-      if(saved.plan){
+    const hydrate = async () => {
+      const lastDomain = getLastDomain();
+      // 1. Essai local d'abord (instantané)
+      const allLocal = loadAllDomains();
+      const hasLocal = Object.keys(allLocal).length > 0;
+      if(hasLocal && lastDomain && allLocal[lastDomain]){
+        const saved = allLocal[lastDomain];
+        setActiveDomain(lastDomain);
         setPlan(saved.plan);if(saved.plan2)setPlan2(saved.plan2);
         if(saved.weeks)setWeeks(saved.weeks);if(saved.answers)setAnswers(saved.answers);
         if(saved.checks)setChecks(saved.checks);if(saved.logs)setLogs(saved.logs);
         if(saved.startDate)setStartDate(saved.startDate);if(saved.nom)setNom(saved.nom);
         setScreen("home");
-      }else if(saved.answers&&Object.keys(saved.answers).length>0){
-        setAnswers(saved.answers);if(saved.nom)setNom(saved.nom);if(saved.email)setEmail(saved.email);
+        // 2. Sync cloud en arrière-plan — met à jour si plus récent
+        const userKey = saved.nom || saved.email || lastDomain;
+        const cloudData = await sbLoad(userKey, lastDomain);
+        if(cloudData?.plan && cloudData.updated_at > (saved.updated_at||"")){
+          setPlan(cloudData.plan);if(cloudData.plan2)setPlan2(cloudData.plan2);
+          if(cloudData.weeks)setWeeks(cloudData.weeks);
+          if(cloudData.checks)setChecks(cloudData.checks);
+          if(cloudData.logs)setLogs(cloudData.logs);
+          saveByDomain(lastDomain, cloudData);
+        }
+      } else {
+        // Fallback ancien storage local
+        const saved=load();
+        if(!saved)return;
+        if(saved.plan){
+          setPlan(saved.plan);if(saved.plan2)setPlan2(saved.plan2);
+          if(saved.weeks)setWeeks(saved.weeks);if(saved.answers)setAnswers(saved.answers);
+          if(saved.checks)setChecks(saved.checks);if(saved.logs)setLogs(saved.logs);
+          if(saved.startDate)setStartDate(saved.startDate);if(saved.nom)setNom(saved.nom);
+          setScreen("home");
+        }else if(saved.answers&&Object.keys(saved.answers).length>0){
+          setAnswers(saved.answers);if(saved.nom)setNom(saved.nom);if(saved.email)setEmail(saved.email);
+        }
       }
-    }
+    };
+    hydrate();
   },[]);
 
   useEffect(()=>{if(Object.keys(answers).length>0){const s=load()||{};save({...s,answers,nom,email});}}, [answers,nom,email]);
   useEffect(()=>{
     if(!plan)return;
     const d=activeDomain||answers.q_domaine_principal||null;
-    if(d&&DOMAIN_KEYS[d]){saveByDomain(d,{plan,plan2,weeks,answers,nom,email,checks,logs,startDate});if(!activeDomain)setActiveDomain(d);}
-    else{const s=load()||{};save({...s,plan,plan2,weeks,answers,nom,email,checks,logs,startDate});}
+    if(d&&DOMAIN_KEYS[d]){
+      const dataToSave={plan,plan2,weeks,answers,nom,email,checks,logs,startDate,updated_at:new Date().toISOString()};
+      saveByDomain(d,dataToSave);
+      if(!activeDomain)setActiveDomain(d);
+      // Sauvegarde cloud en arrière-plan
+      const userKey=nom||email||d;
+      sbSave(userKey, d, dataToSave);
+    }else{const s=load()||{};save({...s,plan,plan2,weeks,answers,nom,email,checks,logs,startDate});}
   },[plan,plan2,weeks,checks,logs,startDate,activeDomain]);
 
   const domaine = answers.q_domaine_principal || "";

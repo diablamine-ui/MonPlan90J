@@ -1699,6 +1699,16 @@ function WeeklyVictory({logs}){
 export default function App(){
   const [screen,setScreen]=useState("landing");
   const [activeDomain,setActiveDomain]=useState(null); // domaine actif
+
+  // ── Chargement XLSX via script dynamique (React ignore les <script> JSX) ──
+  useEffect(()=>{
+    if(window.XLSX)return; // déjà chargé
+    const s=document.createElement("script");
+    s.src=SHEETJS_URL;s.async=true;
+    s.onload=()=>console.log("XLSX ready");
+    s.onerror=()=>console.warn("XLSX load error");
+    document.head.appendChild(s);
+  },[]);
   const [si,setSi]=useState(0); // segment index
   const [qi,setQi]=useState(0); // question index
   const [answers,setAnswers]=useState({});
@@ -1969,8 +1979,9 @@ export default function App(){
   };
   const exportSheets=()=>{
     if(!plan)return;
+    if(!window.XLSX){alert("Chargement en cours, réessaye dans 2 secondes.");return;}
     try{
-      const wb=XLSX.utils.book_new();
+      const wb=window.XLSX.utils.book_new();
       // ── Profil & Diagnostic ──
       const profil=[
         ["MON PLAN DE VIE 90 JOURS",""],["",""],
@@ -1992,23 +2003,23 @@ export default function App(){
         ["CONTRAT",""],
         [plan2?.contrat||"—",""],
       ];
-      const wsProfil=XLSX.utils.aoa_to_sheet(profil);
+      const wsProfil=window.XLSX.utils.aoa_to_sheet(profil);
       wsProfil["!cols"]=[{wch:26},{wch:65}];
-      XLSX.utils.book_append_sheet(wb,wsProfil,"Profil & Diagnostic");
+      window.XLSX.utils.book_append_sheet(wb,wsProfil,"Profil & Diagnostic");
       // ── Plan 12 Semaines ──
       const weeksData=[["Sem","Phase","Rôle","Titre","Objectif","Action 1","Action 2","Action 3","Métrique","Victoire","Risque"]];
       (weeks||[]).forEach(w=>weeksData.push([`S${w.s||w.semaine||"?"}`,w.ph||w.phase||"—",w.role||"—",w.t||w.titre||"—",w.o||w.objectif||"—",(w.a||w.actions||[])[0]||"—",(w.a||w.actions||[])[1]||"—",(w.a||w.actions||[])[2]||"—",w.m||w.metrique||"—",w.v||w.victoire||"—",w.r||w.risque||"—"]));
       if(weeksData.length===1)weeksData.push(["Génération en cours...","","","","","","","","","",""]);
-      const wsWeeks=XLSX.utils.aoa_to_sheet(weeksData);
+      const wsWeeks=window.XLSX.utils.aoa_to_sheet(weeksData);
       wsWeeks["!cols"]=[{wch:6},{wch:12},{wch:22},{wch:22},{wch:35},{wch:38},{wch:38},{wch:38},{wch:22},{wch:22},{wch:22}];
-      XLSX.utils.book_append_sheet(wb,wsWeeks,"Plan 12 Semaines");
+      window.XLSX.utils.book_append_sheet(wb,wsWeeks,"Plan 12 Semaines");
       // ── Tracker J1-J90 ──
       const tracker=[["Jour","Date","Humeur","Énergie","Focus","Action","Rituel","Rechute","Temps(min)","Notes"]];
       const start=startDate?new Date(startDate):new Date();
       for(let i=1;i<=90;i++){const d=new Date(start);d.setDate(d.getDate()+i-1);const key=d.toISOString().split("T")[0];const log=logs[key]||{};tracker.push([`J${i}`,d.toLocaleDateString("fr-FR"),log.humeur||"",log.energie||"",log.focus||"",log.action_done?"✓":"",log.rituel?"✓":"",log.rechute?"⚠":"",log.temps||"",log.notes||""]);}
-      const wsTracker=XLSX.utils.aoa_to_sheet(tracker);
+      const wsTracker=window.XLSX.utils.aoa_to_sheet(tracker);
       wsTracker["!cols"]=[{wch:6},{wch:14},{wch:10},{wch:10},{wch:8},{wch:10},{wch:8},{wch:10},{wch:12},{wch:35}];
-      XLSX.utils.book_append_sheet(wb,wsTracker,"Tracker J1-J90");
+      window.XLSX.utils.book_append_sheet(wb,wsTracker,"Tracker J1-J90");
       // ── Rituel & Protocoles ──
       const rituel=[["RITUEL",""],["Autosuggestion",plan2?.rituel?.autosuggestion||"—"],["",""],["MATIN",""]];
       (plan2?.rituel?.matin||[]).forEach(e=>rituel.push([e.etape,`${e.duree} — ${e.action}`]));
@@ -2020,16 +2031,16 @@ export default function App(){
       rituel.push(["",""],["PROTOCOLE RECHUTE",""]);
       const pr=plan2?.protocole_rechute||{};
       [["5 minutes",pr["5_minutes"]],["24h",pr["24h"]],["48h",pr["48h"]],["Règle non-zéro",pr.regle_non_zero],["Jour difficile",pr.jour_difficile]].forEach(([k,v])=>rituel.push([k,v||"—"]));
-      const wsRituel=XLSX.utils.aoa_to_sheet(rituel);
+      const wsRituel=window.XLSX.utils.aoa_to_sheet(rituel);
       wsRituel["!cols"]=[{wch:22},{wch:70}];
-      XLSX.utils.book_append_sheet(wb,wsRituel,"Rituel & Protocoles");
+      window.XLSX.utils.book_append_sheet(wb,wsRituel,"Rituel & Protocoles");
       // ── Lectures ──
       const lectures=[["Titre","Auteur","Pourquoi"]];
       (plan2?.lectures||[]).forEach(l=>lectures.push([l.titre||"—",l.auteur||"—",l.pourquoi||"—"]));
-      const wsL=XLSX.utils.aoa_to_sheet(lectures);
+      const wsL=window.XLSX.utils.aoa_to_sheet(lectures);
       wsL["!cols"]=[{wch:35},{wch:22},{wch:60}];
-      XLSX.utils.book_append_sheet(wb,wsL,"Lectures");
-      XLSX.writeFile(wb,`MonPlan90_${(plan.nom_guerre||firstName).replace(/\s+/g,"_")}_${new Date().toLocaleDateString("fr-FR").replace(/\//g,"-")}.xlsx`);
+      window.XLSX.utils.book_append_sheet(wb,wsL,"Lectures");
+      window.XLSX.writeFile(wb,`MonPlan90_${(plan.nom_guerre||firstName).replace(/\s+/g,"_")}_${new Date().toLocaleDateString("fr-FR").replace(/\//g,"-")}.xlsx`);
     }catch(e){console.error(e);alert("Erreur export. Réessayez.");}
   };
   const printPDF=()=>{
@@ -2139,7 +2150,7 @@ export default function App(){
   if(screen==="landing")return(
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",overflowX:"hidden"}}>
       <link rel="stylesheet" href={FONT}/>
-      <script src={SHEETJS_URL}/>
+      {/* XLSX chargé via useEffect au démarrage */}
       <script defer data-domain="monplan90.vercel.app" src="https://plausible.io/js/script.js"/>
       <meta name="theme-color" content="#0A0A0A"/>
       <meta name="apple-mobile-web-app-capable" content="yes"/>

@@ -555,15 +555,54 @@ Français direct. Aucun texte hors du JSON.`;
 
 function buildPromptWeeks(answers, nom_guerre) {
   const a = flatAnswers(answers);
-  const g = id => a[id] || "";
-  const domaine = answers.q_domaine_principal || "";
-  const moment = (g('q_moment')||g('q_rythme')||'soir').split('(')[0].trim();
-  const heures = g('q_heures')||g('q_rythme')||'30min';
-  return `Plan 90j pour ${g('q_profil')||nom_guerre}. Domaine: ${domaine}. Objectif: ${g('q_objectif')||g('q_frustration')||'transformation'}. Temps: ${heures} le ${moment}.
-Génère 12 semaines. S1-4=EVEIL, S5-8=CONSTRUCTION, S9-12=RECOLTE.
-JSON uniquement commence par {:
-{"semaines":[{"s":1,"ph":"EVEIL","role":"string","t":"titre court","o":"objectif semaine","a":["action concrète 1","action 2","action 3"],"m":"metrique","r":"risque","v":"victoire"},{"s":2,...},{"s":3,...},{"s":4,...},{"s":5,"ph":"CONSTRUCTION",...},{"s":6,...},{"s":7,...},{"s":8,...},{"s":9,"ph":"RECOLTE",...},{"s":10,...},{"s":11,...},{"s":12,...}]}
-Exactement 12 objets. Actions liées à ${domaine}. Français court.`;
+  const g = id => a[id] || "Non renseigné";
+  const domaine = answers.q_domaine_principal || "Finances";
+  const moment = (g('q_moment')||'soir').split('(')[0].trim();
+  const heures = g('q_heures')||'30 min';
+
+  return `Tu es un architecte de transformation comportementale. Tu construis le plan 12 semaines PERSONNALISÉ de ${g('q_profil')||nom_guerre}.
+
+PROFIL COMPLET :
+— Domaine : ${domaine}
+— Nom de guerre : ${nom_guerre}
+— Objectif 90j : ${g('q_objectif')}
+— Situation actuelle : ${g('q_etat_now')||g('q_frustration')||g('q_etat_mental')||g('q_pensee_dominante')}
+— Bloquants identifiés : ${g('q_bloquants')||g('q_resistance_perte')||g('q_croyance_limitante')}
+— Schéma de sabotage : ${g('q_mensonge')||g('q_adaptive')}
+— Sacrifice accepté : ${g('q_sacrifice')}
+— Environnement : ${g('q_env')}
+— Temps disponible : ${heures} le ${moment}
+— Niveau de conviction : ${g('q_pari')}
+— Vision si succès : ${g('q_engagement')||g('q_urgence_version_stable')}
+— Coût de l'inaction : ${g('q_si_pas')||g('q_cout_statu_quo')}
+
+RÈGLES DE CONSTRUCTION :
+— S1–S4 = ÉVEIL : briser les habitudes, identifier les déclencheurs, installer la structure minimale
+— S5–S8 = CONSTRUCTION : renforcer les nouvelles habitudes, affronter le saboteur, accélérer
+— S9–S12 = RÉCOLTE : consolider, ancrer l'identité nouvelle, projeter
+— Chaque semaine doit attaquer UN bloquant spécifique de ce profil — pas de généralités
+— Les actions doivent être CONCRÈTES : avec verbe d'action, durée, contexte (ex: "Écrire 3 sources de revenus possibles en 15 min le matin avant le café")
+— Le titre doit être une phrase courte percutante liée au profil (pas "Semaine 1")
+— La victoire = preuve mesurable que la semaine a été réussie
+— Le risque = le saboteur spécifique à surveiller cette semaine
+
+JSON STRICT — commence par { :
+{"semaines":[
+{"s":1,"ph":"ÉVEIL","role":"Réduction friction","t":"titre percutant lié au profil","o":"objectif précis de cette semaine","a":["action concrète avec verbe+durée+contexte","action 2","action 3"],"m":"métrique mesurable","r":"risque saboteur spécifique","v":"victoire concrète prouvable"},
+{"s":2,"ph":"ÉVEIL",...},
+{"s":3,"ph":"ÉVEIL",...},
+{"s":4,"ph":"ÉVEIL",...},
+{"s":5,"ph":"CONSTRUCTION",...},
+{"s":6,"ph":"CONSTRUCTION",...},
+{"s":7,"ph":"CONSTRUCTION",...},
+{"s":8,"ph":"CONSTRUCTION",...},
+{"s":9,"ph":"RÉCOLTE",...},
+{"s":10,"ph":"RÉCOLTE",...},
+{"s":11,"ph":"RÉCOLTE",...},
+{"s":12,"ph":"RÉCOLTE",...}
+]}
+
+Exactement 12 semaines. Chaque champ renseigné avec du contenu SPÉCIFIQUE à ce profil. Français. Concis mais précis.`;
 }
 
 function buildPromptCoach(plan, plan2, weeks, dailyLogs, question, history) {

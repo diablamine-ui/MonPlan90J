@@ -586,23 +586,30 @@ RÈGLES DE CONSTRUCTION :
 — La victoire = preuve mesurable que la semaine a été réussie
 — Le risque = le saboteur spécifique à surveiller cette semaine
 
+STRUCTURE OPÉRATIONNELLE DE CHAQUE SEMAINE :
+Chaque semaine a 4 jours d'action définis. L'heure s'adapte au profil (${moment}, ${heures} disponibles).
+— Lundi : action de lancement de semaine (mise en route, intention, première tâche clé)
+— Mercredi : action de milieu (maintien, approfondissement, correction de cap)
+— Vendredi : action de consolidation (bilan partiel, ancrage, préparation dimanche)
+— Dimanche : bilan + brainstorming semaine suivante (auto-évaluation, planification J+7)
+
 JSON STRICT — commence par { :
 {"semaines":[
-{"s":1,"ph":"ÉVEIL","role":"Réduction friction","t":"titre percutant lié au profil","o":"objectif précis de cette semaine","a":["action concrète avec verbe+durée+contexte","action 2","action 3"],"m":"métrique mesurable","r":"risque saboteur spécifique","v":"victoire concrète prouvable"},
-{"s":2,"ph":"ÉVEIL",...},
+{"s":1,"ph":"ÉVEIL","t":"titre percutant lié au profil","o":"objectif précis de la semaine","seuil":6,"lundi":{"h":"${moment==='matin'?'07h00':'20h00'}","dur":"${heures}","tache":"action concrète lundi avec verbe+contexte"},"mercredi":{"h":"${moment==='matin'?'07h00':'20h00'}","dur":"${heures}","tache":"action concrète mercredi"},"vendredi":{"h":"${moment==='matin'?'07h00':'20h00'}","dur":"${heures}","tache":"action concrète vendredi"},"dimanche":{"h":"${moment==='matin'?'09h00':'17h00'}","dur":"45 min","tache":"Bilan semaine 1 : noter actions faites, énergie moyenne, rechutes. Brainstorming 3 priorités semaine 2."},"m":"métrique mesurable","r":"risque saboteur spécifique","v":"victoire concrète prouvable"},
+{"s":2,"ph":"ÉVEIL","t":"...","o":"...","seuil":6,"lundi":{...},"mercredi":{...},"vendredi":{...},"dimanche":{...},"m":"...","r":"...","v":"..."},
 {"s":3,"ph":"ÉVEIL",...},
 {"s":4,"ph":"ÉVEIL",...},
-{"s":5,"ph":"CONSTRUCTION",...},
+{"s":5,"ph":"CONSTRUCTION","seuil":6,...},
 {"s":6,"ph":"CONSTRUCTION",...},
 {"s":7,"ph":"CONSTRUCTION",...},
 {"s":8,"ph":"CONSTRUCTION",...},
-{"s":9,"ph":"RÉCOLTE",...},
+{"s":9,"ph":"RÉCOLTE","seuil":6,...},
 {"s":10,"ph":"RÉCOLTE",...},
 {"s":11,"ph":"RÉCOLTE",...},
 {"s":12,"ph":"RÉCOLTE",...}
 ]}
 
-Exactement 12 semaines. Chaque champ renseigné avec du contenu SPÉCIFIQUE à ce profil. Français. Concis mais précis.`;
+Exactement 12 semaines. Chaque jour (lundi/mercredi/vendredi/dimanche) avec heure et tâche SPÉCIFIQUE au profil. Le dimanche est toujours bilan+brainstorming. Français. Précis et opérationnel.`;
 }
 
 function buildPromptCoach(plan, plan2, weeks, dailyLogs, question, history) {
@@ -1303,108 +1310,197 @@ function DailyTracker({dayNum,todayLog,onSave,logs={}}){
   </div>;
 }
 
-function WeekCard({w, checked, onCheck, isLocked, prevWeekDone, prevWeekNum, nomGuerre}){
+// ── Calcul score semaine depuis les logs journaliers ──
+function computeWeekScore(weekNum, logs, startDate){
+  if(!startDate||!logs) return null;
+  const start = new Date(startDate);
+  const weekStart = new Date(start.getTime() + (weekNum-1)*7*24*3600*1000);
+  const weekEnd   = new Date(weekStart.getTime() + 7*24*3600*1000);
+  const weekLogs  = Object.entries(logs)
+    .filter(([k])=>{ const d=new Date(k); return d>=weekStart && d<weekEnd; })
+    .map(([,v])=>v);
+  if(weekLogs.length===0) return null;
+  // Exécution : actions faites / jours loggués × 4
+  const actionPts = weekLogs.length>0 ? Math.round((weekLogs.filter(l=>l.action_done).length/weekLogs.length)*4*10)/10 : 0;
+  // Régularité : jours loggués / 7 × 3
+  const regPts = Math.round((weekLogs.length/7)*3*10)/10;
+  // Énergie moyenne / 5 × 2
+  const avgE = weekLogs.reduce((s,l)=>s+(l.energie||3),0)/weekLogs.length;
+  const ePts = Math.round((avgE/5)*2*10)/10;
+  // Zéro rechute : 1 pt si aucune rechute
+  const rechutePts = weekLogs.some(l=>l.rechute) ? 0 : 1;
+  const total = Math.min(10, Math.round((actionPts+regPts+ePts+rechutePts)*10)/10);
+  return { total, actionPts, regPts, ePts, rechutePts, logsCount: weekLogs.length };
+}
+
+function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, nomGuerre, logs, startDate}){
   const [open,setOpen]=useState(false);
   const [showWeekDone,setShowWeekDone]=useState(false);
-  const pc=w.phase==="ÉVEIL"?C.blue:w.phase==="CONSTRUCTION"?C.gold:C.green;
-  const actions=w.actions||w.a||[];
-  const doneCount=actions.filter((_,i)=>checked[`${w.semaine||w.s}-${i}`]).length;
-  const allDone=doneCount>=2;
-  const weekNum=w.semaine||w.s;
-  const prenom=nomGuerre?.split(" ")[0]||"toi";
+  const weekNum=wNum||w.semaine||w.s;
+  const ph=w.phase||w.ph||"ÉVEIL";
+  const pc=ph==="ÉVEIL"?C.blue:ph==="CONSTRUCTION"?C.gold:C.green;
+  const seuil=w.seuil||6;
 
-  const handleCheck=(key,val)=>{
+  // Jours de la semaine
+  const days=[
+    {key:"lundi",   label:"Lundi",    emoji:"🗓"},
+    {key:"mercredi",label:"Mercredi", emoji:"⚡"},
+    {key:"vendredi",label:"Vendredi", emoji:"🎯"},
+    {key:"dimanche",label:"Dimanche", emoji:"📊"},
+  ];
+
+  // Score de CETTE semaine (calculé depuis logs)
+  const score = computeWeekScore(weekNum, logs, startDate);
+  const scoreTotal = score?.total ?? null;
+  const scoreColor = scoreTotal===null?C.textDim:scoreTotal>=seuil?C.green:scoreTotal>=4?C.gold:C.red;
+  const semainePasse = scoreTotal!==null;
+  const debloque = scoreTotal===null ? false : scoreTotal>=seuil;
+
+  // Check des jours
+  const daysDone=days.filter(d=>checked[`${weekNum}-${d.key}`]).length;
+  const allDaysDone=daysDone>=3;
+
+  const handleDayCheck=(dayKey,val)=>{
+    const key=`${weekNum}-${dayKey}`;
     onCheck(key,val);
-    const newDone=actions.filter((_,i)=>{
-      const k=`${weekNum}-${i}`;
-      return k===key ? val : !!checked[k];
-    }).length;
-    const prevDone=actions.filter((_,i)=>!!checked[`${weekNum}-${i}`]).length;
-    // Popup félicitation uniquement quand TOUTES les actions sont faites (3/3)
-    if(newDone>=actions.length && prevDone<actions.length){
-      setOpen(true);
-      setTimeout(()=>setShowWeekDone(true),600);
-    }
+    const newCount=days.filter(d=>d.key===dayKey?val:!!checked[`${weekNum}-${d.key}`]).length;
+    if(newCount>=3 && daysDone<3){ setOpen(true); setTimeout(()=>setShowWeekDone(true),600); }
   };
 
+  // Célébration fin de semaine
   if(showWeekDone) return(
     <div style={{animation:"fadeUp 0.3s ease",padding:"1.2rem",marginBottom:"0.5rem",position:"relative"}}>
-      {/* Fond flash */}
-      <div style={{position:"fixed",inset:0,background:`${pc}15`,zIndex:10,animation:"fadeIn 0.1s ease, fadeUp 0.5s ease 0.8s both reverse",pointerEvents:"none"}}/>
-      {/* Confetti plein écran */}
+      <div style={{position:"fixed",inset:0,background:`${pc}15`,zIndex:10,pointerEvents:"none"}}/>
       <div style={{position:"fixed",inset:0,zIndex:11,pointerEvents:"none",overflow:"hidden"}}>
         {[...Array(24)].map((_,i)=>{
           const emojis=["🏆","🎉","✨","⭐","💫","🌟","🎊","✦","⚡","🔥","🥇","🎯"];
-          return <span key={i} style={{
-            position:"absolute",
-            left:`${Math.random()*95}%`,
-            top:`${-10+Math.random()*20}%`,
-            fontSize:`${0.8+Math.random()*1.2}rem`,
-            animation:`confettiFall ${0.8+Math.random()*0.8}s ease ${i*0.05}s both`,
-          }}>{emojis[i%emojis.length]}</span>;
+          return <span key={i} style={{position:"absolute",left:`${Math.random()*95}%`,top:`${-10+Math.random()*20}%`,fontSize:`${0.8+Math.random()*1.2}rem`,animation:`confettiFall ${0.8+Math.random()*0.8}s ease ${i*0.05}s both`}}>{emojis[i%emojis.length]}</span>;
         })}
       </div>
-      {/* Card */}
       <div style={{position:"relative",zIndex:12,background:`${pc}12`,border:`2px solid ${pc}50`,borderTop:`5px solid ${pc}`,padding:"1.8rem 1.2rem",textAlign:"center",marginBottom:"1rem",animation:"popIn 0.6s ease 0.2s both",boxShadow:`0 0 40px ${pc}30`}}>
-        <div style={{fontSize:"3rem",marginBottom:"0.6rem",animation:"pulse 0.6s ease 3"}}>🏆</div>
-        <div style={{...SF,fontSize:"1.2rem",color:pc,marginBottom:"0.7rem"}}>Semaine {weekNum} terminée 🏆</div>
-        <p style={{fontSize:"0.85rem",color:C.text,lineHeight:1.85,marginBottom:"0.7rem"}}>{weekNum} semaine{weekNum>1?"s":""} derrière toi. {12-weekNum} devant. Ce n'est pas le moment de relâcher.</p>
-        <p style={{fontSize:"0.82rem",color:C.textMid,lineHeight:1.75,marginBottom:"0.7rem"}}>La régularité que tu bâtis maintenant est exactement ce qui sépare ceux qui réussissent de ceux qui <em>presque</em> réussissent.</p>
-        {weekNum<12&&<p style={{fontSize:"0.78rem",color:pc,lineHeight:1.6,fontStyle:"italic"}}>✦ La Semaine {weekNum+1} vient de se déverrouiller.</p>}
-        {weekNum===12&&<p style={{fontSize:"0.85rem",color:C.green,lineHeight:1.6,fontWeight:400}}>✦ Tu as tenu les 90 jours. Peu de gens peuvent dire ça.</p>}
+        <div style={{fontSize:"3rem",marginBottom:"0.6rem"}}>🏆</div>
+        <div style={{...SF,fontSize:"1.2rem",color:pc,marginBottom:"0.7rem"}}>Semaine {weekNum} — jours complétés</div>
+        <p style={{fontSize:"0.82rem",color:C.text,lineHeight:1.85,marginBottom:"0.6rem"}}>Ton score sera calculé automatiquement dimanche à partir de ton tracker journalier.</p>
+        {score&&<div style={{background:`${scoreColor}15`,border:`1px solid ${scoreColor}40`,padding:"0.7rem",marginBottom:"0.7rem"}}>
+          <div style={{fontSize:"0.58rem",color:scoreColor,...MN,letterSpacing:"0.12em",marginBottom:"0.3rem"}}>SCORE SEMAINE {weekNum}</div>
+          <div style={{...SF,fontSize:"1.8rem",color:scoreColor}}>{scoreTotal}<span style={{fontSize:"0.9rem",color:C.textMid}}>/10</span></div>
+          <div style={{fontSize:"0.7rem",color:scoreTotal>=seuil?C.green:C.red,marginTop:"0.3rem"}}>{scoreTotal>=seuil?`✓ Semaine ${weekNum+1} débloquée`:`✗ Score insuffisant (seuil : ${seuil}/10)`}</div>
+        </div>}
+        {weekNum<12&&<p style={{fontSize:"0.78rem",color:pc,lineHeight:1.6,fontStyle:"italic"}}>✦ Continue le tracker chaque jour pour maximiser ton score.</p>}
+        {weekNum===12&&<p style={{fontSize:"0.85rem",color:C.green,lineHeight:1.6}}>✦ Tu as tenu les 90 jours. Peu de gens peuvent dire ça.</p>}
       </div>
       <button onClick={()=>setShowWeekDone(false)} style={{position:"relative",zIndex:1,width:"100%",padding:"0.9rem",background:pc,border:"none",color:C.bg,fontSize:"0.74rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,cursor:"pointer"}}>
-        {weekNum<12?`Passer à la Semaine ${weekNum+1} →`:"Voir le bilan final ✦"}
+        Voir la semaine ✦
       </button>
     </div>
   );
 
+  // Semaine verrouillée
   if(isLocked) return(
-    <div style={{marginBottom:"0.5rem",border:`1px solid ${C.border}30`,background:`${C.bg2}80`,opacity:0.6}}>
+    <div style={{marginBottom:"0.5rem",border:`1px solid ${C.border}30`,background:`${C.bg2}80`,opacity:0.65}}>
       <div style={{padding:"0.75rem 0.85rem",display:"flex",alignItems:"center",gap:"0.65rem"}}>
         <span style={{...MN,fontSize:"0.63rem",color:C.textDim,minWidth:"2rem"}}>S{weekNum}</span>
-        <Tag color={C.textDim}>{w.phase||w.ph}</Tag>
+        <Tag color={C.textDim}>{ph}</Tag>
         <span style={{flex:1,color:C.textDim,fontSize:"0.83rem"}}>{w.titre||w.t}</span>
         <span style={{fontSize:"0.8rem"}}>🔒</span>
       </div>
       <div style={{padding:"0 0.85rem 0.75rem"}}>
         <div style={{padding:"0.55rem 0.8rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}25`,borderLeft:`3px solid ${C.goldD}`,fontSize:"0.72rem",color:C.textDim,lineHeight:1.6}}>
-          ✦ Accomplis 2 actions sur 3 de la S{prevWeekNum} pour débloquer cette semaine.
-          {prevWeekDone!==undefined&&<span style={{color:C.gold,marginLeft:"0.3rem"}}>({prevWeekDone}/3 faites)</span>}
+          ✦ Score ≥ {seuil}/10 à la S{weekNum-1} requis pour débloquer.
+          {prevWeekScore!==null&&prevWeekScore!==undefined&&
+            <span style={{color:prevWeekScore>=seuil?C.green:C.red,marginLeft:"0.3rem"}}>
+              (score S{weekNum-1} : {prevWeekScore}/10)
+            </span>
+          }
         </div>
       </div>
     </div>
   );
 
-  return <div style={{marginBottom:"0.5rem",border:`1px solid ${allDone?C.green:C.border}`,background:C.bg2,transition:"border 0.3s"}}>
+  // Semaine active
+  return <div style={{marginBottom:"0.5rem",border:`1px solid ${semainePasse&&debloque?C.green:semainePasse?C.red:C.border}`,background:C.bg2,transition:"border 0.3s"}}>
     <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",padding:"0.75rem 0.85rem",background:"transparent",border:"none",display:"flex",alignItems:"center",gap:"0.65rem",textAlign:"left",cursor:"pointer"}}>
       <span style={{...MN,fontSize:"0.63rem",color:C.textDim,minWidth:"2rem"}}>S{weekNum}</span>
-      <Tag color={pc}>{w.phase||w.ph}</Tag>
-      <span style={{fontSize:"0.65rem",color:C.goldD,...MN,flexShrink:0}}>{w.role||w.r||WEEK_ROLES[weekNum]||""}</span>
-      <span style={{flex:1,color:allDone?C.green:C.text,fontSize:"0.83rem"}}>{w.titre||w.t}</span>
-      {doneCount>0&&<span style={{...MN,fontSize:"0.58rem",color:allDone?C.green:C.gold}}>{doneCount}/3</span>}
-      {allDone&&<span style={{color:C.green,fontSize:"0.7rem"}}>✓</span>}
+      <Tag color={pc}>{ph}</Tag>
+      <span style={{flex:1,color:C.text,fontSize:"0.83rem"}}>{w.titre||w.t}</span>
+      {scoreTotal!==null&&<span style={{...MN,fontSize:"0.65rem",color:scoreColor,fontWeight:500}}>{scoreTotal}/10</span>}
+      {daysDone>0&&scoreTotal===null&&<span style={{...MN,fontSize:"0.58rem",color:C.gold}}>{daysDone}/4j</span>}
       <span style={{color:C.textDim,fontSize:"0.78rem",flexShrink:0}}>{open?"−":"+"}</span>
     </button>
+
     {open&&<div style={{padding:"0 0.85rem 0.85rem",borderTop:`1px solid ${C.border}`}}>
-      {/* Barre de progression 2/3 */}
-      <div style={{display:"flex",alignItems:"center",gap:"0.5rem",marginTop:"0.55rem",marginBottom:"0.65rem"}}>
-        <div style={{flex:1,height:"3px",background:C.bg3}}>
-          <div style={{height:"100%",width:`${Math.min(doneCount/3*100,100)}%`,background:allDone?C.green:C.gold,transition:"width 0.4s ease"}}/>
+      {/* Objectif + Métrique */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.55rem",margin:"0.65rem 0"}}>
+        {[["Objectif",w.objectif||w.o],["Métrique",w.metrique||w.m]].map(([l,v])=>(
+          <div key={l}>
+            <div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>{l}</div>
+            <div style={{fontSize:"0.76rem",color:C.textMid,lineHeight:1.5}}>{v}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Planning 4 jours */}
+      <div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.5rem"}}>Planning semaine</div>
+      {days.map(({key,label,emoji})=>{
+        const ck=`${weekNum}-${key}`;
+        const done=!!checked[ck];
+        const dayData=w[key]||{};
+        const isDimanche=key==="dimanche";
+        return(
+          <button key={key} onClick={()=>handleDayCheck(key,!done)}
+            style={{width:"100%",display:"flex",gap:"0.6rem",marginBottom:"0.4rem",alignItems:"flex-start",
+              background:done?isDimanche?`${C.green}12`:`${C.green}0A`:isDimanche?`${C.gold}06`:"transparent",
+              border:`1px solid ${done?C.green:isDimanche?C.goldD:C.border}`,
+              padding:"0.55rem 0.65rem",textAlign:"left",transition:"all 0.2s",cursor:"pointer"}}>
+            <span style={{color:done?C.green:C.textDim,fontSize:"0.72rem",marginTop:"0.05rem",flexShrink:0}}>{done?"✓":"○"}</span>
+            <div style={{flex:1}}>
+              <div style={{display:"flex",gap:"0.5rem",alignItems:"center",marginBottom:"0.2rem"}}>
+                <span style={{fontSize:"0.58rem",color:isDimanche?C.gold:pc,...MN,letterSpacing:"0.08em"}}>{emoji} {label}</span>
+                {dayData.h&&<span style={{fontSize:"0.56rem",color:C.textDim,...MN}}>{dayData.h}</span>}
+                {dayData.dur&&<span style={{fontSize:"0.54rem",color:C.textDim,...MN}}>· {dayData.dur}</span>}
+              </div>
+              <div style={{fontSize:"0.77rem",color:done?C.textMid:C.text,lineHeight:1.5,textDecoration:done?"line-through":"none"}}>
+                {dayData.tache||"—"}
+              </div>
+            </div>
+          </button>
+        );
+      })}
+
+      {/* Score automatique */}
+      {score&&(
+        <div style={{marginTop:"0.75rem",background:`${scoreColor}0A`,border:`1px solid ${scoreColor}25`,padding:"0.65rem 0.8rem"}}>
+          <div style={{fontSize:"0.54rem",color:scoreColor,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.4rem"}}>Score automatique — Semaine {weekNum}</div>
+          <div style={{display:"flex",gap:"0.5rem",alignItems:"baseline",marginBottom:"0.4rem"}}>
+            <span style={{...SF,fontSize:"1.6rem",color:scoreColor}}>{scoreTotal}</span>
+            <span style={{fontSize:"0.7rem",color:C.textMid}}>/10 · seuil {seuil}/10</span>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.3rem",fontSize:"0.66rem",color:C.textMid}}>
+            <span>Exécution : {score.actionPts}/4</span>
+            <span>Régularité : {score.regPts}/3</span>
+            <span>Énergie : {score.ePts}/2</span>
+            <span>Rechutes : {score.rechutePts}/1</span>
+          </div>
+          <div style={{marginTop:"0.4rem",fontSize:"0.7rem",color:scoreColor,fontWeight:500}}>
+            {debloque?`✓ Semaine ${weekNum+1} débloquée`:`✗ Score insuffisant — continue le tracker`}
+          </div>
+          {score.logsCount<7&&<div style={{fontSize:"0.62rem",color:C.textDim,marginTop:"0.3rem",fontStyle:"italic"}}>({score.logsCount}/7 jours loggués — score provisoire)</div>}
         </div>
-        <span style={{fontSize:"0.58rem",color:allDone?C.green:C.textDim,...MN}}>{doneCount}/3 {allDone?"✓ Semaine débloquée":""}</span>
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.55rem",marginBottom:"0.65rem"}}>
-        {[["Objectif",w.objectif||w.o],["Métrique",w.metrique||w.m]].map(([l,v])=><div key={l}><div style={{fontSize:"0.56rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>{l}</div><div style={{fontSize:"0.78rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
-      </div>
-      <div style={{fontSize:"0.56rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.4rem"}}>Actions</div>
-      {actions.map((a,i)=>{const key=`${weekNum}-${i}`;const done=checked[key];
-        return <button key={i} onClick={()=>handleCheck(key,!done)} style={{width:"100%",display:"flex",gap:"0.55rem",marginBottom:"0.32rem",alignItems:"flex-start",background:done?`${C.green}0A`:"transparent",border:`1px solid ${done?C.green:C.border}`,padding:"0.42rem 0.62rem",textAlign:"left",transition:"all 0.2s",cursor:"pointer"}}>
-          <span style={{color:done?C.green:C.textDim,fontSize:"0.72rem",marginTop:"0.1rem",flexShrink:0}}>{done?"✓":"○"}</span>
-          <span style={{fontSize:"0.79rem",color:done?C.textMid:C.text,lineHeight:1.5,textDecoration:done?"line-through":"none"}}>{a}</span>
-        </button>;})}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.45rem",marginTop:"0.45rem"}}>
-        {[["⚠ Risque",w.risque||w.r,C.red],["✓ Victoire",w.victoire||w.v,C.green]].map(([l,v,c])=><div key={l} style={{background:`${c}0A`,border:`1px solid ${c}20`,padding:"0.42rem 0.6rem"}}><div style={{fontSize:"0.54rem",color:c,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.73rem",color:C.textMid,lineHeight:1.35}}>{v}</div></div>)}
+      )}
+      {!score&&(
+        <div style={{marginTop:"0.75rem",padding:"0.55rem 0.8rem",background:`${C.bg3}`,border:`1px solid ${C.border}`,fontSize:"0.68rem",color:C.textDim,lineHeight:1.5}}>
+          📊 Score calculé automatiquement depuis ton tracker journalier. Logue chaque jour pour un score précis.
+        </div>
+      )}
+
+      {/* Risque + Victoire */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.45rem",marginTop:"0.6rem"}}>
+        {[["⚠ Risque",w.risque||w.r,C.red],["✓ Victoire",w.victoire||w.v,C.green]].map(([l,v,c])=>(
+          <div key={l} style={{background:`${c}0A`,border:`1px solid ${c}20`,padding:"0.42rem 0.6rem"}}>
+            <div style={{fontSize:"0.54rem",color:c,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div>
+            <div style={{fontSize:"0.73rem",color:C.textMid,lineHeight:1.35}}>{v}</div>
+          </div>
+        ))}
       </div>
     </div>}
   </div>;
@@ -2979,22 +3075,13 @@ export default function App(){
           {!weeksLoading&&weeks!==null&&weeks.length===0&&<Card><div style={{textAlign:"center",padding:"0.75rem",color:C.textDim,fontSize:"0.81rem"}}><div style={{marginBottom:"0.65rem"}}>Impossible de charger.</div><button onClick={()=>{setWeeks(null);generateWeeks(plan);}} style={{padding:"0.52rem 1rem",background:C.gold,border:"none",color:C.bg,fontSize:"0.7rem",letterSpacing:"0.1em",cursor:"pointer"}}>Réessayer</button></div></Card>}
           {!weeksLoading&&weeks&&weeks.length>0&&(()=>{
             const nrm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase();
-            // Calcul du déverrouillage — 2/3 actions par semaine
+            // Calcul déverrouillage par SCORE automatique
+            const getWeekScore=(wn)=>computeWeekScore(wn, logs, startDate);
             const isWeekUnlocked=(weekNum)=>{
               if(weekNum<=1)return true; // S1 toujours débloquée
-              const prevNum=weekNum-1;
-              const prevWeek=weeks.find(w=>(w.semaine||w.s)===prevNum);
-              if(!prevWeek)return true;
-              const prevActions=prevWeek.actions||prevWeek.a||[];
-              const prevDone=prevActions.filter((_,i)=>checks[`${prevNum}-${i}`]).length;
-              return prevDone>=2;
-            };
-            const getPrevDone=(weekNum)=>{
-              const prevNum=weekNum-1;
-              const prevWeek=weeks.find(w=>(w.semaine||w.s)===prevNum);
-              if(!prevWeek)return 0;
-              const prevActions=prevWeek.actions||prevWeek.a||[];
-              return prevActions.filter((_,i)=>checks[`${prevNum}-${i}`]).length;
+              const prevScore=getWeekScore(weekNum-1);
+              if(prevScore===null)return false; // pas encore de logs = bloqué
+              return prevScore.total>=(weeks.find(w=>(w.semaine||w.s)===weekNum-1)?.seuil||6);
             };
             return ["ÉVEIL","CONSTRUCTION","RÉCOLTE"].map(phase=>{
               const pw=weeks.filter(w=>nrm(w.phase||w.ph||"")===nrm(phase));if(!pw.length)return null;
@@ -3005,7 +3092,8 @@ export default function App(){
                 <div style={{border:`1px solid ${pc}35`}}>{pw.map(w=>{
                   const wn=w.semaine||w.s;
                   const locked=!isWeekUnlocked(wn);
-                  return <WeekCard key={wn} w={w} checked={checks} onCheck={toggleCheck} isLocked={locked} prevWeekNum={wn-1} prevWeekDone={getPrevDone(wn)} nomGuerre={plan?.nom_guerre}/>;
+                  const prevScore=wn>1?getWeekScore(wn-1):null;
+                  return <WeekCard key={wn} w={w} weekNum={wn} checked={checks} onCheck={toggleCheck} isLocked={locked} prevWeekScore={prevScore?.total??null} nomGuerre={plan?.nom_guerre} logs={logs} startDate={startDate}/>;
                 })}</div>
               </div>;
             });
@@ -3044,6 +3132,55 @@ export default function App(){
           Créé par <span style={{color:C.gold}}>Lamine Diabaté</span> · Mon Plan de Vie 90 Jours<br/>
           <span style={{color:C.goldD,fontSize:"0.61rem",...MN}}>Auteur · "90 Jours pour Renaître" · "Le Pouvoir d'un Esprit Aligné"</span>
         </div>
+      </div>
+    );
+  }
+
+  // ── PLAN-SELECT ──
+  if(screen==="plan-select"){
+    const allD=loadAllDomains();
+    const domains=Object.keys(allD);
+    return(
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",maxWidth:"660px",margin:"0 auto",padding:"1.1rem 0.9rem 4rem",animation:"fadeUp 0.4s ease"}}>
+        <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"2rem",paddingBottom:"0.85rem",borderBottom:`1px solid ${C.border}`}}>
+          <div style={{...SF,fontSize:"1rem",color:C.gold}}>Mes Plans</div>
+          <button onClick={()=>setScreen(plan?"home":"landing")} style={{padding:"0.38rem 0.65rem",background:"transparent",border:`1px solid ${C.border}`,color:C.textDim,fontSize:"0.6rem",...MN,cursor:"pointer"}}>← Retour</button>
+        </div>
+
+        {domains.length===0&&(
+          <div style={{textAlign:"center",padding:"3rem 1rem",color:C.textDim,fontSize:"0.8rem"}}>
+            <div style={{fontSize:"2rem",marginBottom:"1rem"}}>✦</div>
+            <p>Aucun plan créé pour l'instant.</p>
+            <button onClick={startNewPlan} style={{...BG,marginTop:"1.5rem"}}>Créer mon premier plan ✦</button>
+          </div>
+        )}
+
+        <div style={{display:"flex",flexDirection:"column",gap:"0.75rem",marginBottom:"1.5rem"}}>
+          {domains.map(d=>{
+            const data=allD[d];
+            const ng=data?.plan?.nom_guerre||d;
+            const isActive=activeDomain===d;
+            const startD=data?.startDate?new Date(data.startDate):null;
+            const dn=startD?Math.floor((Date.now()-startD.getTime())/(1000*60*60*24))+1:1;
+            return(
+              <button key={d} onClick={()=>switchDomain(d)} style={{padding:"1rem 1.2rem",background:isActive?`${C.gold}12`:C.bg2,border:`1px solid ${isActive?C.gold:C.border}`,textAlign:"left",cursor:"pointer",transition:"all 0.2s"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.4rem"}}>
+                  <div style={{fontSize:"0.56rem",color:isActive?C.gold:C.goldD,textTransform:"uppercase",letterSpacing:"0.15em",...MN}}>{d} {isActive&&"· ACTIF"}</div>
+                  <div style={{fontSize:"0.6rem",color:C.textDim,...MN}}>J{Math.min(dn,90)}/90</div>
+                </div>
+                <div style={{...SF,fontSize:"0.95rem",color:isActive?C.gold:C.text}}>{ng}</div>
+                {data?.plan?.scorecard?.mission_centrale&&<div style={{fontSize:"0.72rem",color:C.textMid,marginTop:"0.3rem",lineHeight:1.5}}>{data.plan.scorecard.mission_centrale.slice(0,80)}…</div>}
+              </button>
+            );
+          })}
+        </div>
+
+        {domains.length<3&&(
+          <button onClick={startNewPlan} style={{width:"100%",padding:"0.9rem",background:"transparent",border:`1px dashed ${C.goldD}`,color:C.goldD,fontSize:"0.7rem",letterSpacing:"0.12em",textTransform:"uppercase",...MN,cursor:"pointer"}}>
+            + Créer un nouveau plan ({domains.length}/3)
+          </button>
+        )}
       </div>
     );
   }

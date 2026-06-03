@@ -23,6 +23,13 @@ const loadAllDomains = () => {
     const data = loadByDomain(d);
     if(data?.plan) result[d] = data;
   });
+  // Fallback: chercher aussi dans le storage générique
+  if(Object.keys(result).length===0){
+    try{
+      const gen=localStorage.getItem(STORAGE_KEY);
+      if(gen){const data=JSON.parse(gen);if(data?.plan){const d=data.answers?.q_domaine_principal||"Finances";result[d]=data;}}
+    }catch(e){}
+  }
   return result;
 };
 const getLastDomain = () => { try{ return localStorage.getItem(LAST_DOMAIN_KEY)||null; }catch{return null;} };
@@ -555,61 +562,22 @@ Français direct. Aucun texte hors du JSON.`;
 
 function buildPromptWeeks(answers, nom_guerre) {
   const a = flatAnswers(answers);
-  const g = id => a[id] || "Non renseigné";
+  const g = id => a[id] || "?";
   const domaine = answers.q_domaine_principal || "Finances";
   const moment = (g('q_moment')||'soir').split('(')[0].trim();
-  const heures = g('q_heures')||'30 min';
+  const heure = moment==='matin'?'07h00':'20h00';
+  const heureDim = moment==='matin'?'09h00':'17h00';
+  const dur = g('q_heures')||'30 min';
 
-  return `Tu es un architecte de transformation comportementale. Tu construis le plan 12 semaines PERSONNALISÉ de ${g('q_profil')||nom_guerre}.
+  return `Génère un plan 12 semaines JSON pour ${nom_guerre}. Domaine: ${domaine}. Objectif: ${g('q_objectif')}. Bloquant: ${g('q_bloquants')||g('q_mensonge')}. Sacrifice: ${g('q_sacrifice')}. Temps: ${dur} le ${moment}.
 
-PROFIL COMPLET :
-— Domaine : ${domaine}
-— Nom de guerre : ${nom_guerre}
-— Objectif 90j : ${g('q_objectif')}
-— Situation actuelle : ${g('q_etat_now')||g('q_frustration')||g('q_etat_mental')||g('q_pensee_dominante')}
-— Bloquants identifiés : ${g('q_bloquants')||g('q_resistance_perte')||g('q_croyance_limitante')}
-— Schéma de sabotage : ${g('q_mensonge')||g('q_adaptive')}
-— Sacrifice accepté : ${g('q_sacrifice')}
-— Environnement : ${g('q_env')}
-— Temps disponible : ${heures} le ${moment}
-— Niveau de conviction : ${g('q_pari')}
-— Vision si succès : ${g('q_engagement')||g('q_urgence_version_stable')}
-— Coût de l'inaction : ${g('q_si_pas')||g('q_cout_statu_quo')}
+STRUCTURE: S1-4=ÉVEIL, S5-8=CONSTRUCTION, S9-12=RÉCOLTE. 4 jours/semaine: Lundi(action lancement), Mercredi(action milieu), Vendredi(consolidation), Dimanche(bilan+brainstorming).
+Chaque tâche: verbe+durée+contexte précis. Titre percutant. Seuil déblocage: 6.
 
-RÈGLES DE CONSTRUCTION :
-— S1–S4 = ÉVEIL : briser les habitudes, identifier les déclencheurs, installer la structure minimale
-— S5–S8 = CONSTRUCTION : renforcer les nouvelles habitudes, affronter le saboteur, accélérer
-— S9–S12 = RÉCOLTE : consolider, ancrer l'identité nouvelle, projeter
-— Chaque semaine doit attaquer UN bloquant spécifique de ce profil — pas de généralités
-— Les actions doivent être CONCRÈTES : avec verbe d'action, durée, contexte (ex: "Écrire 3 sources de revenus possibles en 15 min le matin avant le café")
-— Le titre doit être une phrase courte percutante liée au profil (pas "Semaine 1")
-— La victoire = preuve mesurable que la semaine a été réussie
-— Le risque = le saboteur spécifique à surveiller cette semaine
+JSON strict, commence par {:
+{"semaines":[{"s":1,"ph":"ÉVEIL","t":"titre court percutant","o":"objectif semaine","seuil":6,"lundi":{"h":"${heure}","dur":"${dur}","tache":"action lundi concrète"},"mercredi":{"h":"${heure}","dur":"${dur}","tache":"action mercredi concrète"},"vendredi":{"h":"${heure}","dur":"${dur}","tache":"action vendredi concrète"},"dimanche":{"h":"${heureDim}","dur":"45 min","tache":"Bilan S1 : score actions/énergie/rechutes. Planifier 3 priorités S2."},"m":"métrique","r":"risque","v":"victoire"},{"s":2,"ph":"ÉVEIL","t":"...","o":"...","seuil":6,"lundi":{...},"mercredi":{...},"vendredi":{...},"dimanche":{...},"m":"...","r":"...","v":"..."},{"s":3,...},{"s":4,...},{"s":5,"ph":"CONSTRUCTION",...},{"s":6,...},{"s":7,...},{"s":8,...},{"s":9,"ph":"RÉCOLTE",...},{"s":10,...},{"s":11,...},{"s":12,...}]}
 
-STRUCTURE OPÉRATIONNELLE DE CHAQUE SEMAINE :
-Chaque semaine a 4 jours d'action définis. L'heure s'adapte au profil (${moment}, ${heures} disponibles).
-— Lundi : action de lancement de semaine (mise en route, intention, première tâche clé)
-— Mercredi : action de milieu (maintien, approfondissement, correction de cap)
-— Vendredi : action de consolidation (bilan partiel, ancrage, préparation dimanche)
-— Dimanche : bilan + brainstorming semaine suivante (auto-évaluation, planification J+7)
-
-JSON STRICT — commence par { :
-{"semaines":[
-{"s":1,"ph":"ÉVEIL","t":"titre percutant lié au profil","o":"objectif précis de la semaine","seuil":6,"lundi":{"h":"${moment==='matin'?'07h00':'20h00'}","dur":"${heures}","tache":"action concrète lundi avec verbe+contexte"},"mercredi":{"h":"${moment==='matin'?'07h00':'20h00'}","dur":"${heures}","tache":"action concrète mercredi"},"vendredi":{"h":"${moment==='matin'?'07h00':'20h00'}","dur":"${heures}","tache":"action concrète vendredi"},"dimanche":{"h":"${moment==='matin'?'09h00':'17h00'}","dur":"45 min","tache":"Bilan semaine 1 : noter actions faites, énergie moyenne, rechutes. Brainstorming 3 priorités semaine 2."},"m":"métrique mesurable","r":"risque saboteur spécifique","v":"victoire concrète prouvable"},
-{"s":2,"ph":"ÉVEIL","t":"...","o":"...","seuil":6,"lundi":{...},"mercredi":{...},"vendredi":{...},"dimanche":{...},"m":"...","r":"...","v":"..."},
-{"s":3,"ph":"ÉVEIL",...},
-{"s":4,"ph":"ÉVEIL",...},
-{"s":5,"ph":"CONSTRUCTION","seuil":6,...},
-{"s":6,"ph":"CONSTRUCTION",...},
-{"s":7,"ph":"CONSTRUCTION",...},
-{"s":8,"ph":"CONSTRUCTION",...},
-{"s":9,"ph":"RÉCOLTE","seuil":6,...},
-{"s":10,"ph":"RÉCOLTE",...},
-{"s":11,"ph":"RÉCOLTE",...},
-{"s":12,"ph":"RÉCOLTE",...}
-]}
-
-Exactement 12 semaines. Chaque jour (lundi/mercredi/vendredi/dimanche) avec heure et tâche SPÉCIFIQUE au profil. Le dimanche est toujours bilan+brainstorming. Français. Précis et opérationnel.`;
+12 semaines exactement. Chaque champ renseigné. Français concis.`
 }
 
 function buildPromptCoach(plan, plan2, weeks, dailyLogs, question, history) {
@@ -1900,7 +1868,12 @@ export default function App(){
   },[]);
 
   useEffect(()=>{if(Object.keys(answers).length>0){const s=load()||{};save({...s,answers,nom,email});}}, [answers,nom,email]);
-  useEffect(()=>{if(plan&&activeDomain){saveByDomain(activeDomain,{plan,plan2,weeks,answers,nom,email,checks,logs,startDate});}else if(plan){const s=load()||{};save({...s,plan,plan2,weeks,answers,nom,email,checks,logs,startDate});}},[plan,plan2,weeks,checks,logs,startDate,activeDomain]);
+  useEffect(()=>{
+    if(!plan)return;
+    const d=activeDomain||answers.q_domaine_principal||null;
+    if(d&&DOMAIN_KEYS[d]){saveByDomain(d,{plan,plan2,weeks,answers,nom,email,checks,logs,startDate});if(!activeDomain)setActiveDomain(d);}
+    else{const s=load()||{};save({...s,plan,plan2,weeks,answers,nom,email,checks,logs,startDate});}
+  },[plan,plan2,weeks,checks,logs,startDate,activeDomain]);
 
   const domaine = answers.q_domaine_principal || "";
   const activeSegs = getSegments(domaine) || SEGMENTS_FINANCES;
@@ -2042,7 +2015,7 @@ export default function App(){
     const tryLoad=async(attempt=1)=>{
       try{
         const res=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({prompt:buildPromptWeeks(answers,ng)+"\n\nCommence par { immédiatement.",system:"Tu es un générateur de JSON strict. Commence IMMÉDIATEMENT par {.",max_tokens:4000})});
+          body:JSON.stringify({prompt:buildPromptWeeks(answers,ng)+"\n\nCommence par { immédiatement.",system:"Tu es un générateur de JSON strict. Commence IMMÉDIATEMENT par {.",max_tokens:6000})});
         if(!res.ok)throw new Error(`Erreur API ${res.status}`);
         const data=await res.json();
         const rawW=data.content||"";

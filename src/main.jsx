@@ -7,6 +7,25 @@ import ReactDOM from 'react-dom/client';
 const CODES = ["LD-MAI26","LD-TEST1","LD-BETA2","LD-VIP01","LD-AMIS5","LD-VIP06"];
 const STORAGE_KEY = "plan90_v10";
 const WEEKLY_KEY = "plan90_weekly_v1";
+// Multi-plans : clés par domaine
+const DOMAIN_KEYS = {
+  "Finances": "plan90_finances_v1",
+  "Comportement": "plan90_comportement_v1",
+  "Mental": "plan90_mental_v1"
+};
+const LAST_DOMAIN_KEY = "plan90_last_domain";
+const getDomainKey = (d) => DOMAIN_KEYS[d] || STORAGE_KEY;
+const saveByDomain = (d, data) => { try{ localStorage.setItem(getDomainKey(d), JSON.stringify(data)); localStorage.setItem(LAST_DOMAIN_KEY, d); }catch(e){} };
+const loadByDomain = (d) => { try{ const k=getDomainKey(d); const x=localStorage.getItem(k); return x?JSON.parse(x):null; }catch(e){return null;} };
+const loadAllDomains = () => {
+  const result = {};
+  Object.keys(DOMAIN_KEYS).forEach(d => {
+    const data = loadByDomain(d);
+    if(data?.plan) result[d] = data;
+  });
+  return result;
+};
+const getLastDomain = () => { try{ return localStorage.getItem(LAST_DOMAIN_KEY)||null; }catch{return null;} };
 const FONT = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Jost:wght@200;300;400;500&display=swap";
 const SHEETJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
 
@@ -1679,6 +1698,7 @@ function WeeklyVictory({logs}){
 
 export default function App(){
   const [screen,setScreen]=useState("landing");
+  const [activeDomain,setActiveDomain]=useState(null); // domaine actif
   const [si,setSi]=useState(0); // segment index
   const [qi,setQi]=useState(0); // question index
   const [answers,setAnswers]=useState({});
@@ -1704,23 +1724,38 @@ export default function App(){
   const [trackerOpen,setTrackerOpen]=useState(false);
   const [foc,setFoc]=useState({});
 
-  // ── HYDRATION ──
+  // ── HYDRATION MULTI-PLANS ──
   useEffect(()=>{
-    const saved=load();
-    if(!saved)return;
-    if(saved.plan){
+    const lastDomain = getLastDomain();
+    const allDomains = loadAllDomains();
+    const hasDomains = Object.keys(allDomains).length > 0;
+    if(hasDomains && lastDomain && allDomains[lastDomain]){
+      // Charger le dernier domaine utilisé directement
+      const saved = allDomains[lastDomain];
+      setActiveDomain(lastDomain);
       setPlan(saved.plan);if(saved.plan2)setPlan2(saved.plan2);
       if(saved.weeks)setWeeks(saved.weeks);if(saved.answers)setAnswers(saved.answers);
       if(saved.checks)setChecks(saved.checks);if(saved.logs)setLogs(saved.logs);
       if(saved.startDate)setStartDate(saved.startDate);if(saved.nom)setNom(saved.nom);
       setScreen("home");
-    }else if(saved.answers&&Object.keys(saved.answers).length>0){
-      setAnswers(saved.answers);if(saved.nom)setNom(saved.nom);if(saved.email)setEmail(saved.email);
+    } else {
+      // Fallback ancien storage
+      const saved=load();
+      if(!saved)return;
+      if(saved.plan){
+        setPlan(saved.plan);if(saved.plan2)setPlan2(saved.plan2);
+        if(saved.weeks)setWeeks(saved.weeks);if(saved.answers)setAnswers(saved.answers);
+        if(saved.checks)setChecks(saved.checks);if(saved.logs)setLogs(saved.logs);
+        if(saved.startDate)setStartDate(saved.startDate);if(saved.nom)setNom(saved.nom);
+        setScreen("home");
+      }else if(saved.answers&&Object.keys(saved.answers).length>0){
+        setAnswers(saved.answers);if(saved.nom)setNom(saved.nom);if(saved.email)setEmail(saved.email);
+      }
     }
   },[]);
 
   useEffect(()=>{if(Object.keys(answers).length>0){const s=load()||{};save({...s,answers,nom,email});}}, [answers,nom,email]);
-  useEffect(()=>{if(plan){const s=load()||{};save({...s,plan,plan2,weeks,answers,nom,email,checks,logs,startDate});}}, [plan,plan2,weeks,checks,logs,startDate]);
+  useEffect(()=>{if(plan&&activeDomain){saveByDomain(activeDomain,{plan,plan2,weeks,answers,nom,email,checks,logs,startDate});}else if(plan){const s=load()||{};save({...s,plan,plan2,weeks,answers,nom,email,checks,logs,startDate});}},[plan,plan2,weeks,checks,logs,startDate,activeDomain]);
 
   const domaine = answers.q_domaine_principal || "";
   const activeSegs = getSegments(domaine) || SEGMENTS_FINANCES;
@@ -1821,6 +1856,8 @@ export default function App(){
   };
   // ── GENERATE — 2 appels séquentiels (p2 reçoit nom_guerre de p1) ──
   const generate=async()=>{
+    const dom = answers.q_domaine_principal || "Finances";
+    setActiveDomain(dom);
     setScreen("loading");setLoadStep(0);
     const timers=LOAD_STEPS.map((_,i)=>setTimeout(()=>setLoadStep(i),i*4200));
     const call=async(prompt,max)=>{
@@ -1881,8 +1918,24 @@ export default function App(){
   };
 
   const toggleCheck=(k,v)=>setChecks(p=>({...p,[k]:v}));
-  const saveLog=(log)=>{const next={...logs,[todayKey()]:log};setLogs(next);const s=load()||{};save({...s,logs:next,plan,plan2,weeks,answers,nom,email,checks,startDate});};
-  const reset=()=>{clear();setPlan(null);setPlan2(null);setWeeks(null);setAnswers({});setChecks({});setLogs({});setStartDate(null);setSi(0);setQi(0);setNom("");setEmail("");setCode("");setAccessErr("");setErrMsg("");setTab("dashboard");setScreen("landing");};
+  const saveLog=(log)=>{const next={...logs,[todayKey()]:log};setLogs(next);if(activeDomain){saveByDomain(activeDomain,{logs:next,plan,plan2,weeks,answers,nom,email,checks,startDate});}else{const s=load()||{};save({...s,logs:next,plan,plan2,weeks,answers,nom,email,checks,startDate});}};
+  const reset=()=>{clear();setPlan(null);setPlan2(null);setWeeks(null);setAnswers({});setChecks({});setLogs({});setStartDate(null);setSi(0);setQi(0);setNom("");setEmail("");setCode("");setAccessErr("");setErrMsg("");setTab("dashboard");setActiveDomain(null);setScreen("landing");};
+  const switchDomain=(d)=>{
+    const saved=loadByDomain(d);
+    if(!saved?.plan)return;
+    setActiveDomain(d);
+    setPlan(saved.plan);setPlan2(saved.plan2||null);setWeeks(saved.weeks||null);
+    setAnswers(saved.answers||{});setChecks(saved.checks||{});setLogs(saved.logs||{});
+    setStartDate(saved.startDate||null);setTab("dashboard");
+    localStorage.setItem(LAST_DOMAIN_KEY,d);
+    setScreen("home");
+  };
+  const startNewPlan=()=>{
+    setPlan(null);setPlan2(null);setWeeks(null);setAnswers({});setChecks({});setLogs({});
+    setStartDate(null);setSi(0);setQi(0);setErrMsg("");setTab("dashboard");
+    setActiveDomain(null);
+    setScreen("intro");
+  };
 
   const copyText=()=>{if(!plan)return;navigator.clipboard.writeText(`MON PLAN DE VIE 90 JOURS — ${firstName}\nNom de Guerre : ${plan.nom_guerre}\n\n${plan2?.message_final||""}\n\nContrat : ${plan2?.contrat||""}\n\nCréé par Lamine Diabaté`).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);});};
   const shareURL=()=>{if(!plan)return;try{const p={n:plan.nom_guerre,m:plan2?.message_final||"",c:plan2?.contrat||"",f:firstName};const enc=btoa(encodeURIComponent(JSON.stringify(p)));navigator.clipboard.writeText(`${window.location.href.split("?")[0]}?share=${enc}`).then(()=>alert("Lien copié !"));}catch(e){alert("Impossible de générer le lien.");}};
@@ -2650,6 +2703,7 @@ export default function App(){
               <span style={{fontSize:"0.7rem",color:curStreak>=7?C.green:curStreak>=3?C.gold:C.textDim,...MN,fontWeight:400}}>{curStreak}j</span>
             </div>}
             <button onClick={()=>setScreen("result")} style={{padding:"0.38rem 0.65rem",background:`${C.gold}12`,border:`1px solid ${C.goldD}`,color:C.gold,fontSize:"0.6rem",letterSpacing:"0.08em",...MN,cursor:"pointer"}}>Plan complet</button>
+            <button onClick={()=>setScreen("plan-select")} style={{padding:"0.38rem 0.65rem",background:"transparent",border:`1px solid ${C.goldD}`,color:C.goldD,fontSize:"0.6rem",...MN,cursor:"pointer"}} title="Mes plans">⊞</button>
             <button onClick={reset} style={{padding:"0.38rem 0.5rem",background:"transparent",border:`1px solid ${C.border}`,color:C.textDim,fontSize:"0.6rem",...MN,cursor:"pointer"}}>↩</button>
           </div>
         </div>

@@ -2,6 +2,20 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 
 // ══════════════════════════════════════════════════════════════
+// fetchWithRetry — réessaie automatiquement sur 429 (rate limit Groq)
+// avec backoff exponentiel, au lieu d'échouer immédiatement.
+// ══════════════════════════════════════════════════════════════
+async function fetchWithRetry(url, opts, maxRetries = 3) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const res = await fetch(url, opts);
+    if (res.status !== 429) return res;
+    if (attempt === maxRetries) return res; // épuisé — on laisse l'appelant gérer l'erreur
+    const wait = 1500 * Math.pow(2, attempt); // 1.5s, 3s, 6s, 12s
+    await new Promise(r => setTimeout(r, wait));
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════════════════════
 const CODES = ["LD-MAI26","LD-TEST1","LD-BETA2","LD-VIP01","LD-AMIS5","LD-VIP06"];
@@ -1555,7 +1569,7 @@ function CoachChat({plan,plan2,weeks,dailyLogs}){
     if(!input.trim()||loading)return;
     const q=input.trim();setInput("");setMsgs(m=>[...m,{role:"user",content:q}]);setLoading(true);
     try{
-      const res=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
+      const res=await fetchWithRetry("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({prompt:buildPromptCoach(plan,plan2,weeks,dailyLogs,q,msgs),system:"Tu es un coach comportemental socratique. Tu poses UNE question avant de donner un conseil. Direct, humain, 3-4 phrases max.",max_tokens:500})});
       if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error?.message||`HTTP ${res.status}`);}
       const data=await res.json();
@@ -2058,7 +2072,7 @@ export default function App(){
     setScreen("loading");setLoadStep(0);
     const timers=LOAD_STEPS.map((_,i)=>setTimeout(()=>setLoadStep(i),i*4200));
     const call=async(prompt,max)=>{
-      const res=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
+      const res=await fetchWithRetry("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({prompt:prompt+"\n\nRAPPEL : commence par { immédiatement.",system:"Tu es un générateur de JSON strict. RÈGLE ABSOLUE : ta réponse commence IMMÉDIATEMENT par { et se termine par }. Zéro texte avant. Zéro backtick.",max_tokens:max})});
       if(!res.ok){const d=await res.json().catch(()=>({}));throw new Error(d.error?.message||`Erreur API ${res.status}`);}
       const data=await res.json();
@@ -2098,7 +2112,7 @@ export default function App(){
       risque:w.risque??w.r, victoire:w.victoire??w.v, seuil:w.seuil||6
     });
     const callAPI=async(prompt,attempt=1)=>{
-      const res=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
+      const res=await fetchWithRetry("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({prompt:prompt+"\n\nCommence par { immédiatement.",system:"Tu es un générateur de JSON strict. Commence IMMÉDIATEMENT par {.",max_tokens:3000})});
       if(!res.ok)throw new Error(`HTTP ${res.status}`);
       const data=await res.json();

@@ -40,7 +40,7 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant', // Rapide + léger → pas de timeout
+        model: 'openai/gpt-oss-20b', // Remplace llama-3.1-8b-instant (déprécié par Groq le 17/06/2026) — encore plus rapide (1000 tok/s)
         max_tokens: Math.min(max_tokens, 4000),
         temperature: 0.5, // Plus bas = JSON plus stable
         messages: [

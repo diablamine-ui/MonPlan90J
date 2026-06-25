@@ -1571,7 +1571,7 @@ function CoachChat({plan,plan2,weeks,dailyLogs}){
     try{
       const res=await fetchWithRetry("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({prompt:buildPromptCoach(plan,plan2,weeks,dailyLogs,q,msgs),system:"Tu es un coach comportemental socratique. Tu poses UNE question avant de donner un conseil. Direct, humain, 3-4 phrases max.",max_tokens:500})});
-      if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error?.message||`HTTP ${res.status}`);}
+      if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error||`HTTP ${res.status}`);}
       const data=await res.json();
       const txt=data.content;
       if(!txt)throw new Error("Réponse vide");
@@ -2074,7 +2074,7 @@ export default function App(){
     const call=async(prompt,max)=>{
       const res=await fetchWithRetry("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({prompt:prompt+"\n\nRAPPEL : commence par { immédiatement.",system:"Tu es un générateur de JSON strict. RÈGLE ABSOLUE : ta réponse commence IMMÉDIATEMENT par { et se termine par }. Zéro texte avant. Zéro backtick.",max_tokens:max})});
-      if(!res.ok){const d=await res.json().catch(()=>({}));throw new Error(d.error?.message||`Erreur API ${res.status}`);}
+      if(!res.ok){const d=await res.json().catch(()=>({}));throw new Error(d.error||`Erreur API ${res.status}`);}
       const data=await res.json();
       const rawC=data.content||"";
       const parsedC=repairJSON(rawC);
@@ -2114,7 +2114,7 @@ export default function App(){
     const callAPI=async(prompt,attempt=1)=>{
       const res=await fetchWithRetry("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({prompt:prompt+"\n\nCommence par { immédiatement.",system:"Tu es un générateur de JSON strict. Commence IMMÉDIATEMENT par {.",max_tokens:3000})});
-      if(!res.ok)throw new Error(`HTTP ${res.status}`);
+      if(!res.ok){const d=await res.json().catch(()=>({}));throw new Error(d.error||`HTTP ${res.status}`);}
       const data=await res.json();
       const parsed=repairJSON(data.content||"");
       if(!parsed?.semaines){

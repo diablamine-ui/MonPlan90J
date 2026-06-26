@@ -1,6 +1,7 @@
 // api/generate.js — Proxy Groq pour MonPlan90
 // Reçoit : { prompt, system, max_tokens }
 // Renvoie : { content: "texte brut" }
+
 export default async function handler(req, res) {
   // CORS — autorise les appels depuis la version artifact Claude
   // (autre origine que mon-plan90j.vercel.app). À resserrer plus tard
@@ -12,7 +13,6 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -40,9 +40,10 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'openai/gpt-oss-20b', // Remplace llama-3.1-8b-instant (déprécié par Groq le 17/06/2026) — encore plus rapide (1000 tok/s)
+        model: 'openai/gpt-oss-120b', // Modèle correct (pas "gpt-oss-20b")
         max_tokens: Math.min(max_tokens, 4000),
         temperature: 0.5, // Plus bas = JSON plus stable
+        reasoning_effort: 'low', // Obligatoire pour ce modèle — sinon réponse vide
         messages: [
           ...(system ? [{ role: 'system', content: system }] : []),
           { role: 'user', content: prompt },

@@ -41,7 +41,10 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'openai/gpt-oss-120b', // Modèle correct (pas "gpt-oss-20b")
-        max_tokens: Math.min(max_tokens, 4000),
+        // Plancher à 500 tokens minimum : ce modèle "raisonne" avant de répondre
+        // et consomme une partie du budget en interne — sous 500 la réponse
+        // visible peut arriver vide même si Groq renvoie 200 OK.
+        max_tokens: Math.min(Math.max(max_tokens, 500), 4000),
         temperature: 0.5, // Plus bas = JSON plus stable
         reasoning_effort: 'low', // Obligatoire pour ce modèle — sinon réponse vide
         messages: [

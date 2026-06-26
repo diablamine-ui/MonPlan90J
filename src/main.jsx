@@ -154,7 +154,6 @@ const DOMAIN_CONFIG = {
     q_etat_now_label:"En 3 mots — décris ta situation financière actuelle.",
     q_etat_now_ph:"Dettes, stagnation, bloqué",
     q_etat_now_ex:"Serré, stable, croissance — ta réalité financière maintenant",
-    // Labels questions adaptées
     q_objectif_label:"Ton objectif financier précis dans 90 jours — et pourquoi tu veux vraiment l'atteindre ?",
     q_objectif_ph:"Générer 300 000 FCFA / mois avec mon activité. Je veux l'atteindre pour ne plus dépendre d'un salaire.",
     q_objectif_ex:"Lancer mon activité freelance et avoir 5 clients payants.",
@@ -543,15 +542,12 @@ function flatAnswers(answers) {
     a.q_heures = sanitize(answers.q_rythme.heures);
     a.q_moment = sanitize(answers.q_rythme.moment);
   }
-  // Fusionner les 3 questions pari en un bloc narratif
   if (answers.q_pari && answers.q_pari_plus && answers.q_pari_moins) {
     a.q_pari_complet = `${answers.q_pari}/100. Pas plus : ${sanitize(answers.q_pari_plus)}. Pas moins : ${sanitize(answers.q_pari_moins)}.`;
   }
-  // Fusionner urgence + projection si q_urgence_projection existe
   if (answers.q_urgence && answers.q_cout_statu_quo) {
     a.q_projection_urgence = `Urgent : ${sanitize(answers.q_urgence)}. Coût inaction : ${sanitize(answers.q_cout_statu_quo)}`;
   }
-  // q_montant est maintenant une question text standalone
   if (!a.q_montant && answers.q_ancrage) {
     a.q_montant = sanitize(answers.q_ancrage.montant);
   }
@@ -665,10 +661,8 @@ function buildPromptCoach(plan, plan2, weeks, dailyLogs, question, history) {
   const actionDays = logs.filter(l=>l.action_done).length;
   const missedDays = logs.filter(l=>!l.action_done&&!l.rechute).length;
 
-  // Analyse des patterns comportementaux
   const patterns = [];
   if(logs.length >= 5) {
-    // Pattern abandon après N jours
     const streaks = [];
     let cur = 0;
     logs.forEach(l => { if(l.action_done) cur++; else { if(cur>0) streaks.push(cur); cur=0; } });
@@ -676,12 +670,9 @@ function buildPromptCoach(plan, plan2, weeks, dailyLogs, question, history) {
       const avgStreak = Math.round(streaks.reduce((s,v)=>s+v,0)/streaks.length);
       if(avgStreak <= 5) patterns.push(`Tu abandonnes souvent après ${avgStreak} jours consécutifs — c'est ton seuil de résistance actuel.`);
     }
-    // Pattern énergie basse → action non faite
     const lowEnergyMissed = recentLogs.filter(l=>l.energie<=2&&!l.action_done).length;
     if(lowEnergyMissed >= 2) patterns.push(`Quand ton énergie passe sous 3, tu rates l'action dans ${Math.round(lowEnergyMissed/recentLogs.filter(l=>l.energie<=2).length*100)||0}% des cas — ton énergie gouverne encore ton exécution.`);
-    // Pattern rechute récente
     if(lastRelapse && logs.indexOf(lastRelapse) >= logs.length - 3) patterns.push(`Tu as rechuté récemment — surveille les 48h qui suivent, c'est là que l'abandon s'installe.`);
-    // Pattern irrégularité
     if(missedDays > actionDays && logs.length >= 7) patterns.push(`Tu manques plus de jours que tu n'en tiens — l'irrégularité est ton vrai adversaire, pas le manque de volonté.`);
   }
 
@@ -727,11 +718,9 @@ RÈGLES ABSOLUES :
 // ══════════════════════════════════════════════════════════════
 // UTILS
 // ══════════════════════════════════════════════════════════════
-// ── SANITIZE — nettoie les réponses avant injection dans les prompts ──
 function sanitize(v) {
   if (!v) return "Non renseigné";
   if (Array.isArray(v)) return v.join(", ");
-  // Remplace les caractères qui peuvent casser un JSON généré par l'IA
   return String(v)
     .replace(/\\/g, " ")
     .replace(/"/g, "'")
@@ -739,31 +728,26 @@ function sanitize(v) {
     .replace(/\r/g, " ")
     .replace(/\t/g, " ")
     .trim()
-    .slice(0, 300); // cap à 300 chars par champ
+    .slice(0, 300);
 }
 
-// ── REPAIR JSON — 4 tentatives en cascade ──
 function repairJSON(raw) {
   if (!raw) return null;
 
-  // Nettoyage initial
   let text = raw
     .replace(/^```json\s*/i, "")
     .replace(/^```\s*/i, "")
     .replace(/```\s*$/i, "")
     .trim();
 
-  // Tentative 1 : parse direct
   try { return JSON.parse(text); } catch(e) {}
 
-  // Tentative 2 : trouver le premier { et le dernier }
   const firstBrace = text.indexOf("{");
   const lastBrace = text.lastIndexOf("}");
   if (firstBrace !== -1 && lastBrace > firstBrace) {
     try { return JSON.parse(text.slice(firstBrace, lastBrace + 1)); } catch(e) {}
   }
 
-  // Tentative 3 : fermer les structures ouvertes
   try {
     const closers = [];
     let inStr = false, esc = false;
@@ -777,7 +761,6 @@ function repairJSON(raw) {
       else if (c === '}' || c === ']') closers.pop();
     }
     if (closers.length > 0) {
-      // Couper à la dernière virgule propre si on est en milieu de string
       const truncated = inStr
         ? text.slice(0, text.lastIndexOf(',"')) + '"'
         : text;
@@ -786,7 +769,6 @@ function repairJSON(raw) {
     }
   } catch(e) {}
 
-  // Tentative 4 : extraction par regex des champs clés (fallback partiel)
   return null;
 }
 
@@ -801,16 +783,10 @@ function computeScore4(dailyLogs, plan) {
   const logs = Object.values(dailyLogs||{}).sort((a,b)=>a.day-b.day);
   if(logs.length === 0) return {execution:0, identite:0, coherence:0, progression:0, global:0};
 
-  // Score Exécution — actions faites / jours tracés
   const execution = logs.length > 0 ? Math.round((logs.filter(l=>l.action_done).length/logs.length)*100) : 0;
-
-  // Score Identité — rituels faits (comportements alignés à l'identité cible)
   const identite = logs.length > 0 ? Math.round((logs.filter(l=>l.rituel_done).length/logs.length)*100) : 0;
-
-  // Score Cohérence — jours sans rechute / total jours
   const coherence = logs.length > 0 ? Math.round(((logs.length-logs.filter(l=>l.rechute).length)/logs.length)*100) : 100;
 
-  // Score Progression — basé sur streak actuel vs historique
   const streak = computeStreak(Object.fromEntries(logs.map(l=>[l.date,l])));
   const maxStreak = Math.max(...logs.reduce((acc,l,i)=>{
     const prev = i>0&&logs[i-1].action_done;
@@ -864,7 +840,10 @@ const CSS=`
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:${C.bg};color:${C.text};font-family:'Jost',sans-serif;font-weight:300;-webkit-font-smoothing:antialiased}
   ::placeholder{color:#2A2520!important}
-  ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:${C.goldD}}
+  ::-webkit-scrollbar{width:8px}
+  ::-webkit-scrollbar-track{background:${C.bg2}}
+  ::-webkit-scrollbar-thumb{background:${C.gold};border-radius:4px}
+  ::-webkit-scrollbar-thumb:hover{background:${C.goldL}}
   textarea,input,select,button{font-family:'Jost',sans-serif;font-weight:300}
 `;
 const MN={fontFamily:"'DM Mono',monospace"};
@@ -905,7 +884,6 @@ function ProgressCircle({day,total=90,size=110}){
 
 // ── VORTEX RESPIRATOIRE 4-7-8 — cercle qui respire ─────────────
 function BreathingVortex({onDone}){
-  // 1 cycle = 4+7+8 = 19 secondes. 5 min ≈ 300s → ~15 cycles
   const TOTAL_CYCLES = 15;
   const PHASES = [
     {label:"Inspire",  dur:4,  color:C.blue,   size:140, ease:"ease-in"},
@@ -970,10 +948,7 @@ function BreathingVortex({onDone}){
 
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"0.8rem 0 0.5rem"}}>
-
-      {/* Cercle organique qui gonfle et dégonfle */}
       <div style={{position:"relative",width:"180px",height:"180px",marginBottom:"0.8rem",display:"flex",alignItems:"center",justifyContent:"center"}}>
-        {/* Halo externe */}
         <div style={{
           position:"absolute",
           width:`${ph.size+30}px`,height:`${ph.size+30}px`,
@@ -981,7 +956,6 @@ function BreathingVortex({onDone}){
           background:`${ph.color}08`,
           transition:`width ${ph.dur}s ${ph.ease}, height ${ph.dur}s ${ph.ease}`,
         }}/>
-        {/* Cercle principal — gonfle et dégonfle */}
         <div style={{
           position:"relative",
           width:`${ph.size}px`,
@@ -994,13 +968,11 @@ function BreathingVortex({onDone}){
           display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
           zIndex:2,
         }}>
-          {/* Label phase */}
           <div style={{
             fontSize:"0.6rem",color:ph.color,letterSpacing:"0.18em",
             textTransform:"uppercase",...MN,marginBottom:"0.2rem",
             opacity:0.9
           }}>{ph.label}</div>
-          {/* Compte à rebours */}
           <div style={{
             ...SF,fontSize:"2.2rem",color:ph.color,lineHeight:1,
             textShadow:`0 0 15px ${ph.color}80`
@@ -1009,7 +981,6 @@ function BreathingVortex({onDone}){
         </div>
       </div>
 
-      {/* Instruction */}
       <div style={{
         fontSize:"0.82rem",color:C.textMid,textAlign:"center",
         lineHeight:1.6,marginBottom:"0.5rem",minHeight:"1.4rem",
@@ -1020,7 +991,6 @@ function BreathingVortex({onDone}){
         {phaseIdx===2 && "Expire lentement par la bouche…"}
       </div>
 
-      {/* Barre de progression globale */}
       <div style={{width:"160px",marginBottom:"0.5rem"}}>
         <div style={{display:"flex",justifyContent:"space-between",fontSize:"0.55rem",color:C.textDim,...MN,marginBottom:"0.2rem"}}>
           <span>Cycle {cycle+1}/{TOTAL_CYCLES}</span>
@@ -1031,7 +1001,6 @@ function BreathingVortex({onDone}){
         </div>
       </div>
 
-      {/* Bouton passer */}
       <button onClick={handleSkip} style={{
         background:"transparent",border:`1px solid ${C.border}`,
         color:C.textDim,fontSize:"0.65rem",letterSpacing:"0.1em",...MN,
@@ -1059,7 +1028,6 @@ function playBip() {
 function playGong() {
   try {
     const ctx = new (window.AudioContext||window.webkitAudioContext)();
-    // Fréquences multiples pour un son de gong riche
     [[110,1.0],[220,0.6],[330,0.4],[440,0.3],[880,0.15]].forEach(([freq,vol],i)=>{
       const o = ctx.createOscillator();
       const g = ctx.createGain();
@@ -1077,8 +1045,6 @@ function playGong() {
 
 // ── ÉTAPE RITUEL AVEC TIMER DÉDIÉ ──────────────────────────
 function RituelTimer({steps, onComplete, nomGuerre}){
-  // Machine d'état plate — TOUT dans un seul composant, zéro remontage enfant
-  // États: idle | countdown | running | step_done | rituel_done
   const [state, setState] = useState({
     phase:"idle", idx:0, t:null, countdown:3
   });
@@ -1104,7 +1070,6 @@ function RituelTimer({steps, onComplete, nomGuerre}){
   };
   const doneMsg = STEP_MSGS[step?.etape]||{titre:"Étape accomplie ✓",msg:"Continue.",sous:"",color:C.green};
 
-  // Démarrer le décompte 3-2-1
   const startCountdown = () => {
     clearInterval(cdRef.current);
     setState(s=>({...s,phase:"countdown",countdown:3}));
@@ -1121,7 +1086,6 @@ function RituelTimer({steps, onComplete, nomGuerre}){
     },1000);
   };
 
-  // Timer courant
   useEffect(()=>{
     if(state.phase!=="running"||state.t===null||isBreathing)return;
     if(state.t<=0){
@@ -1134,10 +1098,8 @@ function RituelTimer({steps, onComplete, nomGuerre}){
     return()=>clearInterval(timerRef.current);
   },[state.phase, state.t, state.idx]);
 
-  // Cleanup
   useEffect(()=>()=>{clearInterval(cdRef.current);clearInterval(timerRef.current);},[]);
 
-  // Avancer à l'étape suivante
   const nextStep = () => {
     const nextIdx = state.idx+1;
     if(nextIdx>=steps.length){
@@ -1161,7 +1123,6 @@ function RituelTimer({steps, onComplete, nomGuerre}){
 
   const prog = total>0&&state.t!==null ? ((total-state.t)/total)*100 : 0;
 
-  // ── RITUEL DONE ──
   if(state.phase==="rituel_done") return(
     <div style={{animation:"fadeUp 0.4s ease",textAlign:"center"}}>
       <div style={{position:"relative",height:"70px",overflow:"hidden",marginBottom:"0.5rem"}}>
@@ -1178,7 +1139,6 @@ function RituelTimer({steps, onComplete, nomGuerre}){
     </div>
   );
 
-  // ── STEP DONE — écran de validation entre étapes ──
   if(state.phase==="step_done") return(
     <div style={{animation:"fadeUp 0.4s ease",textAlign:"center"}}>
       <div style={{background:`${doneMsg.color}10`,border:`1px solid ${doneMsg.color}30`,borderTop:`4px solid ${doneMsg.color}`,padding:"1.2rem",marginBottom:"0.8rem"}}>
@@ -1193,7 +1153,6 @@ function RituelTimer({steps, onComplete, nomGuerre}){
     </div>
   );
 
-  // Barre progression étapes (pour countdown, running, step_done)
   const StepBar = ()=>(
     <div style={{display:"flex",gap:"0.3rem",marginBottom:"0.75rem"}}>
       {steps.map((_,i)=>(
@@ -1202,7 +1161,6 @@ function RituelTimer({steps, onComplete, nomGuerre}){
     </div>
   );
 
-  // ── IDLE — instructions + START ──
   if(state.phase==="idle") return(
     <div>
       <StepBar/>
@@ -1232,7 +1190,6 @@ function RituelTimer({steps, onComplete, nomGuerre}){
     </div>
   );
 
-  // ── COUNTDOWN 3-2-1 ──
   if(state.phase==="countdown") return(
     <div style={{textAlign:"center",padding:"1.5rem 1rem",animation:"fadeIn 0.3s ease"}}>
       <StepBar/>
@@ -1241,8 +1198,6 @@ function RituelTimer({steps, onComplete, nomGuerre}){
     </div>
   );
 
-  // ── RUNNING ──
-  // Respiration = vortex (SEULEMENT si phase==="running")
   if(state.phase==="running" && isBreathing) return(
     <div>
       <StepBar/>
@@ -1250,7 +1205,6 @@ function RituelTimer({steps, onComplete, nomGuerre}){
     </div>
   );
 
-  // Autres étapes = timer
   return(
     <div>
       <StepBar/>
@@ -1271,7 +1225,6 @@ function RituelTimer({steps, onComplete, nomGuerre}){
     </div>
   );
 }
-
 
 function DailyTracker({dayNum,todayLog,onSave,logs={}}){
   const [humeur,setHumeur]=useState(todayLog?.humeur||null);
@@ -1362,14 +1315,10 @@ function computeWeekScore(weekNum, logs, startDate){
     .filter(([k])=>{ const d=new Date(k); return d>=weekStart && d<weekEnd; })
     .map(([,v])=>v);
   if(weekLogs.length===0) return null;
-  // Exécution : actions faites / jours loggués × 4
   const actionPts = weekLogs.length>0 ? Math.round((weekLogs.filter(l=>l.action_done).length/weekLogs.length)*4*10)/10 : 0;
-  // Régularité : jours loggués / 7 × 3
   const regPts = Math.round((weekLogs.length/7)*3*10)/10;
-  // Énergie moyenne / 5 × 2
   const avgE = weekLogs.reduce((s,l)=>s+(l.energie||3),0)/weekLogs.length;
   const ePts = Math.round((avgE/5)*2*10)/10;
-  // Zéro rechute : 1 pt si aucune rechute
   const rechutePts = weekLogs.some(l=>l.rechute) ? 0 : 1;
   const total = Math.min(10, Math.round((actionPts+regPts+ePts+rechutePts)*10)/10);
   return { total, actionPts, regPts, ePts, rechutePts, logsCount: weekLogs.length };
@@ -1383,7 +1332,6 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
   const pc=ph==="ÉVEIL"?C.blue:ph==="CONSTRUCTION"?C.gold:C.green;
   const seuil=w.seuil||6;
 
-  // Jours de la semaine
   const days=[
     {key:"lundi",   label:"Lundi",    emoji:"🗓"},
     {key:"mercredi",label:"Mercredi", emoji:"⚡"},
@@ -1391,14 +1339,12 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
     {key:"dimanche",label:"Dimanche", emoji:"📊"},
   ];
 
-  // Score de CETTE semaine (calculé depuis logs)
   const score = computeWeekScore(weekNum, logs, startDate);
   const scoreTotal = score?.total ?? null;
   const scoreColor = scoreTotal===null?C.textDim:scoreTotal>=seuil?C.green:scoreTotal>=4?C.gold:C.red;
   const semainePasse = scoreTotal!==null;
   const debloque = scoreTotal===null ? false : scoreTotal>=seuil;
 
-  // Check des jours
   const daysDone=days.filter(d=>checked[`${weekNum}-${d.key}`]).length;
   const allDaysDone=daysDone>=3;
 
@@ -1409,7 +1355,6 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
     if(newCount>=3 && daysDone<3){ setOpen(true); setTimeout(()=>setShowWeekDone(true),600); }
   };
 
-  // Célébration fin de semaine
   if(showWeekDone) return(
     <div style={{animation:"fadeUp 0.3s ease",padding:"1.2rem",marginBottom:"0.5rem",position:"relative"}}>
       <div style={{position:"fixed",inset:0,background:`${pc}15`,zIndex:10,pointerEvents:"none"}}/>
@@ -1437,7 +1382,6 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
     </div>
   );
 
-  // Semaine verrouillée
   if(isLocked) return(
     <div style={{marginBottom:"0.5rem",border:`1px solid ${C.border}30`,background:`${C.bg2}80`,opacity:0.65}}>
       <div style={{padding:"0.75rem 0.85rem",display:"flex",alignItems:"center",gap:"0.65rem"}}>
@@ -1459,7 +1403,6 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
     </div>
   );
 
-  // Semaine active
   return <div style={{marginBottom:"0.5rem",border:`1px solid ${semainePasse&&debloque?C.green:semainePasse?C.red:C.border}`,background:C.bg2,transition:"border 0.3s"}}>
     <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",padding:"0.75rem 0.85rem",background:"transparent",border:"none",display:"flex",alignItems:"center",gap:"0.65rem",textAlign:"left",cursor:"pointer"}}>
       <span style={{...MN,fontSize:"0.63rem",color:C.textDim,minWidth:"2rem"}}>S{weekNum}</span>
@@ -1471,7 +1414,6 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
     </button>
 
     {open&&<div style={{padding:"0 0.85rem 0.85rem",borderTop:`1px solid ${C.border}`}}>
-      {/* Objectif + Métrique */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.55rem",margin:"0.65rem 0"}}>
         {[["Objectif",w.objectif||w.o],["Métrique",w.metrique||w.m]].map(([l,v])=>(
           <div key={l}>
@@ -1481,7 +1423,6 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
         ))}
       </div>
 
-      {/* Planning 4 jours */}
       <div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.5rem"}}>Planning semaine</div>
       {days.map(({key,label,emoji})=>{
         const ck=`${weekNum}-${key}`;
@@ -1509,7 +1450,6 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
         );
       })}
 
-      {/* Score automatique */}
       {score&&(
         <div style={{marginTop:"0.75rem",background:`${scoreColor}0A`,border:`1px solid ${scoreColor}25`,padding:"0.65rem 0.8rem"}}>
           <div style={{fontSize:"0.54rem",color:scoreColor,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.4rem"}}>Score automatique — Semaine {weekNum}</div>
@@ -1535,7 +1475,6 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
         </div>
       )}
 
-      {/* Risque + Victoire */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.45rem",marginTop:"0.6rem"}}>
         {[["⚠ Risque",w.risque||w.r,C.red],["✓ Victoire",w.victoire||w.v,C.green]].map(([l,v,c])=>(
           <div key={l} style={{background:`${c}0A`,border:`1px solid ${c}20`,padding:"0.42rem 0.6rem"}}>
@@ -1549,7 +1488,6 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
 }
 
 function CoachChat({plan,plan2,weeks,dailyLogs}){
-  // Mémoire persistante localStorage
   const COACH_KEY = `coach_history_${plan?.nom_guerre||'user'}`;
   const savedHistory = React.useMemo(()=>{
     try{ const h=localStorage.getItem(COACH_KEY); return h?JSON.parse(h):null; }catch{return null;}
@@ -1559,7 +1497,6 @@ function CoachChat({plan,plan2,weeks,dailyLogs}){
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
 
-  // Sauvegarder l'historique à chaque nouveau message
   useEffect(()=>{
     try{ localStorage.setItem(COACH_KEY, JSON.stringify(msgs.slice(-20))); }catch{}
   },[msgs]);
@@ -1665,11 +1602,9 @@ function EngagementTab({plan, plan2, firstName}){
     canvas.width = 900; canvas.height = 1200;
     const ctx = canvas.getContext("2d");
 
-    // Fond noir
     ctx.fillStyle = "#080808";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Bordure dorée
     ctx.strokeStyle = "#8B6914";
     ctx.lineWidth = 1;
     ctx.strokeRect(40, 40, 820, 1120);
@@ -1677,7 +1612,6 @@ function EngagementTab({plan, plan2, firstName}){
     ctx.lineWidth = 0.5;
     ctx.strokeRect(50, 50, 800, 1100);
 
-    // Titre
     ctx.fillStyle = "#8B6914";
     ctx.font = "13px 'DM Mono', monospace";
     ctx.textAlign = "center";
@@ -1687,12 +1621,10 @@ function EngagementTab({plan, plan2, firstName}){
     ctx.font = "bold 46px Georgia, serif";
     ctx.fillText(plan?.nom_guerre||"", 450, 180);
 
-    // Ligne décorative
     ctx.strokeStyle = "#8B6914";
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(150,205); ctx.lineTo(750,205); ctx.stroke();
 
-    // Texte engagement
     const textLines = [
       `Je soussigné(e) ${signerNom},`,
       "",
@@ -1731,7 +1663,6 @@ function EngagementTab({plan, plan2, firstName}){
       y += line === "" ? 15 : 30;
     });
 
-    // Zone signature
     const sigCanvas = canvasRef.current;
     y = Math.max(y + 40, 880);
     ctx.strokeStyle = "#2A2A2A";
@@ -1739,7 +1670,6 @@ function EngagementTab({plan, plan2, firstName}){
     ctx.beginPath(); ctx.moveTo(150, y+80); ctx.lineTo(480, y+80); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(520, y+80); ctx.lineTo(750, y+80); ctx.stroke();
 
-    // Coller la signature du canvas
     if (sigCanvas && hasStrokes) {
       ctx.drawImage(sigCanvas, 150, y, 330, 80);
     }
@@ -1750,12 +1680,10 @@ function EngagementTab({plan, plan2, firstName}){
     ctx.fillText("Signature", 315, y+100);
     ctx.fillText(today, 635, y+100);
 
-    // Footer
     ctx.fillStyle = "#8B6914";
     ctx.font = "11px monospace";
     ctx.fillText("✦ Créé par Lamine Diabaté · Mon Plan de Vie 90 Jours ✦", 450, 1160);
 
-    // Télécharger
     const link = document.createElement("a");
     link.download = `engagement-${(plan?.nom_guerre||"plan").replace(/\s+/g,"-").toLowerCase()}.png`;
     link.href = canvas.toDataURL("image/png");
@@ -1771,7 +1699,6 @@ function EngagementTab({plan, plan2, firstName}){
       <Card accent>
         <SH icon="✦" label="Mon Engagement Personnel" sub="Signe et télécharge ton contrat"/>
 
-        {/* Document d'engagement */}
         <div style={{
           padding:"1.4rem",background:`${C.gold}06`,
           border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`,
@@ -1812,7 +1739,6 @@ function EngagementTab({plan, plan2, firstName}){
           {citation&&<div style={{...SF,fontSize:"0.88rem",color:C.goldL,fontStyle:"italic",textAlign:"center",padding:"0.6rem",borderTop:`1px solid ${C.goldD}40`}}>"{citation}"</div>}
         </div>
 
-        {/* Zone de signature */}
         <div style={{marginBottom:"1rem"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.4rem"}}>
             <div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.15em",textTransform:"uppercase",...MN}}>Signature au doigt</div>
@@ -1834,7 +1760,6 @@ function EngagementTab({plan, plan2, firstName}){
           </div>
         </div>
 
-        {/* Bouton télécharger */}
         <button
           onClick={()=>{setSigned(true);downloadEngagement();}}
           disabled={!signerNom.trim()||!hasStrokes}
@@ -1858,7 +1783,7 @@ function EngagementTab({plan, plan2, firstName}){
   );
 }
 
-// ── Composant Victory hebdomadaire — extrait de l'IIFE pour respecter les Rules of Hooks ──
+// ── Composant Victory hebdomadaire ──
 function WeeklyVictory({logs}){
   const wk=Math.ceil((Object.keys(logs||{}).length||1)/7);
   const vKey=`victory_w${wk}`;
@@ -1875,22 +1800,21 @@ function WeeklyVictory({logs}){
 
 export default function App(){
   const [screen,setScreen]=useState("landing");
-  const [activeDomain,setActiveDomain]=useState(null); // domaine actif
+  const [activeDomain,setActiveDomain]=useState(null);
 
-  // ── Chargement XLSX via script dynamique (React ignore les <script> JSX) ──
   useEffect(()=>{
-    if(window.XLSX)return; // déjà chargé
+    if(window.XLSX)return;
     const s=document.createElement("script");
     s.src=SHEETJS_URL;s.async=true;
     s.onload=()=>console.log("XLSX ready");
     s.onerror=()=>console.warn("XLSX load error");
     document.head.appendChild(s);
   },[]);
-  const [si,setSi]=useState(0); // segment index
-  const [qi,setQi]=useState(0); // question index
+  const [si,setSi]=useState(0);
+  const [qi,setQi]=useState(0);
   const [answers,setAnswers]=useState({});
-  const [plan,setPlan]=useState(null);   // appel 1 : identité+diagnostic+scorecard
-  const [plan2,setPlan2]=useState(null); // appel 2 : rituel+protocoles+lectures
+  const [plan,setPlan]=useState(null);
+  const [plan2,setPlan2]=useState(null);
   const [weeks,setWeeks]=useState(null);
   const [weeksLoading,setWeeksLoading]=useState(false);
   const [checks,setChecks]=useState({});
@@ -1901,8 +1825,8 @@ export default function App(){
   const [email,setEmail]=email_s,[code,setCode]=code_s;
   const [accessErr,setAccessErr]=useState("");
   const [accessShake,setAccessShake]=useState(false);
-  const [qError,setQError]=useState("");       // message d'erreur question
-  const [qShake,setQShake]=useState(false);    // animation shake sur question
+  const [qError,setQError]=useState("");
+  const [qShake,setQShake]=useState(false);
   const [showAide,setShowAide]=useState(false);
   const [showReward,setShowReward]=useState("");
   const [copied,setCopied]=useState(false);
@@ -1911,11 +1835,9 @@ export default function App(){
   const [trackerOpen,setTrackerOpen]=useState(false);
   const [foc,setFoc]=useState({});
 
-  // ── HYDRATION MULTI-PLANS (local + cloud) ──
   useEffect(()=>{
     const hydrate = async () => {
       const lastDomain = getLastDomain();
-      // 1. Essai local d'abord (instantané)
       const allLocal = loadAllDomains();
       const hasLocal = Object.keys(allLocal).length > 0;
       if(hasLocal && lastDomain && allLocal[lastDomain]){
@@ -1926,7 +1848,6 @@ export default function App(){
         if(saved.checks)setChecks(saved.checks);if(saved.logs)setLogs(saved.logs);
         if(saved.startDate)setStartDate(saved.startDate);if(saved.nom)setNom(saved.nom);
         setScreen("home");
-        // 2. Sync cloud en arrière-plan — met à jour si plus récent
         const userKey = saved.nom || saved.email || lastDomain;
         const cloudData = await sbLoad(userKey, lastDomain);
         if(cloudData?.plan && cloudData.updated_at > (saved.updated_at||"")){
@@ -1937,7 +1858,6 @@ export default function App(){
           saveByDomain(lastDomain, cloudData);
         }
       } else {
-        // Fallback ancien storage local
         const saved=load();
         if(!saved)return;
         if(saved.plan){
@@ -1962,7 +1882,6 @@ export default function App(){
       const dataToSave={plan,plan2,weeks,answers,nom,email,checks,logs,startDate,updated_at:new Date().toISOString()};
       saveByDomain(d,dataToSave);
       if(!activeDomain)setActiveDomain(d);
-      // Sauvegarde cloud en arrière-plan
       const userKey=nom||email||d;
       sbSave(userKey, d, dataToSave);
     }else{const s=load()||{};save({...s,plan,plan2,weeks,answers,nom,email,checks,logs,startDate});}
@@ -1980,7 +1899,6 @@ export default function App(){
   const dn=dayNum(startDate);const lv=getLevel(dn);
   const stats=computeStats(logs);const todayLog=logs[todayKey()];const contMsg=getContMsg(dn);
 
-  // Auto-ouvre le tracker si journée pas encore enregistrée — après dn
   useEffect(()=>{ if(plan&&!logs[todayKey()]) setTrackerOpen(true); },[plan,startDate]);
 
   const LOAD_STEPS=["Analyse psychologique du profil…","Construction du diagnostic…","Calcul du scorecard comportemental…","Génération du rituel et protocoles…","Finalisation du plan…"];
@@ -1988,7 +1906,6 @@ export default function App(){
   const iSt=k=>({width:"100%",padding:"0.82rem 0.95rem",background:C.bg,border:`1px solid ${foc[k]?C.goldD:C.border}`,borderBottom:`2px solid ${foc[k]?C.gold:C.border}`,color:C.text,fontSize:"0.88rem",fontWeight:300,outline:"none",transition:"all 0.25s"});
   const BG={padding:"1rem 2.5rem",background:C.gold,border:"none",color:C.bg,fontSize:"0.75rem",letterSpacing:"0.18em",textTransform:"uppercase",fontWeight:500,cursor:"pointer",boxShadow:`0 4px 22px ${C.gold}35`};
 
-  // ── ACCESS ──
   const doAccess=()=>{
     if(!nom.trim()||nom.trim().length<2){setAccessErr("Entre ton nom complet.");setAccessShake(true);setTimeout(()=>setAccessShake(false),500);return;}
     if(!email.trim()||!email.includes("@")){setAccessErr("Email invalide.");setAccessShake(true);setTimeout(()=>setAccessShake(false),500);return;}
@@ -2004,7 +1921,6 @@ export default function App(){
   const [transitionData, setTransitionData] = useState(null);
   const [showTransition, setShowTransition] = useState(false);
 
-  // ── QUIZ VALIDATION & NAVIGATION ──
   const trigQError=(msg)=>{setQError(msg);setQShake(true);setTimeout(()=>setQShake(false),500);setTimeout(()=>setQError(""),3000);};
   const setVal=v=>{setQError("");setAnswers(p=>({...p,[q.id]:v}));};
   const setSubVal=(parentId,subKey,v)=>{setQError("");setAnswers(p=>({...p,[parentId]:{...(p[parentId]||{}),[subKey]:v}}));};
@@ -2051,7 +1967,6 @@ export default function App(){
 
   const goBack=()=>{
     setShowAide(false);setQError("");
-    // Retour en arrière en sautant les domainOnly si nécessaire
     if(qi>0){
       let prevQi = qi-1;
       while(prevQi > 0){
@@ -2065,7 +1980,6 @@ export default function App(){
       setQi((getSegments(answers.q_domaine_principal)||SEGMENTS_FINANCES)[si-1].questions.length-1);
     }
   };
-  // ── GENERATE — 2 appels séquentiels (p2 reçoit nom_guerre de p1) ──
   const generate=async()=>{
     const dom = answers.q_domaine_principal || "Finances";
     setActiveDomain(dom);
@@ -2082,15 +1996,13 @@ export default function App(){
       return parsedC;
     };
     try{
-      // Appel 1 — identité + diagnostic + scorecard
       const p1=await call(buildPrompt1(answers),3500);
       setLoadStep(2);
-      // Appel 2 — rituel + protocoles + lectures (avec vrai nom_guerre)
       const p2=await call(buildPrompt2(answers,p1.nom_guerre||""),4000);
       timers.forEach(clearTimeout);
       setPlan(p1);setPlan2(p2);
       setStartDate(new Date().toISOString().split('T')[0]);
-      setShowEmailPopup(true); // Afficher popup email avant home
+      setShowEmailPopup(true);
       setScreen("home");
     }catch(e){
       timers.forEach(clearTimeout);
@@ -2099,7 +2011,6 @@ export default function App(){
     }
   };
 
-  // ── GENERATE WEEKS ──
   const generateWeeks=async(p1)=>{
     if(weeks||weeksLoading)return;setWeeksLoading(true);
     const ng=p1?.nom_guerre||"";
@@ -2124,9 +2035,7 @@ export default function App(){
       return parsed.semaines;
     };
     try{
-      // Appel 1 : S1-S6
       const part1=await callAPI(buildPromptWeeksA(answers,ng));
-      // Appel 2 : S7-S12 (avec délai pour éviter rate limit)
       await new Promise(r=>setTimeout(r,1500));
       const part2=await callAPI(buildPromptWeeksB(answers,ng));
       const all=[...part1,...part2].map(norm).filter(w=>w.semaine).sort((a,b)=>a.semaine-b.semaine);
@@ -2194,7 +2103,6 @@ export default function App(){
     if(!window.XLSX){alert("Chargement en cours, réessaye dans 2 secondes.");return;}
     try{
       const wb=window.XLSX.utils.book_new();
-      // ── Profil & Diagnostic ──
       const profil=[
         ["MON PLAN DE VIE 90 JOURS",""],["",""],
         ["Nom de Guerre",plan.nom_guerre||"—"],["Domaine",answers.q_domaine_principal||"—"],
@@ -2218,21 +2126,18 @@ export default function App(){
       const wsProfil=window.XLSX.utils.aoa_to_sheet(profil);
       wsProfil["!cols"]=[{wch:26},{wch:65}];
       window.XLSX.utils.book_append_sheet(wb,wsProfil,"Profil & Diagnostic");
-      // ── Plan 12 Semaines ──
       const weeksData=[["Sem","Phase","Rôle","Titre","Objectif","Action 1","Action 2","Action 3","Métrique","Victoire","Risque"]];
       (weeks||[]).forEach(w=>weeksData.push([`S${w.s||w.semaine||"?"}`,w.ph||w.phase||"—",w.role||"—",w.t||w.titre||"—",w.o||w.objectif||"—",(w.a||w.actions||[])[0]||"—",(w.a||w.actions||[])[1]||"—",(w.a||w.actions||[])[2]||"—",w.m||w.metrique||"—",w.v||w.victoire||"—",w.r||w.risque||"—"]));
       if(weeksData.length===1)weeksData.push(["Génération en cours...","","","","","","","","","",""]);
       const wsWeeks=window.XLSX.utils.aoa_to_sheet(weeksData);
       wsWeeks["!cols"]=[{wch:6},{wch:12},{wch:22},{wch:22},{wch:35},{wch:38},{wch:38},{wch:38},{wch:22},{wch:22},{wch:22}];
       window.XLSX.utils.book_append_sheet(wb,wsWeeks,"Plan 12 Semaines");
-      // ── Tracker J1-J90 ──
       const tracker=[["Jour","Date","Humeur","Énergie","Focus","Action","Rituel","Rechute","Temps(min)","Notes"]];
       const start=startDate?new Date(startDate):new Date();
       for(let i=1;i<=90;i++){const d=new Date(start);d.setDate(d.getDate()+i-1);const key=d.toISOString().split("T")[0];const log=logs[key]||{};tracker.push([`J${i}`,d.toLocaleDateString("fr-FR"),log.humeur||"",log.energie||"",log.focus||"",log.action_done?"✓":"",log.rituel?"✓":"",log.rechute?"⚠":"",log.temps||"",log.notes||""]);}
       const wsTracker=window.XLSX.utils.aoa_to_sheet(tracker);
       wsTracker["!cols"]=[{wch:6},{wch:14},{wch:10},{wch:10},{wch:8},{wch:10},{wch:8},{wch:10},{wch:12},{wch:35}];
       window.XLSX.utils.book_append_sheet(wb,wsTracker,"Tracker J1-J90");
-      // ── Rituel & Protocoles ──
       const rituel=[["RITUEL",""],["Autosuggestion",plan2?.rituel?.autosuggestion||"—"],["",""],["MATIN",""]];
       (plan2?.rituel?.matin||[]).forEach(e=>rituel.push([e.etape,`${e.duree} — ${e.action}`]));
       rituel.push(["Première action",plan2?.rituel?.premiere_action_du_jour||"—"]);
@@ -2246,7 +2151,6 @@ export default function App(){
       const wsRituel=window.XLSX.utils.aoa_to_sheet(rituel);
       wsRituel["!cols"]=[{wch:22},{wch:70}];
       window.XLSX.utils.book_append_sheet(wb,wsRituel,"Rituel & Protocoles");
-      // ── Lectures ──
       const lectures=[["Titre","Auteur","Pourquoi"]];
       (plan2?.lectures||[]).forEach(l=>lectures.push([l.titre||"—",l.auteur||"—",l.pourquoi||"—"]));
       const wsL=window.XLSX.utils.aoa_to_sheet(lectures);
@@ -2272,7 +2176,6 @@ export default function App(){
     const w=window.open("","_blank","width=900,height=700");if(!w){alert("Autorise les popups.");return;}w.document.write(html);w.document.close();
   };
 
-  // Share viewer
   useEffect(()=>{const p=new URLSearchParams(window.location.search).get("share");if(!p)return;try{const d=JSON.parse(decodeURIComponent(atob(p)));setScreen("shareview");window._sp=d;}catch(e){}}, []);
 
   // ══════════════════════════════════════════════════════
@@ -2302,7 +2205,6 @@ export default function App(){
     </div>
   );}
 
-  // ── EMAIL POPUP ──
   const handleEmailSubscribe = async () => {
     if (!emailInput || !emailInput.includes('@')) return;
     setEmailLoading(true);
@@ -2362,7 +2264,6 @@ export default function App(){
   if(screen==="landing")return(
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",overflowX:"hidden"}}>
       <link rel="stylesheet" href={FONT}/>
-      {/* XLSX chargé via useEffect au démarrage */}
       <script defer data-domain="monplan90.vercel.app" src="https://plausible.io/js/script.js"/>
       <meta name="theme-color" content="#0A0A0A"/>
       <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -2373,7 +2274,6 @@ export default function App(){
       <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"3rem 1.5rem",textAlign:"center",position:"relative"}}>
         <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,background:`radial-gradient(ellipse at 50% 0%,${C.gold}08 0%,transparent 55%),radial-gradient(ellipse at 20% 80%,${C.blue}05 0%,transparent 40%)`,pointerEvents:"none"}}/>
 
-        {/* Logo / titre */}
         <div style={{marginBottom:"0.5rem"}}>
           <Divider/>
           <div style={{margin:"1.5rem 0 0.4rem",fontSize:"0.52rem",letterSpacing:"0.4em",color:C.goldD,textTransform:"uppercase",...MN}}>Système de Transformation Comportementale</div>
@@ -2382,13 +2282,11 @@ export default function App(){
         <h1 style={{...SF,fontSize:"clamp(3.2rem,11vw,6rem)",fontWeight:300,fontStyle:"italic",color:C.gold,lineHeight:0.88,marginBottom:"1.5rem"}}>de Vie</h1>
         <div style={{display:"inline-block",padding:"0.45rem 1.6rem",border:`1px solid ${C.goldD}`,background:`${C.gold}08`,...SF,fontSize:"clamp(1.1rem,3.5vw,1.8rem)",color:C.gold,letterSpacing:"0.2em",marginBottom:"2rem"}}>90 Jours</div>
 
-        {/* Tagline */}
         <p style={{maxWidth:"360px",color:C.textMid,lineHeight:1.9,fontSize:"clamp(0.85rem,2.5vw,0.95rem)",marginBottom:"2rem"}}>
           Pas un texte inspirant.<br/>
           Un <strong style={{color:C.text}}>système d'exécution</strong> construit sur ta psychologie réelle.
         </p>
 
-        {/* 3 domaines */}
         <div style={{display:"flex",gap:"0.5rem",marginBottom:"2rem",flexWrap:"wrap",justifyContent:"center"}}>
           {Object.entries(DOMAIN_CONFIG).map(([name,cfg])=>(
             <div key={name} style={{padding:"0.5rem 0.9rem",background:`${cfg.color}10`,border:`1px solid ${cfg.color}30`,display:"flex",alignItems:"center",gap:"0.4rem"}}>
@@ -2403,7 +2301,6 @@ export default function App(){
 
         <button onClick={()=>setScreen("access")} style={{...BG,padding:"1.1rem 3rem",marginBottom:"2rem"}}>Accéder à mon programme ✦</button>
 
-        {/* Stats */}
         <div style={{display:"flex",gap:"1.8rem",flexWrap:"wrap",justifyContent:"center"}}>
           {[["22","Questions ciblées"],["~12'","Pour remplir"],["12","Semaines structurées"],["90","Jours transformants"]].map(([n,l])=>(
             <div key={n} style={{textAlign:"center"}}>
@@ -2440,7 +2337,6 @@ export default function App(){
           <button onClick={doAccess} style={{...BG,width:"100%",padding:"0.92rem"}}>Accéder ✦</button>
         </Card>
         <div style={{textAlign:"center",marginTop:"0.5rem"}}><button onClick={()=>setScreen("landing")} style={{background:"none",border:"none",color:C.textDim,fontSize:"0.68rem",cursor:"pointer"}}>← Présentation</button></div>
-        {/* Page d'attente pour ceux qui n'ont pas de code */}
         <div style={{textAlign:"center",marginTop:"1.5rem",padding:"1.2rem",background:C.bg2,border:`1px solid ${C.border}`}}>
           <div style={{fontSize:"0.58rem",color:C.goldD,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.5rem"}}>Pas encore de code ?</div>
           <p style={{fontSize:"0.78rem",color:C.textMid,lineHeight:1.7,marginBottom:"0.85rem"}}>Rejoins la communauté et demande ton accès. Les premières places sont limitées.</p>
@@ -2562,10 +2458,8 @@ export default function App(){
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem 1.5rem",maxWidth:"540px",margin:"0 auto",position:"relative",overflow:"hidden"}}>
         <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
 
-        {/* Fond animé — halo coloré du bloc précédent qui s'efface */}
         <div style={{position:"absolute",top:"-20%",left:"-20%",width:"140%",height:"140%",background:`radial-gradient(ellipse at 30% 20%, ${prevColor}12 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, ${nextColor}08 0%, transparent 50%)`,pointerEvents:"none",animation:"fadeIn 0.8s ease"}}/>
 
-        {/* Particules dorées */}
         <div style={{position:"absolute",inset:0,pointerEvents:"none",overflow:"hidden"}}>
           {[...Array(8)].map((_,i)=>(
             <div key={i} style={{
@@ -2581,7 +2475,6 @@ export default function App(){
           ))}
         </div>
 
-        {/* Bloc complété — badge */}
         <div style={{animation:"fadeUp 0.4s ease",marginBottom:"1.5rem",textAlign:"center"}}>
           <div style={{display:"inline-flex",alignItems:"center",gap:"0.5rem",padding:"0.4rem 1rem",background:`${prevColor}15`,border:`1px solid ${prevColor}40`,marginBottom:"0.8rem"}}>
             <span style={{color:prevColor,fontSize:"0.9rem"}}>{prevSeg?.icon}</span>
@@ -2589,13 +2482,11 @@ export default function App(){
           </div>
         </div>
 
-        {/* Titre principal */}
         <div style={{textAlign:"center",animation:"fadeUp 0.5s ease 0.1s both",marginBottom:"1.5rem"}}>
           <div style={{...SF,fontSize:"clamp(1.8rem,6vw,2.8rem)",color:C.gold,fontWeight:400,lineHeight:1.1,marginBottom:"0.8rem"}}>{transitionData.title}</div>
           <p style={{color:C.textMid,fontSize:"0.88rem",lineHeight:1.85}}>{transitionData.sub}</p>
         </div>
 
-        {/* Ligne de séparation animée */}
         <div style={{width:"100%",maxWidth:"320px",marginBottom:"1.5rem",animation:"fadeIn 0.6s ease 0.2s both"}}>
           <div style={{height:"1px",background:`linear-gradient(90deg,transparent,${C.gold},transparent)`}}/>
           <div style={{display:"flex",justifyContent:"center",marginTop:"-0.5rem"}}>
@@ -2603,7 +2494,6 @@ export default function App(){
           </div>
         </div>
 
-        {/* Message transition */}
         <div style={{animation:"fadeUp 0.5s ease 0.3s both",marginBottom:"1.5rem",textAlign:"center",maxWidth:"380px"}}>
           <p style={{color:C.text,fontSize:"0.9rem",lineHeight:1.85,marginBottom:transitionData.warn?"1rem":"0"}}>{transitionData.next}</p>
           {transitionData.warn&&<div style={{padding:"0.75rem 1rem",background:`${C.gold}08`,borderLeft:`3px solid ${C.gold}`,marginTop:"0.8rem",textAlign:"left"}}>
@@ -2611,7 +2501,6 @@ export default function App(){
           </div>}
         </div>
 
-        {/* Prochain bloc — card avec couleur du prochain */}
         <div style={{
           animation:"fadeUp 0.5s ease 0.4s both",
           width:"100%",maxWidth:"380px",marginBottom:"2rem",
@@ -2629,7 +2518,6 @@ export default function App(){
           </div>
         </div>
 
-        {/* Bouton */}
         <div style={{animation:"fadeUp 0.5s ease 0.5s both",width:"100%",maxWidth:"380px"}}>
           <button onClick={continueAfterTransition} style={{...BG,width:"100%",padding:"1.1rem",fontSize:"0.75rem",letterSpacing:"0.15em"}}>
             {transitionData.cta}
@@ -2647,13 +2535,11 @@ export default function App(){
     const btnLabel=isLastSegBtn&&isLastQBtn?"Voir le récap ✦":"Continuer →";
     const hasContent=validateAnswer(q,val).valid;
 
-    // Adaptation contextuelle selon le domaine choisi
     const cfg = getDomainCfg(answers);
     const domainLabel = answers.q_domaine_principal || "";
     const ADAPTED_IDS = ["q_objectif","q_sacrifice","q_si_pas","q_mensonge","q_perte_succes","q_adaptive","q_environnement","q_charge_mentale","q_pari","q_engagement"];
     const isAdapted = ADAPTED_IDS.includes(q.id) && !!domainLabel;
 
-    // Résout le label adapté
     const resolveLabel = (q) => {
       if (!cfg) return q.label === "_adapté_" ? "" : q.label;
       const labelMap = {
@@ -2709,7 +2595,6 @@ export default function App(){
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",display:"flex",flexDirection:"column",padding:"1.4rem",maxWidth:"540px",margin:"0 auto"}}>
         <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
 
-        {/* Progress */}
         <div style={{paddingTop:"0.6rem",marginBottom:"1.2rem"}}>
           <div style={{display:"flex",gap:"0.28rem",marginBottom:"0.65rem"}}>{(getSegments(answers.q_domaine_principal)||SEGMENTS_FINANCES).map((sg,i)=><div key={sg.id} style={{flex:1,padding:"0.28rem",textAlign:"center",border:`1px solid ${i===si?C.goldD:C.border}`,background:i===si?`${C.gold}10`:"transparent",transition:"all 0.3s"}}><div style={{fontSize:"0.56rem",color:i===si?C.gold:C.textDim,...MN}}>{sg.icon} {sg.label}</div></div>)}</div>
           <div style={{display:"flex",justifyContent:"space-between",fontSize:"0.6rem",color:C.textDim,marginBottom:"0.22rem",...MN}}>
@@ -2720,13 +2605,10 @@ export default function App(){
           <div style={{height:"2px",background:C.bg3}}><div style={{height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${C.goldD},${C.goldL})`,transition:"width 0.5s ease",boxShadow:`0 0 7px ${C.gold}50`}}/></div>
         </div>
 
-        {/* Reward */}
         {showReward&&<div style={{padding:"0.5rem 0.85rem",background:`${C.green}10`,border:`1px solid ${C.green}28`,borderLeft:`3px solid ${C.green}`,marginBottom:"0.7rem",animation:"fadeIn 0.3s ease",fontSize:"0.75rem",color:C.green}}>✓ {showReward}</div>}
 
-        {/* Error */}
         {qError&&<div style={{padding:"0.5rem 0.85rem",background:`${C.red}10`,border:`1px solid ${C.red}40`,borderLeft:`3px solid ${C.red}`,marginBottom:"0.7rem",animation:"fadeIn 0.25s ease",fontSize:"0.75rem",color:C.red}}>⚠ {qError}</div>}
 
-        {/* Question */}
         <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",animation:qShake?"shake 0.45s ease":"slideIn 0.3s ease"}}>
           <div style={{fontSize:"1.3rem",color:C.gold,opacity:0.5,marginBottom:"0.5rem"}}>{seg.icon}</div>
           <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:"0.65rem",marginBottom:"0.28rem"}}>
@@ -2745,7 +2627,6 @@ export default function App(){
 
           <div style={{width:"24px",height:"1px",background:C.gold,opacity:0.4,marginBottom:"0.85rem"}}/>
 
-          {/* RENDU PAR TYPE */}
           {q.type==="text"&&<input type="text" value={val||""} onChange={e=>setVal(e.target.value)} placeholder={ph} onKeyDown={e=>e.key==="Enter"&&tryNext()}
             style={{...iSt("q"),borderColor:qError?C.red:foc["q"]?C.goldD:C.border,borderBottomColor:qError?C.red:foc["q"]?C.gold:C.border,animation:qShake?"shake 0.45s ease":"none"}}
             onFocus={()=>setF("q",true)} onBlur={()=>setF("q",false)}/>}
@@ -2777,11 +2658,9 @@ export default function App(){
           </div>}
 
           {q.type==="adaptive_select"&&<div style={{animation:qShake?"shake 0.45s ease":"none"}}>
-            {/* Choix principal */}
             <div style={{marginBottom:"0.8rem"}}>
               {q.opts.map(opt=><button key={opt} onClick={()=>setSubVal(q.id,"choice",opt)} style={{width:"100%",display:"flex",gap:"0.6rem",marginBottom:"0.38rem",alignItems:"center",background:(val||{}).choice===opt?`${C.gold}14`:"transparent",border:`1px solid ${(val||{}).choice===opt?C.gold:C.border}`,color:(val||{}).choice===opt?C.gold:C.textMid,padding:"0.68rem 0.85rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.84rem",cursor:"pointer"}}><span style={{fontSize:"0.58rem"}}>{(val||{}).choice===opt?"◉":"◎"}</span>{opt}</button>)}
             </div>
-            {/* Question conditionnelle */}
             {(val||{}).choice&&<div style={{marginBottom:"0.8rem",animation:"fadeIn 0.3s ease"}}>
               <div style={{padding:"0.6rem 0.85rem",background:`${C.gold}08`,borderLeft:`3px solid ${C.goldD}`,marginBottom:"0.5rem"}}>
                 <div style={{fontSize:"0.72rem",color:C.goldL,lineHeight:1.5}}>{q.follow?.[(val||{}).choice]?.ph||""}</div>
@@ -2790,7 +2669,6 @@ export default function App(){
                 style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:300}}
                 onFocus={e=>e.target.style.borderColor=`${C.gold}55`} onBlur={e=>e.target.style.borderColor=C.border}/>
             </div>}
-            {/* Question fixe — toujours affichée */}
             {(val||{}).choice&&<div style={{animation:"fadeIn 0.3s ease"}}>
               <div style={{height:"1px",background:C.border,marginBottom:"0.8rem"}}/>
               <div style={{fontSize:"0.75rem",color:C.text,lineHeight:1.6,marginBottom:"0.5rem",fontWeight:400}}>{q.fixed?.label}</div>
@@ -2801,7 +2679,6 @@ export default function App(){
           </div>}
         </div>
 
-        {/* Nav */}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingBottom:"1.8rem",gap:"0.65rem",marginTop:"1.2rem"}}>
           {doneQ>0?<button onClick={goBack} style={{padding:"0.68rem 1rem",background:"transparent",border:`1px solid ${C.border}`,color:C.textDim,fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>← Retour</button>:<div/>}
           <button onClick={tryNext} style={{
@@ -2877,7 +2754,6 @@ export default function App(){
     const autosuggestion=plan2?.rituel?.autosuggestion||"";
     const curStreak=computeStreak(logs);
 
-    // ── Détection d'absence ──
     const logKeys = Object.keys(logs).sort();
     const lastLogDate = logKeys.length > 0 ? logKeys[logKeys.length-1] : null;
     const today_key = todayKey();
@@ -2887,7 +2763,6 @@ export default function App(){
     const isAbsent = daysSinceLastLog !== null && daysSinceLastLog >= 2;
     const absenceDays = daysSinceLastLog;
 
-    // Message retour selon durée absence
     const getRetourMsg = (days) => {
       if(days >= 14) return {
         titre: `${days} jours d'absence.`,
@@ -2913,14 +2788,12 @@ export default function App(){
     return(
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",maxWidth:"660px",margin:"0 auto",padding:"1.1rem 0.9rem 4rem",animation:"fadeUp 0.5s ease"}}>
         <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
-        {/* Top */}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.2rem",paddingBottom:"0.85rem",borderBottom:`1px solid ${C.border}`}}>
           <div>
             <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.1rem"}}>{today}</div>
             <div style={{...SF,fontSize:"1rem",color:C.gold}}>{plan.nom_guerre}</div>
           </div>
           <div style={{display:"flex",gap:"0.5rem",alignItems:"center"}}>
-            {/* Streak badge */}
             {curStreak>0&&<div style={{display:"flex",alignItems:"center",gap:"0.25rem",padding:"0.3rem 0.6rem",background:curStreak>=7?`${C.green}18`:curStreak>=3?`${C.gold}18`:`${C.bg3}`,border:`1px solid ${curStreak>=7?C.green:curStreak>=3?C.goldD:C.border}`}}>
               <span style={{fontSize:"0.8rem"}}>🔥</span>
               <span style={{fontSize:"0.7rem",color:curStreak>=7?C.green:curStreak>=3?C.gold:C.textDim,...MN,fontWeight:400}}>{curStreak}j</span>
@@ -2931,7 +2804,6 @@ export default function App(){
           </div>
         </div>
 
-        {/* Bouton Communauté WhatsApp */}
         <button onClick={joinCommunity} style={{
           width:"100%",display:"flex",alignItems:"center",gap:"0.75rem",
           padding:"0.85rem 1rem",marginBottom:"1rem",
@@ -2946,7 +2818,6 @@ export default function App(){
           <span style={{fontSize:"0.7rem",color:"#25D366"}}>→</span>
         </button>
 
-        {/* ── MODE RETOUR APRÈS ABSENCE ── */}
         {retourMsg&&<div style={{
           padding:"1.2rem 1.3rem",marginBottom:"1.2rem",
           background:`${retourMsg.color}08`,
@@ -2964,7 +2835,6 @@ export default function App(){
           </div>
         </div>}
 
-        {/* ── AUTOSUGGESTION — premier élément visible si pas d'absence ── */}
         {!retourMsg&&autosuggestion&&<div style={{
           padding:"1.2rem 1.3rem",marginBottom:"1rem",
           background:`linear-gradient(135deg,${C.gold}12,${C.gold}06)`,
@@ -2975,12 +2845,10 @@ export default function App(){
           <div style={{...SF,fontSize:"clamp(1rem,3.5vw,1.25rem)",color:C.gold,fontStyle:"italic",lineHeight:1.65,marginTop:"0.8rem"}}>{autosuggestion}</div>
         </div>}
 
-        {/* Continuation msg */}
         {!retourMsg&&contMsg&&<div style={{padding:"0.75rem 0.9rem",background:`${C.gold}07`,borderLeft:`3px solid ${C.gold}`,marginBottom:"0.9rem"}}>
           <div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.18em",...MN,marginBottom:"0.2rem"}}>MESSAGE JOUR {dn}</div>
           <div style={{fontSize:"0.8rem",color:C.goldL,lineHeight:1.65,fontStyle:"italic"}}>{contMsg.msg}</div>
         </div>}
-        {/* Dashboard */}
         <Card accent>
           <div style={{display:"flex",gap:"0.9rem",alignItems:"center",marginBottom:"0.9rem"}}>
             <ProgressCircle day={Math.min(dn,90)} size={105}/>
@@ -2999,7 +2867,6 @@ export default function App(){
             </div>)}
           </div>
         </Card>
-        {/* ── ACTION DU JOUR — héros de l'écran ── */}
         <div style={{
           padding:"1.2rem 1.3rem",marginBottom:"1rem",
           background:`linear-gradient(135deg,${C.green}15,${C.green}05)`,
@@ -3019,7 +2886,6 @@ export default function App(){
           </button>
         </div>
 
-        {/* Tracker */}
         <div id="tracker-section">
         <Card>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:trackerOpen?"0.9rem":"0",cursor:"pointer"}} onClick={()=>setTrackerOpen(o=>!o)}>
@@ -3029,11 +2895,8 @@ export default function App(){
           {trackerOpen&&<DailyTracker dayNum={dn} todayLog={todayLog} onSave={log=>{saveLog(log);setTrackerOpen(false);}} logs={logs}/>}
         </Card>
         </div>
-        {/* Rituel */}
         {plan2?.rituel?.matin&&<Card><SH icon="🌬" label="Rituel du jour" sub="< 10 min · Timer intégré"/><RituelTimer steps={plan2.rituel.matin} nomGuerre={plan.nom_guerre} onComplete={()=>{if(todayLog){saveLog({...todayLog,rituel_done:true});}}} /></Card>}
-        {/* Coach */}
         <CoachChat plan={plan} plan2={plan2} weeks={weeks} dailyLogs={logs}/>
-        {/* Quick nav */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.45rem"}}>
           {[{lbl:"📅 Plan semaines",sub:"12 semaines + checklist",action:()=>{setTab("plan");setScreen("result");if(!weeks&&!weeksLoading)generateWeeks(plan);}},{lbl:"📊 Dashboard",sub:"Scorecard + Identité future",action:()=>{setTab("dashboard");setScreen("result");}},{lbl:"🛡 Anti-abandon",sub:"Protocoles de rechute",action:()=>{setTab("anti-abandon");setScreen("result");}},{lbl:"↓ PDF Premium",sub:"Collector · Page identité",action:printPDF}].map(({lbl,sub,action})=><button key={lbl} onClick={action} style={{padding:"0.75rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,textAlign:"left",cursor:"pointer",transition:"all 0.2s"}}>
             <div style={{fontSize:"0.8rem",marginBottom:"0.15rem"}}>{lbl}</div>
@@ -3069,11 +2932,9 @@ export default function App(){
             <div style={{fontSize:"0.75rem",color:C.textMid,marginTop:"0.45rem",lineHeight:1.5}}>{s.pourquoi_ce_nom}</div>
           </div>
         </div>
-        {/* Share */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.3rem",marginBottom:"1rem"}}>
           {[{lbl:"↓ PDF",a:printPDF,bg:C.gold,c:C.bg},{lbl:"↓ Sheets",a:exportSheets,bg:"#3498DB",c:"#fff"},{lbl:"💬 Communauté",a:joinCommunity,bg:"#25D36618",c:"#25D366"}].map(({lbl,a,bg,c})=><button key={lbl} onClick={a} style={{padding:"0.72rem 0.1rem",background:bg,border:"none",color:c,fontSize:"0.68rem",letterSpacing:"0.05em",cursor:"pointer",transition:"all 0.2s"}}>{lbl}</button>)}
         </div>
-        {/* Tabs */}
         <div style={{display:"flex",gap:"0.22rem",marginBottom:"1rem",overflowX:"auto",paddingBottom:"0.22rem"}}>
           {tabs.map(t=><button key={t} onClick={()=>{setTab(t);if(t==="plan"&&!weeks&&!weeksLoading)generateWeeks(plan);}} style={{padding:"0.48rem 0.68rem",background:tab===t?`${C.gold}18`:"transparent",border:`1px solid ${tab===t?C.gold:C.border}`,color:tab===t?C.gold:C.textDim,...MN,fontSize:"0.58rem",letterSpacing:"0.08em",cursor:"pointer",whiteSpace:"nowrap",textTransform:"uppercase",transition:"all 0.2s"}}>{tLabels[t]}</button>)}
         </div>
@@ -3096,7 +2957,6 @@ export default function App(){
             </div>
             <div style={{marginTop:"0.5rem",padding:"0.75rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}35`,borderLeft:`3px solid ${C.gold}`}}><div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Mission centrale</div><div style={{...SF,fontSize:"0.92rem",color:C.goldL,lineHeight:1.5}}>{sc.mission_centrale}</div></div>
 
-            {/* 4 SCORES DE PROGRESSION */}
             {stats.total>0&&(()=>{
               const s4=computeScore4(logs,plan);
               return <div style={{marginTop:"0.75rem",padding:"0.75rem",background:C.bg3,border:`1px solid ${C.border}`}}>
@@ -3152,12 +3012,11 @@ export default function App(){
           {!weeksLoading&&weeks!==null&&weeks.length===0&&<Card><div style={{textAlign:"center",padding:"0.75rem",color:C.textDim,fontSize:"0.81rem"}}><div style={{marginBottom:"0.65rem"}}>Impossible de charger.</div><button onClick={()=>{setWeeks(null);generateWeeks(plan);}} style={{padding:"0.52rem 1rem",background:C.gold,border:"none",color:C.bg,fontSize:"0.7rem",letterSpacing:"0.1em",cursor:"pointer"}}>Réessayer</button></div></Card>}
           {!weeksLoading&&weeks&&weeks.length>0&&(()=>{
             const nrm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase();
-            // Calcul déverrouillage par SCORE automatique
             const getWeekScore=(wn)=>computeWeekScore(wn, logs, startDate);
             const isWeekUnlocked=(weekNum)=>{
-              if(weekNum<=1)return true; // S1 toujours débloquée
+              if(weekNum<=1)return true;
               const prevScore=getWeekScore(weekNum-1);
-              if(prevScore===null)return false; // pas encore de logs = bloqué
+              if(prevScore===null)return false;
               return prevScore.total>=(weeks.find(w=>(w.semaine||w.s)===weekNum-1)?.seuil||6);
             };
             return ["ÉVEIL","CONSTRUCTION","RÉCOLTE"].map(phase=>{

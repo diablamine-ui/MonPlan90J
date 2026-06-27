@@ -2943,58 +2943,63 @@ export default function App(){
         </div>
 
         {tab==="dashboard"&&<div style={{animation:"fadeUp 0.4s ease"}}>
-          {s.identite_future&&<Card><SH icon="◈" label="Identité Future — Jour 90"/>
-            <div style={{display:"grid",gridTemplateColumns:"1fr",gap:"0.5rem"}}>
-              {[["Comment je pense",s.identite_future.comment_pense,C.gold],["Comment j'agis",s.identite_future.comment_agit,C.goldL],["Ce que je ne tolère plus",s.identite_future.ne_tolere_plus,C.red],["Mes nouveaux standards",s.identite_future.nouveaux_standards,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.55rem 0.75rem",background:`${c}0A`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
+
+          {s.identite_future&&<div style={{marginBottom:"3rem"}}>
+            <SH icon="◈" label="Identité Future — Jour 90"/>
+            <div style={{display:"flex",flexDirection:"column",gap:"1.3rem",marginTop:"0.6rem"}}>
+              {[["Comment je pense",s.identite_future.comment_pense,C.gold],["Comment j'agis",s.identite_future.comment_agit,C.goldL],["Ce que je ne tolère plus",s.identite_future.ne_tolere_plus,C.red],["Mes nouveaux standards",s.identite_future.nouveaux_standards,C.green]].map(([l,v,c])=><div key={l} style={{paddingLeft:"1rem",borderLeft:`2px solid ${c}`}}><div style={{fontSize:"0.64rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.3rem"}}>{l}</div><div style={{fontSize:"1rem",color:C.text,lineHeight:1.6}}>{v}</div></div>)}
             </div>
-          </Card>}
-          <Card><SH icon="◈" label="Diagnostic Lucide"/>
-            <p style={{color:C.textMid,lineHeight:1.78,fontSize:"0.87rem",marginBottom:"0.85rem"}}>{s.diagnostic?.resume}</p>
-            {[["Bloquant central",s.diagnostic?.bloquant_central,C.red],["Schéma de sabotage",s.diagnostic?.schema_sabotage,C.gold],["Leçon",s.diagnostic?.lecon_echec,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.58rem 0.78rem",background:`${c}0A`,border:`1px solid ${c}25`,borderLeft:`3px solid ${c}`,marginBottom:"0.5rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
-          </Card>
+          </div>}
+
+          <div style={{marginBottom:"3rem"}}>
+            <SH icon="◈" label="Diagnostic Lucide"/>
+            <p style={{color:C.textMid,lineHeight:1.85,fontSize:"1rem",marginTop:"0.6rem",marginBottom:"1.4rem"}}>{s.diagnostic?.resume}</p>
+            <div style={{display:"flex",flexDirection:"column",gap:"1.2rem"}}>
+              {[["Bloquant central",s.diagnostic?.bloquant_central,C.red],["Schéma de sabotage",s.diagnostic?.schema_sabotage,C.gold],["Leçon",s.diagnostic?.lecon_echec,C.green]].map(([l,v,c])=><div key={l} style={{paddingLeft:"1rem",borderLeft:`2px solid ${c}`}}><div style={{fontSize:"0.64rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.3rem"}}>{l}</div><div style={{fontSize:"0.95rem",color:C.text,lineHeight:1.6}}>{v}</div></div>)}
+            </div>
+          </div>
+
           <Card><SH icon="📊" label="Scorecard"/>
             {scores.map(({k,d})=>d?<ScoreBar key={k} label={k} score={d.score} lecture={d.lecture}/>:null)}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.5rem",marginTop:"0.75rem"}}>
-              <div style={{padding:"0.68rem",background:`${riskColor}0E`,border:`1px solid ${riskColor}35`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Risque abandon</div><div style={{...SF,fontSize:"0.92rem",color:C.text}}>{sc.risque_abandon}</div><div style={{fontSize:"0.68rem",color:C.textDim,marginTop:"0.15rem",lineHeight:1.4}}>{sc.facteur_risque}</div></div>
-              <div style={{padding:"0.68rem",background:`${C.green}0A`,border:`1px solid ${C.green}35`}}><div style={{fontSize:"0.54rem",color:C.green,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Levier principal</div><div style={{fontSize:"0.77rem",color:C.textMid,lineHeight:1.4}}>{sc.levier_principal}</div></div>
+              <div style={{padding:"0.68rem",background:`${riskColor}0E`,border:`1px solid ${riskColor}35`,borderRadius:"10px"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Risque abandon</div><div style={{...SF,fontSize:"0.92rem",color:C.text}}>{sc.risque_abandon}</div><div style={{fontSize:"0.68rem",color:C.textDim,marginTop:"0.15rem",lineHeight:1.4}}>{sc.facteur_risque}</div></div>
+              <div style={{padding:"0.68rem",background:`${C.green}0A`,border:`1px solid ${C.green}35`,borderRadius:"10px"}}><div style={{fontSize:"0.54rem",color:C.green,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Levier principal</div><div style={{fontSize:"0.77rem",color:C.textMid,lineHeight:1.4}}>{sc.levier_principal}</div></div>
             </div>
-            <div style={{marginTop:"0.5rem",padding:"0.75rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}35`,borderLeft:`3px solid ${C.gold}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Mission centrale</div><div style={{...SF,fontSize:"0.92rem",color:C.text,lineHeight:1.5}}>{sc.mission_centrale}</div></div>
+            <div style={{marginTop:"0.5rem",padding:"0.75rem",borderLeft:`3px solid ${C.gold}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Mission centrale</div><div style={{...SF,fontSize:"0.92rem",color:C.text,lineHeight:1.5}}>{sc.mission_centrale}</div></div>
 
             {stats.total>0&&(()=>{
               const s4=computeScore4(logs,plan);
-              return <div style={{marginTop:"0.75rem",padding:"0.75rem",background:C.bg3,border:`1px solid ${C.border}`}}>
-                <div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.6rem"}}>Progression réelle — Jour {stats.total}</div>
+              return <div style={{marginTop:"1rem",paddingTop:"1rem",borderTop:`1px solid ${C.border}`}}>
+                <div style={{fontSize:"0.85rem",color:C.text,marginBottom:"0.9rem"}}>Aujourd'hui, jour {stats.total} : <strong style={{color:C.gold}}>{s4.global}% de constance réelle.</strong> {s4.global>=60?"Tu tiens la cadence.":"Encore du chemin, mais tu avances."}</div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.4rem"}}>
                   {[["⚡ Exécution",s4.execution,C.gold,"Actions réalisées"],[" Identité",s4.identite,C.green,"Rituels accomplis"],["◈ Cohérence",s4.coherence,C.blue,"Jours sans rechute"],["▶ Progression",s4.progression,C.purple,"Distance parcourue"]].map(([lbl,val,col,sub])=>(
-                    <div key={lbl} style={{padding:"0.55rem",background:`${col}08`,border:`1px solid ${col}22`}}>
+                    <div key={lbl} style={{padding:"0.55rem",background:`${col}08`,border:`1px solid ${col}22`,borderRadius:"10px"}}>
                       <div style={{fontSize:"0.6rem",color:C.textDim,letterSpacing:"0.08em",...MN}}>{lbl}</div>
                       <div style={{...SF,fontSize:"1.3rem",color:C.text,margin:"0.15rem 0"}}>{val}<span style={{fontSize:"0.6rem"}}>%</span></div>
                       <div style={{fontSize:"0.58rem",color:C.textDim}}>{sub}</div>
                     </div>
                   ))}
                 </div>
-                <div style={{marginTop:"0.5rem",padding:"0.45rem",background:`${C.gold}08`,borderLeft:`2px solid ${C.gold}`,fontSize:"0.72rem",color:C.text}}>
-                  Score global : <strong>{s4.global}%</strong>
-                </div>
               </div>;
             })()}
           </Card>
           {stats.total>0&&<Card><SH icon="🏆" label="Ce que tu as déjà prouvé"/>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.45rem"}}>
-              {[[`${stats.streak}j consécutifs`,"de continuité",stats.streak>=3?C.green:C.gold],[`${stats.done} actions`,"exécutées",C.gold],[`${stats.relapses} rechute${stats.relapses!==1?"s":""}`, "récupérée${stats.relapses!==1?'s':''}",C.green],[`${Math.round(stats.totalMins/60*10)/10}h`,"investies",C.blue]].map(([v,l,c])=><div key={l} style={{padding:"0.65rem",background:`${c}0A`,border:`1px solid ${c}22`}}><div style={{...SF,fontSize:"1.05rem",color:C.text,marginBottom:"0.1rem"}}>{v}</div><div style={{fontSize:"0.62rem",color:C.textDim,lineHeight:1.3}}>{l}</div></div>)}
+              {[[`${stats.streak}j consécutifs`,"de continuité",stats.streak>=3?C.green:C.gold],[`${stats.done} actions`,"exécutées",C.gold],[`${stats.relapses} rechute${stats.relapses!==1?"s":""}`, "récupérée${stats.relapses!==1?'s':''}",C.green],[`${Math.round(stats.totalMins/60*10)/10}h`,"investies",C.blue]].map(([v,l,c])=><div key={l} style={{padding:"0.65rem",background:`${c}0A`,border:`1px solid ${c}22`,borderRadius:"10px"}}><div style={{...SF,fontSize:"1.05rem",color:C.text,marginBottom:"0.1rem"}}>{v}</div><div style={{fontSize:"0.62rem",color:C.textDim,lineHeight:1.3}}>{l}</div></div>)}
             </div>
           </Card>}
           <Card><SH icon="🏆" label="Ma victoire de la semaine" sub="Le cerveau oublie ses progrès — écris le tien"/>
             <WeeklyVictory logs={logs}/>
           </Card>
 
-          {s.citations_personnelles?.length>0&&<Card><SH icon="✦" label="Phrases personnelles" sub="Générées à partir de ton profil"/>
-            {s.citations_personnelles.map((c,i)=><div key={i} style={{padding:"0.65rem 0.85rem",border:`1.5px solid ${C.goldD}`,marginBottom:"0.45rem",background:C.bg3}}><div style={{...SF,fontSize:"0.92rem",color:C.text,fontStyle:"italic",lineHeight:1.55}}>{c}</div></div>)}
-          </Card>}
-          <Card><SH icon="✦" label="Message Final"/>
-            <p style={{color:C.textMid,lineHeight:1.85,fontSize:"0.87rem",fontStyle:"italic"}}>{s2.message_final}</p>
-          </Card>
-          <div style={{padding:"0.95rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`,textAlign:"center",marginBottom:"1rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>Contrat</div><div style={{...SF,fontSize:"0.97rem",color:C.text,fontStyle:"italic",lineHeight:1.6}}>{s2.contrat}</div></div>
+          <div style={{marginTop:"3.5rem",paddingTop:"2.5rem",borderTop:`1px solid ${C.border}`,textAlign:"center"}}>
+            {s.citations_personnelles?.length>0&&<div style={{marginBottom:"2rem"}}>
+              {s.citations_personnelles.map((c,i)=><div key={i} style={{...SF,fontSize:"1rem",color:C.text,fontStyle:"italic",lineHeight:1.7,marginBottom:"0.9rem"}}>✦ {c}</div>)}
+            </div>}
+            <p style={{...SF,color:C.textMid,lineHeight:1.9,fontSize:"1rem",fontStyle:"italic",maxWidth:"480px",margin:"0 auto 2rem"}}>{s2.message_final}</p>
+            <div style={{fontSize:"0.6rem",color:C.textDim,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.6rem"}}>Contrat</div>
+            <div style={{...SF,fontSize:"1.05rem",color:C.text,fontStyle:"italic",lineHeight:1.7,maxWidth:"480px",margin:"0 auto"}}>{s2.contrat}</div>
+          </div>
         </div>}
 
         {tab==="rituel"&&<div style={{animation:"fadeUp 0.4s ease"}}>

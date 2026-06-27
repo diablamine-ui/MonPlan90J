@@ -1707,7 +1707,7 @@ function EngagementTab({plan, plan2, firstName}){
         }}>
           <div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.25em",textTransform:"uppercase",...MN,textAlign:"center",marginBottom:"0.8rem"}}>Engagement Personnel</div>
 
-          <div style={{...SF,fontSize:"1.3rem",color:C.textDim,textAlign:"center",marginBottom:"1rem",fontWeight:500}}>{plan?.nom_guerre||"…"}</div>
+          <div style={{...SF,fontSize:"1.3rem",color:C.text,textAlign:"center",marginBottom:"1rem",fontWeight:500}}>{plan?.nom_guerre||"…"}</div>
 
           <div style={{fontSize:"0.52rem",color:C.textDim,letterSpacing:"0.12em",textTransform:"uppercase",...MN,marginBottom:"0.25rem"}}>Je soussigné(e)</div>
           <input
@@ -2305,7 +2305,7 @@ export default function App(){
         <div style={{display:"flex",gap:"1.8rem",flexWrap:"wrap",justifyContent:"center"}}>
           {[["22","Questions ciblées"],["~12'","Pour remplir"],["12","Semaines structurées"],["90","Jours transformants"]].map(([n,l])=>(
             <div key={n} style={{textAlign:"center"}}>
-              <div style={{...SF,fontSize:"1.8rem",color:C.textDim}}>{n}</div>
+              <div style={{...SF,fontSize:"1.8rem",color:C.text}}>{n}</div>
               <div style={{fontSize:"0.6rem",color:C.textDim,letterSpacing:"0.1em",textTransform:"uppercase",...MN}}>{l}</div>
             </div>
           ))}
@@ -2854,11 +2854,11 @@ export default function App(){
           <div style={{display:"flex",gap:"0.9rem",alignItems:"center",marginBottom:"0.9rem"}}>
             <ProgressCircle day={Math.min(dn,90)} size={105}/>
             <div style={{flex:1}}>
-              <div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.25rem"}}>Niveau — {lv.label}</div>
-              <div style={{...SF,fontSize:"0.95rem",color:C.textDim,lineHeight:1.4,marginBottom:"0.5rem"}}>{sc.mission_centrale}</div>
-              <div style={{fontSize:"0.56rem",color:C.textDim,...MN,marginBottom:"0.2rem"}}>Exécution — {stats.execRate}%</div>
+              <div style={{fontSize:"0.54rem",color:C.text,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.25rem"}}>Niveau — {lv.label}</div>
+              <div style={{...SF,fontSize:"0.95rem",color:C.text,lineHeight:1.4,marginBottom:"0.5rem"}}>{sc.mission_centrale}</div>
+              <div style={{fontSize:"0.56rem",color:C.text,...MN,marginBottom:"0.2rem"}}>Exécution — {stats.execRate}%</div>
               <div style={{height:"4px",background:C.bg3,marginBottom:"0.25rem"}}><div style={{height:"100%",width:`${stats.execRate}%`,background:`linear-gradient(90deg,${C.goldD},${C.gold})`,transition:"width 1s ease"}}/></div>
-              <div style={{fontSize:"0.65rem",color:C.textDim}}>{lv.desc}</div>
+              <div style={{fontSize:"0.65rem",color:C.text}}>{lv.desc}</div>
             </div>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"0.35rem",paddingTop:"0.7rem",borderTop:`1px solid ${C.border}`}}>

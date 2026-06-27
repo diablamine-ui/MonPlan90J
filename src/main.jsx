@@ -840,13 +840,13 @@ const CSS=`
   @keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(60px) rotate(360deg);opacity:0}}
   @keyframes popIn{0%{transform:scale(0.3);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:${C.bg};color:${C.text};font-family:'Jost',sans-serif;font-weight:300;-webkit-font-smoothing:antialiased}
+  body{background:${C.bg};color:${C.text};font-family:'Jost',sans-serif;font-weight:400;-webkit-font-smoothing:antialiased}
   ::placeholder{color:#2A2520!important}
   ::-webkit-scrollbar{width:8px}
   ::-webkit-scrollbar-track{background:${C.bg2}}
   ::-webkit-scrollbar-thumb{background:${C.gold};border-radius:4px}
   ::-webkit-scrollbar-thumb:hover{background:${C.goldL}}
-  textarea,input,select,button{font-family:'Jost',sans-serif;font-weight:300}
+  textarea,input,select,button{font-family:'Jost',sans-serif;font-weight:400}
 `;
 const MN={fontFamily:"'DM Mono',monospace"};
 const SF={fontFamily:"'Jost',sans-serif"};
@@ -1905,7 +1905,7 @@ export default function App(){
 
   const LOAD_STEPS=["Analyse psychologique du profil…","Construction du diagnostic…","Calcul du scorecard comportemental…","Génération du rituel et protocoles…","Finalisation du plan…"];
   const setF=(k,v)=>setFoc(p=>({...p,[k]:v}));
-  const iSt=k=>({width:"100%",padding:"0.82rem 0.95rem",background:C.bg,border:`1px solid ${foc[k]?C.goldD:C.border}`,borderBottom:`2px solid ${foc[k]?C.gold:C.border}`,color:C.text,fontSize:"0.88rem",fontWeight:300,outline:"none",transition:"all 0.25s"});
+  const iSt=k=>({width:"100%",padding:"0.82rem 0.95rem",background:C.bg,border:`1px solid ${foc[k]?C.goldD:C.border}`,borderBottom:`2px solid ${foc[k]?C.gold:C.border}`,color:C.text,fontSize:"0.88rem",fontWeight:400,outline:"none",transition:"all 0.25s"});
   const BG={padding:"1rem 2.5rem",background:C.gold,border:"none",color:C.onGold,fontSize:"0.75rem",letterSpacing:"0.18em",textTransform:"uppercase",fontWeight:500,cursor:"pointer",boxShadow:`0 4px 22px ${C.gold}35`};
 
   const doAccess=()=>{
@@ -2274,7 +2274,7 @@ export default function App(){
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
       <style>{CSS}</style>
       <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"3rem 1.5rem",textAlign:"center",position:"relative"}}>
-        <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,background:`radial-gradient(ellipse at 50% 0%,${C.gold}08 0%,transparent 55%),radial-gradient(ellipse at 20% 80%,${C.blue}05 0%,transparent 40%)`,pointerEvents:"none"}}/>
+        <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,background:`radial-gradient(ellipse at 50% 0%,${C.gold}22 0%,transparent 55%),radial-gradient(ellipse at 20% 80%,${C.blue}15 0%,transparent 45%),radial-gradient(ellipse at 85% 70%,${C.purple}12 0%,transparent 40%)`,pointerEvents:"none"}}/>
 
         <div style={{marginBottom:"0.5rem"}}>
           <Divider/>
@@ -2282,7 +2282,7 @@ export default function App(){
         </div>
         <h1 style={{...SF,fontSize:"clamp(3.2rem,11vw,6rem)",fontWeight:400,color:C.text,lineHeight:0.88,marginBottom:"0.1rem"}}>Mon Plan</h1>
         <h1 style={{...SF,fontSize:"clamp(3.2rem,11vw,6rem)",fontWeight:300,fontStyle:"italic",color:C.text,lineHeight:0.88,marginBottom:"1.5rem"}}>de Vie</h1>
-        <div style={{display:"inline-block",padding:"0.45rem 1.6rem",border:`1px solid ${C.goldD}`,background:`${C.gold}08`,...SF,fontSize:"clamp(1.1rem,3.5vw,1.8rem)",color:C.text,letterSpacing:"0.2em",marginBottom:"2rem"}}>90 Jours</div>
+        <div style={{display:"inline-block",padding:"0.5rem 1.8rem",border:`2px solid ${C.gold}`,background:`${C.gold}20`,...SF,fontSize:"clamp(1.1rem,3.5vw,1.8rem)",color:C.text,fontWeight:500,letterSpacing:"0.2em",marginBottom:"2rem",boxShadow:`0 3px 14px ${C.gold}30`}}>90 Jours</div>
 
         <p style={{maxWidth:"360px",color:C.textMid,lineHeight:1.9,fontSize:"clamp(0.85rem,2.5vw,0.95rem)",marginBottom:"2rem"}}>
           Pas un texte inspirant.<br/>
@@ -2291,10 +2291,10 @@ export default function App(){
 
         <div style={{display:"flex",gap:"0.5rem",marginBottom:"2rem",flexWrap:"wrap",justifyContent:"center"}}>
           {Object.entries(DOMAIN_CONFIG).map(([name,cfg])=>(
-            <div key={name} style={{padding:"0.5rem 0.9rem",background:`${cfg.color}10`,border:`1px solid ${cfg.color}30`,display:"flex",alignItems:"center",gap:"0.4rem"}}>
-              <span style={{fontSize:"0.9rem"}}>{cfg.icon}</span>
+            <div key={name} style={{padding:"0.55rem 1rem",background:`${cfg.color}14`,border:`2px solid ${cfg.color}`,display:"flex",alignItems:"center",gap:"0.45rem",boxShadow:`0 2px 8px ${cfg.color}25`}}>
+              <span style={{fontSize:"1.1rem"}}>{cfg.icon}</span>
               <div style={{textAlign:"left"}}>
-                <div style={{fontSize:"0.75rem",color:C.text,fontWeight:400}}>{name}</div>
+                <div style={{fontSize:"0.75rem",color:C.text,fontWeight:600}}>{name}</div>
                 <div style={{fontSize:"0.58rem",color:C.textDim,...MN}}>{cfg.desc}</div>
               </div>
             </div>
@@ -2306,7 +2306,7 @@ export default function App(){
         <div style={{display:"flex",gap:"1.8rem",flexWrap:"wrap",justifyContent:"center"}}>
           {[["22","Questions ciblées"],["~12'","Pour remplir"],["12","Semaines structurées"],["90","Jours transformants"]].map(([n,l])=>(
             <div key={n} style={{textAlign:"center"}}>
-              <div style={{...SF,fontSize:"1.8rem",color:C.text}}>{n}</div>
+              <div style={{...SF,fontSize:"1.8rem",color:"#8B6914",fontWeight:500}}>{n}</div>
               <div style={{fontSize:"0.6rem",color:C.textDim,letterSpacing:"0.1em",textTransform:"uppercase",...MN}}>{l}</div>
             </div>
           ))}
@@ -2634,7 +2634,7 @@ export default function App(){
             onFocus={()=>setF("q",true)} onBlur={()=>setF("q",false)}/>}
 
           {q.type==="textarea"&&<textarea value={val||""} onChange={e=>setVal(e.target.value)} placeholder={ph} rows={4}
-            style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${qError?C.red:C.border}`,borderBottom:`2px solid ${qError?C.red:C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:300,animation:qShake?"shake 0.45s ease":"none"}}
+            style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${qError?C.red:C.border}`,borderBottom:`2px solid ${qError?C.red:C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:400,animation:qShake?"shake 0.45s ease":"none"}}
             onFocus={e=>{e.target.style.borderColor=`${C.gold}55`;e.target.style.borderBottomColor=`${C.gold}55`;}} onBlur={e=>{e.target.style.borderColor=qError?C.red:C.border;e.target.style.borderBottomColor=qError?C.red:C.border;}}/>}
 
           {q.type==="select"&&<div style={{animation:qShake?"shake 0.45s ease":"none"}}>{q.opts.map(opt=><button key={opt} onClick={()=>setVal(opt)} style={{width:"100%",display:"flex",gap:"0.6rem",marginBottom:"0.38rem",alignItems:"center",background:val===opt?`${C.gold}14`:"transparent",border:`1px solid ${val===opt?C.gold:C.border}`,color:val===opt?C.text:C.textMid,padding:"0.68rem 0.85rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.84rem",cursor:"pointer"}}><span style={{fontSize:"0.58rem"}}>{val===opt?"◉":"◎"}</span>{opt}</button>)}</div>}
@@ -2668,14 +2668,14 @@ export default function App(){
                 <div style={{fontSize:"0.72rem",color:C.text,lineHeight:1.5}}>{q.follow?.[(val||{}).choice]?.ph||""}</div>
               </div>
               <textarea value={(val||{}).follow_answer||""} onChange={e=>setSubVal(q.id,"follow_answer",e.target.value)} placeholder={(val||{}).choice==="Oui, je les ai définis"?"Décris tes objectifs à 10 ans...":(val||{}).choice==="Pas encore"?"Qu'est-ce qui t'a empêché...":"Décris concrètement ce qui se passerait..."} rows={3}
-                style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:300}}
+                style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:400}}
                 onFocus={e=>e.target.style.borderColor=`${C.gold}55`} onBlur={e=>e.target.style.borderColor=C.border}/>
             </div>}
             {(val||{}).choice&&<div style={{animation:"fadeIn 0.3s ease"}}>
               <div style={{height:"1px",background:C.border,marginBottom:"0.8rem"}}/>
               <div style={{fontSize:"0.75rem",color:C.text,lineHeight:1.6,marginBottom:"0.5rem",fontWeight:400}}>{q.fixed?.label}</div>
               <textarea value={(val||{}).fixed_answer||""} onChange={e=>setSubVal(q.id,"fixed_answer",e.target.value)} placeholder={q.fixed?.ph||""} rows={3}
-                style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:300}}
+                style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:400}}
                 onFocus={e=>e.target.style.borderColor=`${C.gold}55`} onBlur={e=>e.target.style.borderColor=C.border}/>
             </div>}
           </div>}
@@ -2938,7 +2938,7 @@ export default function App(){
           {[{lbl:"↓ PDF",a:printPDF,bg:C.gold,c:C.bg},{lbl:"↓ Sheets",a:exportSheets,bg:"#3498DB",c:"#fff"},{lbl:"💬 Communauté",a:joinCommunity,bg:"#25D36618",c:"#25D366"}].map(({lbl,a,bg,c})=><button key={lbl} onClick={a} style={{padding:"0.72rem 0.1rem",background:bg,border:"none",color:c,fontSize:"0.68rem",letterSpacing:"0.05em",cursor:"pointer",transition:"all 0.2s"}}>{lbl}</button>)}
         </div>
         <div style={{display:"flex",gap:"0.22rem",marginBottom:"1rem",overflowX:"auto",paddingBottom:"0.22rem"}}>
-          {tabs.map(t=><button key={t} onClick={()=>{setTab(t);if(t==="plan"&&!weeks&&!weeksLoading)generateWeeks(plan);}} style={{padding:"0.48rem 0.68rem",background:tab===t?`${C.gold}18`:"transparent",border:`1px solid ${tab===t?C.gold:C.border}`,color:tab===t?C.text:C.textDim,...MN,fontSize:"0.58rem",letterSpacing:"0.08em",cursor:"pointer",whiteSpace:"nowrap",textTransform:"uppercase",transition:"all 0.2s"}}>{tLabels[t]}</button>)}
+          {tabs.map(t=><button key={t} onClick={()=>{setTab(t);if(t==="plan"&&!weeks&&!weeksLoading)generateWeeks(plan);}} style={{padding:"0.52rem 0.75rem",background:tab===t?C.gold:C.bg2,border:`1.5px solid ${tab===t?C.goldD:C.border}`,color:tab===t?C.onGold:C.text,...MN,fontWeight:tab===t?600:400,fontSize:"0.58rem",letterSpacing:"0.08em",cursor:"pointer",whiteSpace:"nowrap",textTransform:"uppercase",transition:"all 0.2s",boxShadow:tab===t?`0 2px 8px ${C.gold}50`:"none"}}>{tLabels[t]}</button>)}
         </div>
 
         {tab==="dashboard"&&<div style={{animation:"fadeUp 0.4s ease"}}>

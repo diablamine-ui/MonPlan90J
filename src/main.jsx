@@ -105,10 +105,10 @@ const sbLoadAll = async(userKey) => {
 // PALETTE
 // ══════════════════════════════════════════════════════════════
 const C = {
-  bg:"#080808",bg1:"#0F0F0F",bg2:"#161616",bg3:"#1E1E1E",
-  border:"#2A2A2A",gold:"#C9A84C",goldL:"#E8C97A",goldD:"#8B6914",
-  text:"#F0EAD6",textDim:"#7A7060",textMid:"#A89880",
-  red:"#E74C3C",green:"#27AE60",blue:"#3498DB",purple:"#8E44AD",
+  bg:"#FAF7F0",bg1:"#F5F0E6",bg2:"#EFE8D8",bg3:"#E5DCC5",
+  border:"#D4C8A8",gold:"#6E5824",goldL:"#6E5420",goldD:"#6E5212",
+  text:"#2A2118",textDim:"#564D3C",textMid:"#6B5D45",
+  red:"#A8362A",green:"#1A6B3C",blue:"#1F5E8C",purple:"#6B3380",
 };
 
 // ══════════════════════════════════════════════════════════════
@@ -2265,9 +2265,9 @@ export default function App(){
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",overflowX:"hidden"}}>
       <link rel="stylesheet" href={FONT}/>
       <script defer data-domain="monplan90.vercel.app" src="https://plausible.io/js/script.js"/>
-      <meta name="theme-color" content="#0A0A0A"/>
+      <meta name="theme-color" content="#FAF7F0"/>
       <meta name="apple-mobile-web-app-capable" content="yes"/>
-      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+      <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
       <meta name="apple-mobile-web-app-title" content="Plan 90"/>
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
       <style>{CSS}</style>

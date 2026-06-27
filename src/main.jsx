@@ -3197,7 +3197,7 @@ export default function App(){
           {s.identite_future&&<div style={{marginBottom:"3rem"}}>
             <SH icon="◈" label="Identité Future — Jour 90"/>
             <div style={{display:"flex",flexDirection:"column",gap:"1.3rem",marginTop:"0.6rem"}}>
-              {[["Comment je pense",s.identite_future.comment_pense,C.gold],["Comment j'agis",s.identite_future.comment_agit,C.goldL],["Ce que je ne tolère plus",s.identite_future.ne_tolere_plus,C.red],["Mes nouveaux standards",s.identite_future.nouveaux_standards,C.green]].map(([l,v,c])=><div key={l} style={{paddingLeft:"1rem",borderLeft:`2px solid ${c}`}}><div style={{fontSize:"0.64rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.3rem"}}>{l}</div><div style={{fontSize:"1rem",color:C.text,lineHeight:1.6}}>{v}</div></div>)}
+              {[["Comment je pense",s.identite_future.comment_pense,C.gold],["Comment j'agis",s.identite_future.comment_agit,C.goldL],["Ce que je ne tolère plus",s.identite_future.ne_tolere_plus,C.red],["Mes nouveaux standards",s.identite_future.nouveaux_standards,C.green]].map(([l,v,c])=><div key={l} style={{paddingLeft:"1rem",borderLeft:`2px solid ${c}`}}><div style={{fontSize:"0.64rem",color:c,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.3rem"}}>{l}</div><div style={{fontSize:"1rem",color:C.text,lineHeight:1.6}}>{v}</div></div>)}
             </div>
           </div>}
 
@@ -3205,7 +3205,7 @@ export default function App(){
             <SH icon="◈" label="Diagnostic Lucide"/>
             <p style={{color:C.textMid,lineHeight:1.85,fontSize:"1rem",marginTop:"0.6rem",marginBottom:"1.4rem"}}>{s.diagnostic?.resume}</p>
             <div style={{display:"flex",flexDirection:"column",gap:"1.2rem"}}>
-              {[["Bloquant central",s.diagnostic?.bloquant_central,C.red],["Schéma de sabotage",s.diagnostic?.schema_sabotage,C.gold],["Leçon",s.diagnostic?.lecon_echec,C.green]].map(([l,v,c])=><div key={l} style={{paddingLeft:"1rem",borderLeft:`2px solid ${c}`}}><div style={{fontSize:"0.64rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.3rem"}}>{l}</div><div style={{fontSize:"0.95rem",color:C.text,lineHeight:1.6}}>{v}</div></div>)}
+              {[["Bloquant central",s.diagnostic?.bloquant_central,C.red],["Schéma de sabotage",s.diagnostic?.schema_sabotage,C.gold],["Leçon",s.diagnostic?.lecon_echec,C.green]].map(([l,v,c])=><div key={l} style={{paddingLeft:"1rem",borderLeft:`2px solid ${c}`}}><div style={{fontSize:"0.64rem",color:c,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.3rem"}}>{l}</div><div style={{fontSize:"0.95rem",color:C.text,lineHeight:1.6}}>{v}</div></div>)}
             </div>
           </div>
 
@@ -3263,7 +3263,7 @@ export default function App(){
           <div style={{marginTop:"2.5rem"}}>
             <SH icon="🛡" label="Protocole de Rechute" sub={`"${s2.protocole_rechute?.contexte||""}"`}/>
             <div style={{display:"flex",flexDirection:"column",gap:"1.1rem",marginTop:"0.6rem"}}>
-              {[["5 premières minutes",s2.protocole_rechute?.["5_minutes"],C.red],["24 heures",s2.protocole_rechute?.["24h"],C.gold],["48 heures",s2.protocole_rechute?.["48h"],C.green]].map(([l,v,c])=><div key={l} style={{paddingLeft:"1rem",borderLeft:`2px solid ${c}`}}><div style={{fontSize:"0.64rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.3rem"}}>{l}</div><div style={{fontSize:"0.95rem",color:C.text,lineHeight:1.6}}>{v}</div></div>)}
+              {[["5 premières minutes",s2.protocole_rechute?.["5_minutes"],C.red],["24 heures",s2.protocole_rechute?.["24h"],C.gold],["48 heures",s2.protocole_rechute?.["48h"],C.green]].map(([l,v,c])=><div key={l} style={{paddingLeft:"1rem",borderLeft:`2px solid ${c}`}}><div style={{fontSize:"0.64rem",color:c,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.3rem"}}>{l}</div><div style={{fontSize:"0.95rem",color:C.text,lineHeight:1.6}}>{v}</div></div>)}
             </div>
             <div style={{marginTop:"1.3rem",padding:"0.9rem 1rem",background:`${C.gold}0A`,border:`1px solid ${C.border}`,borderRadius:"12px"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.2rem"}}>Règle du Non-Zéro</div><div style={{fontSize:"0.85rem",color:C.text,lineHeight:1.55}}>{s2.protocole_rechute?.regle_non_zero}</div></div>
           </div>
@@ -3304,7 +3304,7 @@ export default function App(){
             {(s2.anti_abandon?.regles||[]).map((r,i)=><div key={i} style={{display:"flex",gap:"0.7rem",marginBottom:"0.55rem",alignItems:"flex-start"}}><span style={{...MN,fontSize:"0.63rem",color:C.gold,minWidth:"1.4rem",marginTop:"0.1rem"}}>{String(i+1).padStart(2,"0")}</span><span style={{fontSize:"0.92rem",color:C.text,lineHeight:1.6}}>{r}</span></div>)}
           </div>
           <div style={{display:"flex",flexDirection:"column",gap:"1.1rem"}}>
-            {[["Jour difficile",s2.protocole_rechute?.jour_difficile,C.gold],["Motivation basse",s2.protocole_rechute?.motivation_basse,C.red],["Rechute émotionnelle",s2.protocole_rechute?.rechute_emotionnelle,C.purple],["Fatigue mentale",s2.protocole_rechute?.fatigue_mentale,C.blue],["Version minimale",s2.anti_abandon?.version_minimale,C.green]].filter(([,v])=>v).map(([l,v,c])=><div key={l} style={{paddingLeft:"1rem",borderLeft:`2px solid ${c}`}}><div style={{fontSize:"0.64rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.3rem"}}>{l}</div><div style={{fontSize:"0.92rem",color:C.text,lineHeight:1.6}}>{v}</div></div>)}
+            {[["Jour difficile",s2.protocole_rechute?.jour_difficile,C.gold],["Motivation basse",s2.protocole_rechute?.motivation_basse,C.red],["Rechute émotionnelle",s2.protocole_rechute?.rechute_emotionnelle,C.purple],["Fatigue mentale",s2.protocole_rechute?.fatigue_mentale,C.blue],["Version minimale",s2.anti_abandon?.version_minimale,C.green]].filter(([,v])=>v).map(([l,v,c])=><div key={l} style={{paddingLeft:"1rem",borderLeft:`2px solid ${c}`}}><div style={{fontSize:"0.64rem",color:c,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.3rem"}}>{l}</div><div style={{fontSize:"0.92rem",color:C.text,lineHeight:1.6}}>{v}</div></div>)}
           </div>
         </div>}
 
@@ -3328,9 +3328,9 @@ export default function App(){
         {tab==="engagement"&&<EngagementTab plan={plan} plan2={plan2} firstName={firstName}/>}
 
         <div style={{textAlign:"center",padding:"2rem 0 0",color:C.textDim,fontSize:"0.66rem",borderTop:`1px solid ${C.border}`,marginTop:"2rem"}}>
-          <div style={{color:C.text,opacity:0.32,letterSpacing:"0.4rem",marginBottom:"0.65rem"}}>✦ ◈ ✦</div>
-          Créé par <span style={{color:C.text}}>Lamine Diabaté</span> · Mon Plan de Vie 90 Jours<br/>
-          <span style={{color:C.text,fontSize:"0.61rem",...MN}}>Auteur · "90 Jours pour Renaître" · "Le Pouvoir d'un Esprit Aligné"</span>
+          <div style={{color:C.gold,opacity:0.6,letterSpacing:"0.4rem",marginBottom:"0.65rem"}}>✦ ◈ ✦</div>
+          Créé par <span style={{color:C.gold}}>Lamine Diabaté</span> · Mon Plan de Vie 90 Jours<br/>
+          <span style={{color:C.gold,fontSize:"0.61rem",...MN}}>Auteur · "90 Jours pour Renaître" · "Le Pouvoir d'un Esprit Aligné"</span>
         </div>
       </div>
     );

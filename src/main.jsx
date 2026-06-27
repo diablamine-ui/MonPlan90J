@@ -722,6 +722,41 @@ RÈGLES ABSOLUES :
 — 3-4 phrases maximum. 1 question. 1 action.`;
 }
 
+function buildPromptCloture(answers, plan, plan2, dailyLogs, autoEval) {
+  const a = flatAnswers(answers);
+  const g = id => a[id] || "Non renseigné";
+  const stats = computeStats(dailyLogs);
+  const croyance = g('q_mensonge') || g('q_croyance_limitante') || g('q_phrase_neg') || "Non renseigné";
+  const pari = g('q_pari_complet') || g('q_pari') || "Non renseigné";
+  const ancienneAutosuggestion = plan2?.rituel?.autosuggestion || "";
+  const bloquant = plan?.diagnostic?.bloquant_central || "";
+
+  return `TU ES UN JUGE QUI PRONONCE UN VERDICT BASÉ UNIQUEMENT SUR DES PREUVES FACTUELLES — PAS UN COACH QUI FÉLICITE.
+
+CROYANCE INITIALE (Jour 1, à confronter) : "${croyance}"
+PARI INITIAL (Jour 1) : ${pari}
+BLOQUANT DIAGNOSTIQUÉ (Jour 1) : ${bloquant}
+ANCIENNE AUTOSUGGESTION (Jour 1) : "${ancienneAutosuggestion}"
+
+PREUVES RÉELLES DES 90 JOURS — UTILISE EXACTEMENT CES CHIFFRES, N'EN INVENTE AUCUN :
+— Jours loggués sur 90 : ${stats.total}
+— Actions réalisées : ${stats.done}
+— Streak maximal : ${stats.streak} jours consécutifs
+— Rechutes traversées : ${stats.relapses}
+— Temps total investi : ${Math.round(stats.totalMins/60*10)/10}h
+— Taux d'exécution global : ${stats.execRate}%
+— À J90, la personne dit que la croyance initiale décrit ENCORE qui elle est : ${autoEval?.toujoursVrai||"Non renseigné"}
+— Auto-évaluation "je suis capable de réussir" (1-10) : ${autoEval?.capable??"?"}
+— Auto-évaluation "je fais confiance à mon futur" (1-10) : ${autoEval?.confiance??"?"}
+
+RÈGLE ABSOLUE : si peu de jours loggués (moins de 20), le verdict doit être honnête et nuancé — ne jamais inventer un triomphe qui ne correspond pas aux chiffres. Si les rechutes sont nombreuses et l'exécution faible, un verdict mitigé est PLUS utile qu'un faux compliment.
+INTERDICTIONS : "félicitations", "bravo", "tu as réussi !", ton de diplôme scolaire, tournures génériques.
+
+Génère ce JSON valide EXACTEMENT — sans texte avant ni après, sans backticks :
+{"mensonge":"reprend mot pour mot la croyance initiale ci-dessus","preuves":["preuve factuelle 1, avec un chiffre réel ci-dessus","preuve factuelle 2","preuve factuelle 3","preuve factuelle 4"],"verdict":"3-4 phrases. Ton de juge qui analyse des preuves, pas de coach qui félicite. Doit nommer explicitement si la croyance initiale tient encore ou non, en s'appuyant uniquement sur les preuves listées.","nouvelle_identite":"Une seule phrase d'OBSERVATION factuelle (pas une affirmation au futur, pas 'je vais devenir') — ce que les 90 jours prouvent que cette personne EST déjà.","lettre_futur":"80-120 mots. Lettre narrative de cette personne à elle-même dans 90 jours. Doit citer au moins 2 chiffres réels ci-dessus et au moins 1 moment difficile traversé si rechutes>0."}
+Français. Direct, sobre. Aucun texte hors du JSON.`;
+}
+
 // ══════════════════════════════════════════════════════════════
 // UTILS
 // ══════════════════════════════════════════════════════════════
@@ -1824,6 +1859,11 @@ export default function App(){
   const [plan2,setPlan2]=useState(null);
   const [weeks,setWeeks]=useState(null);
   const [weeksLoading,setWeeksLoading]=useState(false);
+  const [cloture,setCloture]=useState(null);
+  const [clotureLoading,setClotureLoading]=useState(false);
+  const [clotureErr,setClotureErr]=useState("");
+  const [autoEval,setAutoEval]=useState(null);
+  const [clotureStarted,setClotureStarted]=useState(false);
   const [checks,setChecks]=useState({});
   const [logs,setLogs]=useState({});
   const [startDate,setStartDate]=useState(null);
@@ -1851,7 +1891,7 @@ export default function App(){
         const saved = allLocal[lastDomain];
         setActiveDomain(lastDomain);
         setPlan(saved.plan);if(saved.plan2)setPlan2(saved.plan2);
-        if(saved.weeks)setWeeks(saved.weeks);if(saved.answers)setAnswers(saved.answers);
+        if(saved.weeks)setWeeks(saved.weeks);if(saved.cloture)setCloture(saved.cloture);if(saved.answers)setAnswers(saved.answers);
         if(saved.checks)setChecks(saved.checks);if(saved.logs)setLogs(saved.logs);
         if(saved.startDate)setStartDate(saved.startDate);if(saved.nom)setNom(saved.nom);
         setScreen("home");
@@ -1860,6 +1900,7 @@ export default function App(){
         if(cloudData?.plan && cloudData.updated_at > (saved.updated_at||"")){
           setPlan(cloudData.plan);if(cloudData.plan2)setPlan2(cloudData.plan2);
           if(cloudData.weeks)setWeeks(cloudData.weeks);
+          if(cloudData.cloture)setCloture(cloudData.cloture);
           if(cloudData.checks)setChecks(cloudData.checks);
           if(cloudData.logs)setLogs(cloudData.logs);
           saveByDomain(lastDomain, cloudData);
@@ -1869,7 +1910,7 @@ export default function App(){
         if(!saved)return;
         if(saved.plan){
           setPlan(saved.plan);if(saved.plan2)setPlan2(saved.plan2);
-          if(saved.weeks)setWeeks(saved.weeks);if(saved.answers)setAnswers(saved.answers);
+          if(saved.weeks)setWeeks(saved.weeks);if(saved.cloture)setCloture(saved.cloture);if(saved.answers)setAnswers(saved.answers);
           if(saved.checks)setChecks(saved.checks);if(saved.logs)setLogs(saved.logs);
           if(saved.startDate)setStartDate(saved.startDate);if(saved.nom)setNom(saved.nom);
           setScreen("home");
@@ -1886,13 +1927,13 @@ export default function App(){
     if(!plan)return;
     const d=activeDomain||answers.q_domaine_principal||null;
     if(d&&DOMAIN_KEYS[d]){
-      const dataToSave={plan,plan2,weeks,answers,nom,email,checks,logs,startDate,updated_at:new Date().toISOString()};
+      const dataToSave={plan,plan2,weeks,cloture,answers,nom,email,checks,logs,startDate,updated_at:new Date().toISOString()};
       saveByDomain(d,dataToSave);
       if(!activeDomain)setActiveDomain(d);
       const userKey=nom||email||d;
       sbSave(userKey, d, dataToSave);
-    }else{const s=load()||{};save({...s,plan,plan2,weeks,answers,nom,email,checks,logs,startDate});}
-  },[plan,plan2,weeks,checks,logs,startDate,activeDomain]);
+    }else{const s=load()||{};save({...s,plan,plan2,weeks,cloture,answers,nom,email,checks,logs,startDate});}
+  },[plan,plan2,weeks,cloture,checks,logs,startDate,activeDomain]);
 
   const domaine = answers.q_domaine_principal || "";
   const activeSegs = getSegments(domaine) || SEGMENTS_FINANCES;
@@ -2055,6 +2096,31 @@ export default function App(){
     }
   };
 
+  const generateCloture=async(evalData)=>{
+    if(cloture||clotureLoading)return;setClotureLoading(true);setClotureErr("");
+    const callAPI=async(prompt,attempt=1)=>{
+      const res=await fetchWithRetry("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({prompt:prompt+"\n\nCommence par { immédiatement.",system:"Tu es un générateur de JSON strict. Commence IMMÉDIATEMENT par {.",max_tokens:1200})});
+      if(!res.ok){const d=await res.json().catch(()=>({}));throw new Error(d.error||`HTTP ${res.status}`);}
+      const data=await res.json();
+      const parsed=repairJSON(data.content||"");
+      if(!parsed?.verdict){
+        if(attempt<3){await new Promise(r=>setTimeout(r,2000*attempt));return callAPI(prompt,attempt+1);}
+        throw new Error("JSON invalide après 3 tentatives");
+      }
+      return parsed;
+    };
+    try{
+      const result=await callAPI(buildPromptCloture(answers,plan,plan2,logs,evalData));
+      setCloture(result);
+    }catch(e){
+      console.error("Clôture échec:",e);
+      setClotureErr(e.message||"Erreur de génération");
+    }finally{
+      setClotureLoading(false);
+    }
+  };
+
   const toggleCheck=(k,v)=>setChecks(p=>({...p,[k]:v}));
   const saveLog=(log)=>{const next={...logs,[todayKey()]:log};setLogs(next);if(activeDomain){saveByDomain(activeDomain,{logs:next,plan,plan2,weeks,answers,nom,email,checks,startDate});}else{const s=load()||{};save({...s,logs:next,plan,plan2,weeks,answers,nom,email,checks,startDate});}};
   const reset=()=>{clear();setPlan(null);setPlan2(null);setWeeks(null);setAnswers({});setChecks({});setLogs({});setStartDate(null);setSi(0);setQi(0);setNom("");setEmail("");setCode("");setAccessErr("");setErrMsg("");setTab("dashboard");setActiveDomain(null);setScreen("landing");};
@@ -2062,14 +2128,14 @@ export default function App(){
     const saved=loadByDomain(d);
     if(!saved?.plan)return;
     setActiveDomain(d);
-    setPlan(saved.plan);setPlan2(saved.plan2||null);setWeeks(saved.weeks||null);
+    setPlan(saved.plan);setPlan2(saved.plan2||null);setWeeks(saved.weeks||null);setCloture(saved.cloture||null);
     setAnswers(saved.answers||{});setChecks(saved.checks||{});setLogs(saved.logs||{});
     setStartDate(saved.startDate||null);setTab("dashboard");
     localStorage.setItem(LAST_DOMAIN_KEY,d);
     setScreen("home");
   };
   const startNewPlan=()=>{
-    setPlan(null);setPlan2(null);setWeeks(null);setAnswers({});setChecks({});setLogs({});
+    setPlan(null);setPlan2(null);setWeeks(null);setCloture(null);setAutoEval(null);setClotureStarted(false);setAnswers({});setChecks({});setLogs({});
     setStartDate(null);setSi(0);setQi(0);setErrMsg("");setTab("dashboard");
     setActiveDomain(null);
     setScreen("intro");
@@ -2874,7 +2940,7 @@ export default function App(){
             </div>)}
           </div>
         </Card>
-        <div style={{
+        {dn<90?<div style={{
           padding:"1.2rem 1.3rem",marginBottom:"1rem",
           background:`linear-gradient(135deg,${C.green}15,${C.green}05)`,
           border:`2px solid ${C.green}50`,borderTop:`4px solid ${C.green}`,
@@ -2891,7 +2957,21 @@ export default function App(){
             style={{width:"100%",padding:"0.75rem",background:C.green,border:"none",color:C.bg,fontSize:"0.74rem",letterSpacing:"0.12em",...MN,cursor:"pointer",fontWeight:500}}>
             ✓ C'est fait — Enregistrer
           </button>
-        </div>
+        </div>:<div style={{
+          padding:"1.3rem 1.4rem",marginBottom:"1rem",
+          background:`linear-gradient(135deg,${C.gold}15,${C.gold}05)`,
+          border:`2px solid ${C.gold}50`,borderTop:`4px solid ${C.gold}`,
+          position:"relative",animation:"fadeUp 0.4s ease",textAlign:"center"
+        }}>
+          <div style={{fontSize:"0.56rem",color:C.gold,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.7rem"}}>◆ Jour {dn} — Les 90 jours sont passés</div>
+          <div style={{...SF,fontSize:"1.05rem",color:C.text,lineHeight:1.6,marginBottom:"1rem"}}>
+            Il y a 90 jours, tu portais une croyance précise sur toi-même. Les faits ont eu le temps de parler.
+          </div>
+          <button onClick={()=>setScreen("cloture")}
+            style={{width:"100%",padding:"0.85rem",background:C.gold,border:"none",color:C.onGold,fontSize:"0.74rem",letterSpacing:"0.12em",...MN,cursor:"pointer",fontWeight:600}}>
+            Découvrir le verdict →
+          </button>
+        </div>}
 
         <div id="tracker-section">
         <Card>
@@ -2910,6 +2990,96 @@ export default function App(){
             <div style={{fontSize:"0.63rem",color:C.textDim}}>{sub}</div>
           </button>)}
         </div>
+      </div>
+    );
+  }
+
+  // ── CLÔTURE J90 ──
+  if(screen==="cloture"&&plan){
+    const croyanceJ1=flatAnswers(answers).q_mensonge||flatAnswers(answers).q_croyance_limitante||flatAnswers(answers).q_phrase_neg||"";
+    return(
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",maxWidth:"560px",margin:"0 auto",padding:"0 1rem 3rem"}}>
+        <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
+        <div style={{padding:"1rem 0 0.5rem"}}>
+          <button onClick={()=>setScreen("home")} style={{background:"none",border:"none",color:C.textDim,fontSize:"0.68rem",letterSpacing:"0.1em",...MN,cursor:"pointer"}}>← Accueil</button>
+        </div>
+
+        {!clotureStarted&&!cloture&&<div style={{animation:"fadeUp 0.4s ease"}}>
+          <div style={{textAlign:"center",marginBottom:"2rem",marginTop:"1rem"}}>
+            <div style={{fontSize:"0.56rem",letterSpacing:"0.3em",color:C.gold,textTransform:"uppercase",...MN,marginBottom:"0.6rem"}}>◆ Avant le verdict</div>
+            <div style={{...SF,fontSize:"1.3rem",color:C.text,lineHeight:1.5}}>Trois questions. Réponds sans réfléchir trop longtemps.</div>
+          </div>
+
+          <Card>
+            <div style={{fontSize:"0.6rem",color:C.textDim,...MN,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"0.6rem"}}>Le Jour 1, tu avais écrit</div>
+            <div style={{...SF,fontSize:"1.05rem",color:C.text,fontStyle:"italic",lineHeight:1.6,marginBottom:"1.6rem",paddingLeft:"1rem",borderLeft:`2px solid ${C.gold}`}}>"{croyanceJ1||"…"}"</div>
+
+            <div style={{fontSize:"0.85rem",color:C.text,marginBottom:"0.7rem"}}>Est-ce que cette phrase décrit encore qui tu es aujourd'hui ?</div>
+            <div style={{display:"flex",gap:"0.4rem",marginBottom:"1.6rem"}}>
+              {["Oui","Partiellement","Non"].map(opt=><button key={opt} onClick={()=>setAutoEval(p=>({...(p||{}),toujoursVrai:opt}))} style={{flex:1,padding:"0.6rem 0.3rem",background:autoEval?.toujoursVrai===opt?`${C.gold}20`:"transparent",border:`1px solid ${autoEval?.toujoursVrai===opt?C.gold:C.border}`,color:autoEval?.toujoursVrai===opt?C.text:C.textMid,fontSize:"0.75rem",cursor:"pointer",borderRadius:"10px"}}>{opt}</button>)}
+            </div>
+
+            <div style={{fontSize:"0.85rem",color:C.text,marginBottom:"0.6rem"}}>Aujourd'hui, je crois que je suis capable de réussir <span style={{color:C.textDim}}>(1-10)</span></div>
+            <div style={{display:"flex",gap:"0.3rem",marginBottom:"1.6rem"}}>
+              {[1,2,3,4,5,6,7,8,9,10].map(n=><button key={n} onClick={()=>setAutoEval(p=>({...(p||{}),capable:n}))} style={{flex:1,padding:"0.45rem 0.1rem",background:autoEval?.capable===n?C.gold:"transparent",border:`1px solid ${autoEval?.capable===n?C.gold:C.border}`,color:autoEval?.capable===n?C.onGold:C.textMid,fontSize:"0.72rem",cursor:"pointer",borderRadius:"8px"}}>{n}</button>)}
+            </div>
+
+            <div style={{fontSize:"0.85rem",color:C.text,marginBottom:"0.6rem"}}>Je fais confiance à mon futur <span style={{color:C.textDim}}>(1-10)</span></div>
+            <div style={{display:"flex",gap:"0.3rem",marginBottom:"0.5rem"}}>
+              {[1,2,3,4,5,6,7,8,9,10].map(n=><button key={n} onClick={()=>setAutoEval(p=>({...(p||{}),confiance:n}))} style={{flex:1,padding:"0.45rem 0.1rem",background:autoEval?.confiance===n?C.gold:"transparent",border:`1px solid ${autoEval?.confiance===n?C.gold:C.border}`,color:autoEval?.confiance===n?C.onGold:C.textMid,fontSize:"0.72rem",cursor:"pointer",borderRadius:"8px"}}>{n}</button>)}
+            </div>
+          </Card>
+
+          <button disabled={!autoEval?.toujoursVrai||!autoEval?.capable||!autoEval?.confiance}
+            onClick={()=>{setClotureStarted(true);generateCloture(autoEval);}}
+            style={{...BG,width:"100%",marginTop:"1.3rem",opacity:(!autoEval?.toujoursVrai||!autoEval?.capable||!autoEval?.confiance)?0.4:1,cursor:(!autoEval?.toujoursVrai||!autoEval?.capable||!autoEval?.confiance)?"not-allowed":"pointer"}}>
+            Voir le verdict →
+          </button>
+        </div>}
+
+        {clotureStarted&&!cloture&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"4rem 0",gap:"1.2rem"}}>
+          <div style={{width:"40px",height:"40px",border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`,borderRadius:"50%",animation:"spin 1.1s linear infinite"}}/>
+          <div style={{color:C.textDim,fontSize:"0.8rem",...MN,textAlign:"center"}}>{clotureLoading?"Analyse des 90 jours en cours…":clotureErr?"":""}</div>
+          {clotureErr&&<div style={{textAlign:"center"}}>
+            <div style={{color:C.red,fontSize:"0.78rem",marginBottom:"1rem"}}>{clotureErr}</div>
+            <button onClick={()=>generateCloture(autoEval)} style={{padding:"0.6rem 1.2rem",background:C.gold,border:"none",color:C.onGold,fontSize:"0.7rem",letterSpacing:"0.1em",cursor:"pointer",borderRadius:"10px"}}>Réessayer</button>
+          </div>}
+        </div>}
+
+        {cloture&&<div style={{animation:"fadeUp 0.5s ease"}}>
+          <div style={{textAlign:"center",marginBottom:"2.5rem",marginTop:"1rem"}}>
+            <div style={{fontSize:"0.56rem",letterSpacing:"0.3em",color:C.gold,textTransform:"uppercase",...MN,marginBottom:"0.7rem"}}>◆ Le Verdict — Jour 90</div>
+          </div>
+
+          <div style={{marginBottom:"2.5rem"}}>
+            <div style={{fontSize:"0.6rem",color:C.textDim,...MN,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:"0.7rem"}}>Le Mensonge — Jour 1</div>
+            <div style={{...SF,fontSize:"1.15rem",color:C.text,fontStyle:"italic",lineHeight:1.6,paddingLeft:"1rem",borderLeft:`2px solid ${C.red}`}}>"{cloture.mensonge}"</div>
+          </div>
+
+          <div style={{marginBottom:"2.5rem"}}>
+            <div style={{fontSize:"0.6rem",color:C.textDim,...MN,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:"0.9rem"}}>Les Preuves</div>
+            <div style={{display:"flex",flexDirection:"column",gap:"0.7rem"}}>
+              {(cloture.preuves||[]).map((p,i)=><div key={i} style={{display:"flex",gap:"0.6rem",alignItems:"flex-start"}}><span style={{color:C.green,fontSize:"0.85rem",marginTop:"0.1rem"}}>✓</span><span style={{fontSize:"0.92rem",color:C.text,lineHeight:1.6}}>{p}</span></div>)}
+            </div>
+          </div>
+
+          <div style={{marginBottom:"2.5rem",padding:"1.2rem",background:C.bg2,border:`1px solid ${C.border}`,borderRadius:"14px"}}>
+            <div style={{fontSize:"0.6rem",color:C.textDim,...MN,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:"0.7rem"}}>Le Verdict</div>
+            <div style={{fontSize:"0.95rem",color:C.text,lineHeight:1.75}}>{cloture.verdict}</div>
+          </div>
+
+          <div style={{marginBottom:"2.5rem",textAlign:"center"}}>
+            <div style={{fontSize:"0.6rem",color:C.textDim,...MN,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:"0.9rem"}}>Ce que tu es devenu</div>
+            <div style={{...SF,fontSize:"1.2rem",color:C.gold,lineHeight:1.6}}>{cloture.nouvelle_identite}</div>
+          </div>
+
+          <div style={{marginBottom:"2rem",paddingTop:"2rem",borderTop:`1px solid ${C.border}`}}>
+            <div style={{fontSize:"0.6rem",color:C.textDim,...MN,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:"0.9rem",textAlign:"center"}}>Lettre au Jour 1</div>
+            <div style={{...SF,fontSize:"0.95rem",color:C.textMid,fontStyle:"italic",lineHeight:1.85}}>{cloture.lettre_futur}</div>
+          </div>
+
+          <button onClick={()=>setScreen("home")} style={{...BG,width:"100%",marginTop:"1rem"}}>Retour à l'accueil</button>
+        </div>}
       </div>
     );
   }

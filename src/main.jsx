@@ -47,7 +47,8 @@ const loadAllDomains = () => {
   return result;
 };
 const getLastDomain = () => { try{ return localStorage.getItem(LAST_DOMAIN_KEY)||null; }catch{return null;} };
-const FONT = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Jost:wght@200;300;400;500&display=swap";
+const FONT = "https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400&family=Jost:wght@200;300;400;500&display=swap";
+const FONT_PDF = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap";
 const SHEETJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
 
 // ══════════════════════════════════════════════════════════════
@@ -105,10 +106,12 @@ const sbLoadAll = async(userKey) => {
 // PALETTE
 // ══════════════════════════════════════════════════════════════
 const C = {
-  bg:"#080808",bg1:"#0F0F0F",bg2:"#161616",bg3:"#1E1E1E",
-  border:"#2A2A2A",gold:"#C9A84C",goldL:"#E8C97A",goldD:"#8B6914",
-  text:"#F0EAD6",textDim:"#7A7060",textMid:"#A89880",
-  red:"#E74C3C",green:"#27AE60",blue:"#3498DB",purple:"#8E44AD",
+  bg:"#0D0C0A",bg1:"#141310",bg2:"#1C1A16",bg3:"#25221C",
+  border:"#24221E",gold:"#E5C158",goldL:"#E5C158",goldD:"#E5C158",
+  text:"#F4F3EF",textDim:"#706E66",textMid:"#A3A199",
+  red:"#FF9494",green:"#8CE0A7",blue:"#8DBBFF",purple:"#B89FD9",
+  redBg:"#4A1D1D",greenBg:"#1F402B",blueBg:"#1A2B3C",
+  onGold:"#111111", // texte sur fond doré — fixe, indépendant de C.bg
 };
 
 // ══════════════════════════════════════════════════════════════
@@ -134,7 +137,7 @@ const WEEK_ROLES = {
 const LEVELS = [
   {min:0, max:14, label:"Éveil",           color:C.blue,   desc:"Tu poses les fondations."},
   {min:15,max:29, label:"Stabilisation",   color:C.gold,   desc:"Les habitudes s'installent."},
-  {min:30,max:44, label:"Construction",    color:C.goldL,  desc:"Tu construis du concret."},
+  {min:30,max:44, label:"Construction",    color:C.gold,  desc:"Tu construis du concret."},
   {min:45,max:59, label:"Momentum",        color:C.purple, desc:"L'élan est là."},
   {min:60,max:74, label:"Consolidation",   color:C.green,  desc:"Tu ancres les changements."},
   {min:75,max:90, label:"Nouvelle identité",color:"#F39C12",desc:"Tu es devenu quelqu'un d'autre."},
@@ -154,7 +157,6 @@ const DOMAIN_CONFIG = {
     q_etat_now_label:"En 3 mots — décris ta situation financière actuelle.",
     q_etat_now_ph:"Dettes, stagnation, bloqué",
     q_etat_now_ex:"Serré, stable, croissance — ta réalité financière maintenant",
-    // Labels questions adaptées
     q_objectif_label:"Ton objectif financier précis dans 90 jours — et pourquoi tu veux vraiment l'atteindre ?",
     q_objectif_ph:"Générer 300 000 FCFA / mois avec mon activité. Je veux l'atteindre pour ne plus dépendre d'un salaire.",
     q_objectif_ex:"Lancer mon activité freelance et avoir 5 clients payants.",
@@ -543,15 +545,12 @@ function flatAnswers(answers) {
     a.q_heures = sanitize(answers.q_rythme.heures);
     a.q_moment = sanitize(answers.q_rythme.moment);
   }
-  // Fusionner les 3 questions pari en un bloc narratif
   if (answers.q_pari && answers.q_pari_plus && answers.q_pari_moins) {
     a.q_pari_complet = `${answers.q_pari}/100. Pas plus : ${sanitize(answers.q_pari_plus)}. Pas moins : ${sanitize(answers.q_pari_moins)}.`;
   }
-  // Fusionner urgence + projection si q_urgence_projection existe
   if (answers.q_urgence && answers.q_cout_statu_quo) {
     a.q_projection_urgence = `Urgent : ${sanitize(answers.q_urgence)}. Coût inaction : ${sanitize(answers.q_cout_statu_quo)}`;
   }
-  // q_montant est maintenant une question text standalone
   if (!a.q_montant && answers.q_ancrage) {
     a.q_montant = sanitize(answers.q_ancrage.montant);
   }
@@ -665,10 +664,8 @@ function buildPromptCoach(plan, plan2, weeks, dailyLogs, question, history) {
   const actionDays = logs.filter(l=>l.action_done).length;
   const missedDays = logs.filter(l=>!l.action_done&&!l.rechute).length;
 
-  // Analyse des patterns comportementaux
   const patterns = [];
   if(logs.length >= 5) {
-    // Pattern abandon après N jours
     const streaks = [];
     let cur = 0;
     logs.forEach(l => { if(l.action_done) cur++; else { if(cur>0) streaks.push(cur); cur=0; } });
@@ -676,12 +673,9 @@ function buildPromptCoach(plan, plan2, weeks, dailyLogs, question, history) {
       const avgStreak = Math.round(streaks.reduce((s,v)=>s+v,0)/streaks.length);
       if(avgStreak <= 5) patterns.push(`Tu abandonnes souvent après ${avgStreak} jours consécutifs — c'est ton seuil de résistance actuel.`);
     }
-    // Pattern énergie basse → action non faite
     const lowEnergyMissed = recentLogs.filter(l=>l.energie<=2&&!l.action_done).length;
     if(lowEnergyMissed >= 2) patterns.push(`Quand ton énergie passe sous 3, tu rates l'action dans ${Math.round(lowEnergyMissed/recentLogs.filter(l=>l.energie<=2).length*100)||0}% des cas — ton énergie gouverne encore ton exécution.`);
-    // Pattern rechute récente
     if(lastRelapse && logs.indexOf(lastRelapse) >= logs.length - 3) patterns.push(`Tu as rechuté récemment — surveille les 48h qui suivent, c'est là que l'abandon s'installe.`);
-    // Pattern irrégularité
     if(missedDays > actionDays && logs.length >= 7) patterns.push(`Tu manques plus de jours que tu n'en tiens — l'irrégularité est ton vrai adversaire, pas le manque de volonté.`);
   }
 
@@ -727,11 +721,9 @@ RÈGLES ABSOLUES :
 // ══════════════════════════════════════════════════════════════
 // UTILS
 // ══════════════════════════════════════════════════════════════
-// ── SANITIZE — nettoie les réponses avant injection dans les prompts ──
 function sanitize(v) {
   if (!v) return "Non renseigné";
   if (Array.isArray(v)) return v.join(", ");
-  // Remplace les caractères qui peuvent casser un JSON généré par l'IA
   return String(v)
     .replace(/\\/g, " ")
     .replace(/"/g, "'")
@@ -739,31 +731,26 @@ function sanitize(v) {
     .replace(/\r/g, " ")
     .replace(/\t/g, " ")
     .trim()
-    .slice(0, 300); // cap à 300 chars par champ
+    .slice(0, 300);
 }
 
-// ── REPAIR JSON — 4 tentatives en cascade ──
 function repairJSON(raw) {
   if (!raw) return null;
 
-  // Nettoyage initial
   let text = raw
     .replace(/^```json\s*/i, "")
     .replace(/^```\s*/i, "")
     .replace(/```\s*$/i, "")
     .trim();
 
-  // Tentative 1 : parse direct
   try { return JSON.parse(text); } catch(e) {}
 
-  // Tentative 2 : trouver le premier { et le dernier }
   const firstBrace = text.indexOf("{");
   const lastBrace = text.lastIndexOf("}");
   if (firstBrace !== -1 && lastBrace > firstBrace) {
     try { return JSON.parse(text.slice(firstBrace, lastBrace + 1)); } catch(e) {}
   }
 
-  // Tentative 3 : fermer les structures ouvertes
   try {
     const closers = [];
     let inStr = false, esc = false;
@@ -777,7 +764,6 @@ function repairJSON(raw) {
       else if (c === '}' || c === ']') closers.pop();
     }
     if (closers.length > 0) {
-      // Couper à la dernière virgule propre si on est en milieu de string
       const truncated = inStr
         ? text.slice(0, text.lastIndexOf(',"')) + '"'
         : text;
@@ -786,7 +772,6 @@ function repairJSON(raw) {
     }
   } catch(e) {}
 
-  // Tentative 4 : extraction par regex des champs clés (fallback partiel)
   return null;
 }
 
@@ -801,16 +786,10 @@ function computeScore4(dailyLogs, plan) {
   const logs = Object.values(dailyLogs||{}).sort((a,b)=>a.day-b.day);
   if(logs.length === 0) return {execution:0, identite:0, coherence:0, progression:0, global:0};
 
-  // Score Exécution — actions faites / jours tracés
   const execution = logs.length > 0 ? Math.round((logs.filter(l=>l.action_done).length/logs.length)*100) : 0;
-
-  // Score Identité — rituels faits (comportements alignés à l'identité cible)
   const identite = logs.length > 0 ? Math.round((logs.filter(l=>l.rituel_done).length/logs.length)*100) : 0;
-
-  // Score Cohérence — jours sans rechute / total jours
   const coherence = logs.length > 0 ? Math.round(((logs.length-logs.filter(l=>l.rechute).length)/logs.length)*100) : 100;
 
-  // Score Progression — basé sur streak actuel vs historique
   const streak = computeStreak(Object.fromEntries(logs.map(l=>[l.date,l])));
   const maxStreak = Math.max(...logs.reduce((acc,l,i)=>{
     const prev = i>0&&logs[i-1].action_done;
@@ -862,25 +841,28 @@ const CSS=`
   @keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(60px) rotate(360deg);opacity:0}}
   @keyframes popIn{0%{transform:scale(0.3);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:${C.bg};color:${C.text};font-family:'Jost',sans-serif;font-weight:300;-webkit-font-smoothing:antialiased}
+  body{background:${C.bg};color:${C.text};font-family:'Jost',sans-serif;font-weight:400;-webkit-font-smoothing:antialiased}
   ::placeholder{color:#2A2520!important}
-  ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:${C.goldD}}
-  textarea,input,select,button{font-family:'Jost',sans-serif;font-weight:300}
+  ::-webkit-scrollbar{width:8px}
+  ::-webkit-scrollbar-track{background:${C.bg2}}
+  ::-webkit-scrollbar-thumb{background:${C.gold};border-radius:4px}
+  ::-webkit-scrollbar-thumb:hover{background:${C.goldL}}
+  textarea,input,select,button{font-family:'Jost',sans-serif;font-weight:400}
 `;
 const MN={fontFamily:"'DM Mono',monospace"};
-const SF={fontFamily:"'Cormorant Garamond',serif"};
+const SF={fontFamily:"'Jost',sans-serif"};
 
 function Divider(){return <div style={{width:"50px",height:"1px",background:`linear-gradient(90deg,transparent,${C.gold},transparent)`,margin:"0 auto"}}/>;}
-function Card({children,accent=false,style={}}){return <div style={{background:C.bg2,border:`1px solid ${accent?C.goldD:C.border}`,borderTop:`2px solid ${accent?C.gold:C.border}`,padding:"1.4rem",marginBottom:"1rem",...style}}>{children}</div>;}
-function Tag({children,color=C.gold}){return <span style={{display:"inline-block",padding:"0.18rem 0.5rem",background:`${color}18`,border:`1px solid ${color}55`,color,fontSize:"0.67rem",letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>{children}</span>;}
-function SH({icon,label,sub}){return <div style={{marginBottom:"1.1rem"}}><div style={{display:"flex",alignItems:"center",gap:"0.55rem",marginBottom:"0.2rem"}}><span style={{color:C.gold}}>{icon}</span><span style={{fontSize:"0.58rem",letterSpacing:"0.28em",color:C.gold,textTransform:"uppercase",...MN}}>{label}</span></div>{sub&&<div style={{fontSize:"0.75rem",color:C.textDim,paddingLeft:"1.35rem"}}>{sub}</div>}</div>;}
+function Card({children,accent=false,style={}}){return <div style={{background:C.bg2,borderRadius:"14px",border:`1px solid ${accent?C.gold:C.border}`,borderTop:accent?`2px solid ${C.gold}`:`1px solid ${C.border}`,padding:"1.75rem",marginBottom:"1.5rem",...style}}>{children}</div>;}
+function Tag({children,color=C.gold}){return <span style={{display:"inline-block",padding:"0.18rem 0.5rem",background:`${color}18`,border:`1px solid ${color}55`,color:C.text,fontSize:"0.67rem",letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>{children}</span>;}
+function SH({icon,label,sub}){return <div style={{marginBottom:"1.1rem"}}><div style={{display:"flex",alignItems:"center",gap:"0.55rem",marginBottom:"0.2rem"}}><span style={{color:C.textDim}}>{icon}</span><span style={{fontSize:"0.58rem",letterSpacing:"0.28em",color:C.textDim,textTransform:"uppercase",...MN}}>{label}</span></div>{sub&&<div style={{fontSize:"0.75rem",color:C.textDim,paddingLeft:"1.35rem"}}>{sub}</div>}</div>;}
 
 function ScoreBar({label,score,lecture}){
   const color=score>=70?C.green:score>=45?C.gold:C.red;
   return <div style={{marginBottom:"1rem"}}>
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:"0.3rem"}}>
       <span style={{fontSize:"0.7rem",letterSpacing:"0.1em",color:C.textMid,textTransform:"uppercase"}}>{label}</span>
-      <span style={{fontSize:"0.82rem",...MN,color}}>{score}/100</span>
+      <span style={{fontSize:"0.82rem",...MN,color:C.text}}>{score}/100</span>
     </div>
     <div style={{height:"3px",background:C.bg3,overflow:"hidden"}}>
       <div style={{height:"100%",width:`${score}%`,background:`linear-gradient(90deg,${color}70,${color})`,transition:"width 1.2s ease"}}/>
@@ -897,7 +879,7 @@ function ProgressCircle({day,total=90,size=110}){
       <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={lv.color} strokeWidth="6" strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" style={{transition:"stroke-dasharray 1s ease"}}/>
     </svg>
     <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
-      <div style={{fontSize:"1.5rem",...SF,color:lv.color,lineHeight:1}}>{day}</div>
+      <div style={{fontSize:"1.5rem",...SF,color:C.text,lineHeight:1}}>{day}</div>
       <div style={{fontSize:"0.52rem",color:C.textDim,...MN}}>/ {total}</div>
     </div>
   </div>;
@@ -905,7 +887,6 @@ function ProgressCircle({day,total=90,size=110}){
 
 // ── VORTEX RESPIRATOIRE 4-7-8 — cercle qui respire ─────────────
 function BreathingVortex({onDone}){
-  // 1 cycle = 4+7+8 = 19 secondes. 5 min ≈ 300s → ~15 cycles
   const TOTAL_CYCLES = 15;
   const PHASES = [
     {label:"Inspire",  dur:4,  color:C.blue,   size:140, ease:"ease-in"},
@@ -970,10 +951,7 @@ function BreathingVortex({onDone}){
 
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"0.8rem 0 0.5rem"}}>
-
-      {/* Cercle organique qui gonfle et dégonfle */}
       <div style={{position:"relative",width:"180px",height:"180px",marginBottom:"0.8rem",display:"flex",alignItems:"center",justifyContent:"center"}}>
-        {/* Halo externe */}
         <div style={{
           position:"absolute",
           width:`${ph.size+30}px`,height:`${ph.size+30}px`,
@@ -981,7 +959,6 @@ function BreathingVortex({onDone}){
           background:`${ph.color}08`,
           transition:`width ${ph.dur}s ${ph.ease}, height ${ph.dur}s ${ph.ease}`,
         }}/>
-        {/* Cercle principal — gonfle et dégonfle */}
         <div style={{
           position:"relative",
           width:`${ph.size}px`,
@@ -994,22 +971,19 @@ function BreathingVortex({onDone}){
           display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
           zIndex:2,
         }}>
-          {/* Label phase */}
           <div style={{
-            fontSize:"0.6rem",color:ph.color,letterSpacing:"0.18em",
+            fontSize:"0.6rem",color:C.text,letterSpacing:"0.18em",
             textTransform:"uppercase",...MN,marginBottom:"0.2rem",
             opacity:0.9
           }}>{ph.label}</div>
-          {/* Compte à rebours */}
           <div style={{
-            ...SF,fontSize:"2.2rem",color:ph.color,lineHeight:1,
+            ...SF,fontSize:"2.2rem",color:C.text,lineHeight:1,
             textShadow:`0 0 15px ${ph.color}80`
           }}>{secsLeft}</div>
-          <div style={{fontSize:"0.5rem",color:ph.color,opacity:0.6,...MN,marginTop:"0.15rem"}}>sec</div>
+          <div style={{fontSize:"0.5rem",color:C.textDim,opacity:0.6,...MN,marginTop:"0.15rem"}}>sec</div>
         </div>
       </div>
 
-      {/* Instruction */}
       <div style={{
         fontSize:"0.82rem",color:C.textMid,textAlign:"center",
         lineHeight:1.6,marginBottom:"0.5rem",minHeight:"1.4rem",
@@ -1020,7 +994,6 @@ function BreathingVortex({onDone}){
         {phaseIdx===2 && "Expire lentement par la bouche…"}
       </div>
 
-      {/* Barre de progression globale */}
       <div style={{width:"160px",marginBottom:"0.5rem"}}>
         <div style={{display:"flex",justifyContent:"space-between",fontSize:"0.55rem",color:C.textDim,...MN,marginBottom:"0.2rem"}}>
           <span>Cycle {cycle+1}/{TOTAL_CYCLES}</span>
@@ -1031,7 +1004,6 @@ function BreathingVortex({onDone}){
         </div>
       </div>
 
-      {/* Bouton passer */}
       <button onClick={handleSkip} style={{
         background:"transparent",border:`1px solid ${C.border}`,
         color:C.textDim,fontSize:"0.65rem",letterSpacing:"0.1em",...MN,
@@ -1059,7 +1031,6 @@ function playBip() {
 function playGong() {
   try {
     const ctx = new (window.AudioContext||window.webkitAudioContext)();
-    // Fréquences multiples pour un son de gong riche
     [[110,1.0],[220,0.6],[330,0.4],[440,0.3],[880,0.15]].forEach(([freq,vol],i)=>{
       const o = ctx.createOscillator();
       const g = ctx.createGain();
@@ -1077,8 +1048,6 @@ function playGong() {
 
 // ── ÉTAPE RITUEL AVEC TIMER DÉDIÉ ──────────────────────────
 function RituelTimer({steps, onComplete, nomGuerre}){
-  // Machine d'état plate — TOUT dans un seul composant, zéro remontage enfant
-  // États: idle | countdown | running | step_done | rituel_done
   const [state, setState] = useState({
     phase:"idle", idx:0, t:null, countdown:3
   });
@@ -1104,7 +1073,6 @@ function RituelTimer({steps, onComplete, nomGuerre}){
   };
   const doneMsg = STEP_MSGS[step?.etape]||{titre:"Étape accomplie ✓",msg:"Continue.",sous:"",color:C.green};
 
-  // Démarrer le décompte 3-2-1
   const startCountdown = () => {
     clearInterval(cdRef.current);
     setState(s=>({...s,phase:"countdown",countdown:3}));
@@ -1121,7 +1089,6 @@ function RituelTimer({steps, onComplete, nomGuerre}){
     },1000);
   };
 
-  // Timer courant
   useEffect(()=>{
     if(state.phase!=="running"||state.t===null||isBreathing)return;
     if(state.t<=0){
@@ -1134,10 +1101,8 @@ function RituelTimer({steps, onComplete, nomGuerre}){
     return()=>clearInterval(timerRef.current);
   },[state.phase, state.t, state.idx]);
 
-  // Cleanup
   useEffect(()=>()=>{clearInterval(cdRef.current);clearInterval(timerRef.current);},[]);
 
-  // Avancer à l'étape suivante
   const nextStep = () => {
     const nextIdx = state.idx+1;
     if(nextIdx>=steps.length){
@@ -1161,7 +1126,6 @@ function RituelTimer({steps, onComplete, nomGuerre}){
 
   const prog = total>0&&state.t!==null ? ((total-state.t)/total)*100 : 0;
 
-  // ── RITUEL DONE ──
   if(state.phase==="rituel_done") return(
     <div style={{animation:"fadeUp 0.4s ease",textAlign:"center"}}>
       <div style={{position:"relative",height:"70px",overflow:"hidden",marginBottom:"0.5rem"}}>
@@ -1178,22 +1142,20 @@ function RituelTimer({steps, onComplete, nomGuerre}){
     </div>
   );
 
-  // ── STEP DONE — écran de validation entre étapes ──
   if(state.phase==="step_done") return(
     <div style={{animation:"fadeUp 0.4s ease",textAlign:"center"}}>
       <div style={{background:`${doneMsg.color}10`,border:`1px solid ${doneMsg.color}30`,borderTop:`4px solid ${doneMsg.color}`,padding:"1.2rem",marginBottom:"0.8rem"}}>
-        <div style={{...SF,fontSize:"1.2rem",color:doneMsg.color,marginBottom:"0.5rem"}}>{doneMsg.titre}</div>
+        <div style={{...SF,fontSize:"1.2rem",color:C.text,marginBottom:"0.5rem"}}>{doneMsg.titre}</div>
         <p style={{fontSize:"0.82rem",color:C.text,lineHeight:1.75,marginBottom:"0.35rem"}}>{doneMsg.msg}</p>
         {doneMsg.sous&&<p style={{fontSize:"0.75rem",color:C.textDim,fontStyle:"italic"}}>{doneMsg.sous}</p>}
       </div>
       <button onClick={nextStep} style={{
         width:"100%",padding:"0.85rem",background:doneMsg.color,border:"none",
-        color:C.bg,fontSize:"0.72rem",letterSpacing:"0.12em",cursor:"pointer",fontWeight:500
+        color:doneMsg.color===C.gold?C.onGold:C.bg,fontSize:"0.72rem",letterSpacing:"0.12em",cursor:"pointer",fontWeight:500
       }}>Continuer →</button>
     </div>
   );
 
-  // Barre progression étapes (pour countdown, running, step_done)
   const StepBar = ()=>(
     <div style={{display:"flex",gap:"0.3rem",marginBottom:"0.75rem"}}>
       {steps.map((_,i)=>(
@@ -1202,22 +1164,21 @@ function RituelTimer({steps, onComplete, nomGuerre}){
     </div>
   );
 
-  // ── IDLE — instructions + START ──
   if(state.phase==="idle") return(
     <div>
       <StepBar/>
       <div style={{padding:"0.85rem 1rem",background:`${C.gold}08`,borderLeft:`3px solid ${C.goldD}`,marginBottom:"0.8rem"}}>
-        <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>
+        <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>
           Étape {state.idx+1}/{steps.length} · {step?.duree}
         </div>
-        <div style={{...SF,fontSize:"1rem",color:C.gold,marginBottom:"0.35rem"}}>{step?.etape}</div>
+        <div style={{...SF,fontSize:"1rem",color:C.text,marginBottom:"0.35rem"}}>{step?.etape}</div>
         <div style={{fontSize:"0.82rem",color:C.textMid,lineHeight:1.6}}>{step?.action}</div>
       </div>
       {state.idx===0&&(
         <div style={{marginBottom:"0.8rem"}}>
           {steps.map((s,i)=>i>0&&(
             <div key={i} style={{display:"flex",gap:"0.6rem",alignItems:"flex-start",marginBottom:"0.4rem",opacity:0.6}}>
-              <span style={{color:C.goldD,...MN,fontSize:"0.6rem",minWidth:"1rem"}}>{i+1}.</span>
+              <span style={{color:C.text,...MN,fontSize:"0.6rem",minWidth:"1rem"}}>{i+1}.</span>
               <span style={{fontSize:"0.75rem",color:C.textDim}}>{s.etape} ({s.duree})</span>
             </div>
           ))}
@@ -1225,24 +1186,21 @@ function RituelTimer({steps, onComplete, nomGuerre}){
       )}
       <button onClick={startCountdown} style={{
         width:"100%",padding:"0.9rem",background:C.gold,border:"none",
-        color:C.bg,fontSize:"0.72rem",letterSpacing:"0.18em",textTransform:"uppercase",
+        color:C.onGold,fontSize:"0.72rem",letterSpacing:"0.18em",textTransform:"uppercase",
         fontWeight:500,cursor:"pointer",animation:"glow 2s ease-in-out infinite"
       }}>▶ Démarrer</button>
       <button onClick={skipStep} style={{width:"100%",padding:"0.35rem",background:"transparent",border:"none",color:C.textDim,fontSize:"0.62rem",cursor:"pointer",marginTop:"0.3rem"}}>Passer →</button>
     </div>
   );
 
-  // ── COUNTDOWN 3-2-1 ──
   if(state.phase==="countdown") return(
     <div style={{textAlign:"center",padding:"1.5rem 1rem",animation:"fadeIn 0.3s ease"}}>
       <StepBar/>
-      <div style={{fontSize:"0.58rem",color:C.goldD,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.6rem"}}>{step?.etape} · Début dans…</div>
-      <div style={{...SF,fontSize:"5rem",color:C.gold,lineHeight:1,animation:"pulse 0.8s ease-in-out infinite",textShadow:`0 0 30px ${C.gold}60`}}>{state.countdown}</div>
+      <div style={{fontSize:"0.58rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.6rem"}}>{step?.etape} · Début dans…</div>
+      <div style={{...SF,fontSize:"5rem",color:C.text,lineHeight:1,animation:"pulse 0.8s ease-in-out infinite",textShadow:`0 0 30px ${C.gold}60`}}>{state.countdown}</div>
     </div>
   );
 
-  // ── RUNNING ──
-  // Respiration = vortex (SEULEMENT si phase==="running")
   if(state.phase==="running" && isBreathing) return(
     <div>
       <StepBar/>
@@ -1250,28 +1208,26 @@ function RituelTimer({steps, onComplete, nomGuerre}){
     </div>
   );
 
-  // Autres étapes = timer
   return(
     <div>
       <StepBar/>
       <div style={{background:C.bg3,border:`1px solid ${C.goldD}`,padding:"1rem",animation:"fadeIn 0.3s ease"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.45rem"}}>
-          <span style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.18em",textTransform:"uppercase",...MN}}>{step?.etape}</span>
-          <span style={{...MN,fontSize:"1.4rem",color:state.t<=10?C.red:C.gold,fontWeight:400,animation:state.t<=10?"pulse 0.8s ease infinite":"none"}}>{fmt(state.t)}</span>
+          <span style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.18em",textTransform:"uppercase",...MN}}>{step?.etape}</span>
+          <span style={{...MN,fontSize:"1.4rem",color:state.t<=10?C.red:C.text,fontWeight:400,animation:state.t<=10?"pulse 0.8s ease infinite":"none"}}>{fmt(state.t)}</span>
         </div>
         <div style={{fontSize:"0.81rem",color:C.textMid,lineHeight:1.5,marginBottom:"0.65rem"}}>{step?.action}</div>
         <div style={{height:"4px",background:C.bg,borderRadius:"2px",marginBottom:"0.5rem"}}>
           <div style={{height:"100%",width:`${prog}%`,background:`linear-gradient(90deg,${C.goldD},${C.gold})`,borderRadius:"2px",transition:"width 1s linear"}}/>
         </div>
         <button onClick={()=>{clearInterval(timerRef.current);playGong();setState(s=>({...s,phase:"step_done"}));}}
-          style={{width:"100%",padding:"0.4rem",background:`${C.gold}15`,border:`1px solid ${C.goldD}`,color:C.gold,fontSize:"0.68rem",cursor:"pointer"}}>
+          style={{width:"100%",padding:"0.4rem",background:`${C.gold}15`,border:`1px solid ${C.goldD}`,color:C.text,fontSize:"0.68rem",cursor:"pointer"}}>
           Terminer cette étape →
         </button>
       </div>
     </div>
   );
 }
-
 
 function DailyTracker({dayNum,todayLog,onSave,logs={}}){
   const [humeur,setHumeur]=useState(todayLog?.humeur||null);
@@ -1291,21 +1247,21 @@ function DailyTracker({dayNum,todayLog,onSave,logs={}}){
   if(saved)return <div style={{padding:"0.9rem",background:`${C.green}0A`,border:`1px solid ${C.green}30`,borderLeft:`3px solid ${C.green}`}}>
     <div style={{fontSize:"0.56rem",color:C.green,letterSpacing:"0.15em",...MN,marginBottom:"0.2rem"}}>Journée enregistrée · Jour {dayNum}</div>
     <div style={{display:"flex",gap:"1rem",alignItems:"center"}}>
-      <span style={{fontSize:"0.8rem",color:C.text}}>H{todayLog?.humeur||humeur}/5 · É{todayLog?.energie||energie}/5 · Score <span style={{color:C.gold,fontWeight:500}}>{todayLog?.score||score}</span>/100</span>
+      <span style={{fontSize:"0.8rem",color:C.text}}>H{todayLog?.humeur||humeur}/5 · É{todayLog?.energie||energie}/5 · Score <span style={{color:C.text,fontWeight:500}}>{todayLog?.score||score}</span>/100</span>
       <button onClick={()=>setSaved(false)} style={{background:"none",border:"none",color:C.textDim,fontSize:"0.68rem",cursor:"pointer"}}>Modifier</button>
     </div>
   </div>;
   return <div>
     <div style={{marginBottom:"0.8rem"}}>
-      <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>HUMEUR</div>
+      <div style={{fontSize:"0.56rem",color:C.text,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>HUMEUR</div>
       <div style={{display:"flex",gap:"0.4rem"}}>{HUMEURS.map(h=><button key={h.v} onClick={()=>setHumeur(h.v)} style={{flex:1,padding:"0.45rem",fontSize:"1.2rem",background:humeur===h.v?`${C.gold}20`:"transparent",border:`1px solid ${humeur===h.v?C.gold:C.border}`,cursor:"pointer",transition:"all 0.15s"}}>{h.e}</button>)}</div>
     </div>
     {[["ÉNERGIE",energie,setEnergie],["FOCUS",focus,setFocus]].map(([lbl,val,set])=><div key={lbl} style={{marginBottom:"0.8rem"}}>
-      <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>{lbl}</div>
-      <div style={{display:"flex",gap:"0.35rem"}}>{[1,2,3,4,5].map(n=><button key={n} onClick={()=>set(n)} style={{flex:1,padding:"0.42rem",background:val===n?`${C.gold}20`:val&&n<=val?`${C.gold}08`:"transparent",border:`1px solid ${val===n?C.gold:C.border}`,color:val===n?C.gold:C.textMid,...MN,fontSize:"0.83rem",cursor:"pointer",transition:"all 0.15s"}}>{n}</button>)}</div>
+      <div style={{fontSize:"0.56rem",color:C.text,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>{lbl}</div>
+      <div style={{display:"flex",gap:"0.35rem"}}>{[1,2,3,4,5].map(n=><button key={n} onClick={()=>set(n)} style={{flex:1,padding:"0.42rem",background:val===n?`${C.gold}20`:val&&n<=val?`${C.gold}08`:"transparent",border:`1px solid ${val===n?C.gold:C.border}`,color:val===n?C.text:C.textMid,...MN,fontSize:"0.83rem",cursor:"pointer",transition:"all 0.15s"}}>{n}</button>)}</div>
     </div>)}
     <div style={{marginBottom:"0.8rem"}}>
-      <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>ACTION PRINCIPALE</div>
+      <div style={{fontSize:"0.56rem",color:C.text,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>ACTION PRINCIPALE</div>
       <div style={{display:"flex",gap:"0.4rem"}}>
         {[["✓ Faite",true,C.green],["✗ Non faite",false,C.red]].map(([lbl,val,color])=><button key={lbl} onClick={()=>setAction(val)} style={{flex:1,padding:"0.52rem",background:action===val?`${color}15`:"transparent",border:`1px solid ${action===val?color:C.border}`,color:action===val?color:C.textMid,fontSize:"0.78rem",cursor:"pointer",transition:"all 0.2s"}}>{lbl}</button>)}
       </div>
@@ -1316,13 +1272,13 @@ function DailyTracker({dayNum,todayLog,onSave,logs={}}){
       </label>)}
     </div>
     <div style={{marginBottom:"0.8rem"}}>
-      <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>TEMPS INVESTI</div>
-      <div style={{display:"flex",gap:"0.3rem"}}>{[0,15,30,45,60,90].map(n=><button key={n} onClick={()=>setTemps(n)} style={{flex:1,padding:"0.38rem 0.1rem",background:temps===n?`${C.gold}18`:"transparent",border:`1px solid ${temps===n?C.gold:C.border}`,color:temps===n?C.gold:C.textMid,...MN,fontSize:"0.7rem",cursor:"pointer"}}>{n===0?"0":n+"'"}</button>)}</div>
+      <div style={{fontSize:"0.56rem",color:C.text,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>TEMPS INVESTI</div>
+      <div style={{display:"flex",gap:"0.3rem"}}>{[0,15,30,45,60,90].map(n=><button key={n} onClick={()=>setTemps(n)} style={{flex:1,padding:"0.38rem 0.1rem",background:temps===n?`${C.gold}18`:"transparent",border:`1px solid ${temps===n?C.gold:C.border}`,color:temps===n?C.text:C.textMid,...MN,fontSize:"0.7rem",cursor:"pointer"}}>{n===0?"0":n+"'"}</button>)}</div>
     </div>
     {showRelapseDiag&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.9)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"1.5rem"}}>
       <div style={{background:C.bg2,border:`1px solid ${C.red}`,borderTop:`3px solid ${C.red}`,padding:"1.5rem",maxWidth:"380px",width:"100%"}}>
         <div style={{fontSize:"0.55rem",color:C.red,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.8rem"}}>Diagnostic Rechute</div>
-        <div style={{fontSize:"0.9rem",color:C.gold,marginBottom:"1rem",fontFamily:"Georgia,serif"}}>Qu'est-ce qui s'est passé ?</div>
+        <div style={{fontSize:"0.9rem",color:C.text,marginBottom:"1rem",fontFamily:"Georgia,serif"}}>Qu'est-ce qui s'est passé ?</div>
         <div style={{display:"flex",flexWrap:"wrap",gap:"0.4rem",marginBottom:"1rem"}}>
           {["Fatigue","Stress","Distraction","Émotion difficile","Environnement","Manque de temps","Ennui","Autre"].map(c=>(
             <button key={c} onClick={()=>setRelapseCause(c)} style={{padding:"0.35rem 0.75rem",background:relapseCause===c?`${C.red}20`:"transparent",border:`1px solid ${relapseCause===c?C.red:C.border}`,color:relapseCause===c?C.red:C.textMid,fontSize:"0.72rem",cursor:"pointer"}}>{c}</button>
@@ -1333,7 +1289,7 @@ function DailyTracker({dayNum,todayLog,onSave,logs={}}){
         <button onClick={()=>setShowRelapseDiag(false)} style={{width:"100%",padding:"0.7rem",background:C.red,border:"none",color:"#fff",fontSize:"0.72rem",letterSpacing:"0.1em",cursor:"pointer"}}>Enregistrer et continuer</button>
       </div>
     </div>}
-    <button onClick={()=>{if(!ready)return;onSave({day:dayNum,humeur,energie,focus,action_done:action,rituel_done:rituel,rechute,temps,score,date:todayKey(),rechute_cause:relapseCause,rechute_lecon:relapseLesson});setSaved(true);}} disabled={!ready} style={{width:"100%",padding:"0.82rem",background:ready?C.gold:C.bg3,border:"none",color:ready?C.bg:C.textDim,fontSize:"0.73rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,opacity:ready?1:0.5,transition:"all 0.25s",cursor:ready?"pointer":"not-allowed"}}>
+    <button onClick={()=>{if(!ready)return;onSave({day:dayNum,humeur,energie,focus,action_done:action,rituel_done:rituel,rechute,temps,score,date:todayKey(),rechute_cause:relapseCause,rechute_lecon:relapseLesson});setSaved(true);}} disabled={!ready} style={{width:"100%",padding:"0.82rem",background:ready?C.gold:C.bg3,border:"none",color:ready?C.onGold:C.textDim,fontSize:"0.73rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,opacity:ready?1:0.5,transition:"all 0.25s",cursor:ready?"pointer":"not-allowed"}}>
       Enregistrer{score>0?` · Score ${score}/100`:""}
     </button>
     {saved&&<div style={{textAlign:"center",padding:"0.75rem 0",animation:"fadeIn 0.4s ease"}}>
@@ -1346,7 +1302,7 @@ function DailyTracker({dayNum,todayLog,onSave,logs={}}){
           streak>=7?"✦ 7 jours. Le mouvement est lancé.":
           streak>=3?`◈ ${streak} jours consécutifs. Continue.`:
           "Chaque jour compte. Même celui-ci.";
-        return <div style={{fontSize:"0.74rem",color:C.goldD,fontStyle:"italic",...SF}}>{msg}</div>;
+        return <div style={{fontSize:"0.74rem",color:C.text,fontStyle:"italic",...SF}}>{msg}</div>;
       })()}
     </div>}
   </div>;
@@ -1362,14 +1318,10 @@ function computeWeekScore(weekNum, logs, startDate){
     .filter(([k])=>{ const d=new Date(k); return d>=weekStart && d<weekEnd; })
     .map(([,v])=>v);
   if(weekLogs.length===0) return null;
-  // Exécution : actions faites / jours loggués × 4
   const actionPts = weekLogs.length>0 ? Math.round((weekLogs.filter(l=>l.action_done).length/weekLogs.length)*4*10)/10 : 0;
-  // Régularité : jours loggués / 7 × 3
   const regPts = Math.round((weekLogs.length/7)*3*10)/10;
-  // Énergie moyenne / 5 × 2
   const avgE = weekLogs.reduce((s,l)=>s+(l.energie||3),0)/weekLogs.length;
   const ePts = Math.round((avgE/5)*2*10)/10;
-  // Zéro rechute : 1 pt si aucune rechute
   const rechutePts = weekLogs.some(l=>l.rechute) ? 0 : 1;
   const total = Math.min(10, Math.round((actionPts+regPts+ePts+rechutePts)*10)/10);
   return { total, actionPts, regPts, ePts, rechutePts, logsCount: weekLogs.length };
@@ -1383,7 +1335,6 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
   const pc=ph==="ÉVEIL"?C.blue:ph==="CONSTRUCTION"?C.gold:C.green;
   const seuil=w.seuil||6;
 
-  // Jours de la semaine
   const days=[
     {key:"lundi",   label:"Lundi",    emoji:"🗓"},
     {key:"mercredi",label:"Mercredi", emoji:"⚡"},
@@ -1391,14 +1342,12 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
     {key:"dimanche",label:"Dimanche", emoji:"📊"},
   ];
 
-  // Score de CETTE semaine (calculé depuis logs)
   const score = computeWeekScore(weekNum, logs, startDate);
   const scoreTotal = score?.total ?? null;
   const scoreColor = scoreTotal===null?C.textDim:scoreTotal>=seuil?C.green:scoreTotal>=4?C.gold:C.red;
   const semainePasse = scoreTotal!==null;
   const debloque = scoreTotal===null ? false : scoreTotal>=seuil;
 
-  // Check des jours
   const daysDone=days.filter(d=>checked[`${weekNum}-${d.key}`]).length;
   const allDaysDone=daysDone>=3;
 
@@ -1409,7 +1358,6 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
     if(newCount>=3 && daysDone<3){ setOpen(true); setTimeout(()=>setShowWeekDone(true),600); }
   };
 
-  // Célébration fin de semaine
   if(showWeekDone) return(
     <div style={{animation:"fadeUp 0.3s ease",padding:"1.2rem",marginBottom:"0.5rem",position:"relative"}}>
       <div style={{position:"fixed",inset:0,background:`${pc}15`,zIndex:10,pointerEvents:"none"}}/>
@@ -1421,23 +1369,22 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
       </div>
       <div style={{position:"relative",zIndex:12,background:`${pc}12`,border:`2px solid ${pc}50`,borderTop:`5px solid ${pc}`,padding:"1.8rem 1.2rem",textAlign:"center",marginBottom:"1rem",animation:"popIn 0.6s ease 0.2s both",boxShadow:`0 0 40px ${pc}30`}}>
         <div style={{fontSize:"3rem",marginBottom:"0.6rem"}}>🏆</div>
-        <div style={{...SF,fontSize:"1.2rem",color:pc,marginBottom:"0.7rem"}}>Semaine {weekNum} — jours complétés</div>
+        <div style={{...SF,fontSize:"1.2rem",color:C.text,marginBottom:"0.7rem"}}>Semaine {weekNum} — jours complétés</div>
         <p style={{fontSize:"0.82rem",color:C.text,lineHeight:1.85,marginBottom:"0.6rem"}}>Ton score sera calculé automatiquement dimanche à partir de ton tracker journalier.</p>
         {score&&<div style={{background:`${scoreColor}15`,border:`1px solid ${scoreColor}40`,padding:"0.7rem",marginBottom:"0.7rem"}}>
-          <div style={{fontSize:"0.58rem",color:scoreColor,...MN,letterSpacing:"0.12em",marginBottom:"0.3rem"}}>SCORE SEMAINE {weekNum}</div>
-          <div style={{...SF,fontSize:"1.8rem",color:scoreColor}}>{scoreTotal}<span style={{fontSize:"0.9rem",color:C.textMid}}>/10</span></div>
+          <div style={{fontSize:"0.58rem",color:C.textDim,...MN,letterSpacing:"0.12em",marginBottom:"0.3rem"}}>SCORE SEMAINE {weekNum}</div>
+          <div style={{...SF,fontSize:"1.8rem",color:C.text}}>{scoreTotal}<span style={{fontSize:"0.9rem",color:C.textMid}}>/10</span></div>
           <div style={{fontSize:"0.7rem",color:scoreTotal>=seuil?C.green:C.red,marginTop:"0.3rem"}}>{scoreTotal>=seuil?`✓ Semaine ${weekNum+1} débloquée`:`✗ Score insuffisant (seuil : ${seuil}/10)`}</div>
         </div>}
-        {weekNum<12&&<p style={{fontSize:"0.78rem",color:pc,lineHeight:1.6,fontStyle:"italic"}}>✦ Continue le tracker chaque jour pour maximiser ton score.</p>}
+        {weekNum<12&&<p style={{fontSize:"0.78rem",color:C.textDim,lineHeight:1.6,fontStyle:"italic"}}>✦ Continue le tracker chaque jour pour maximiser ton score.</p>}
         {weekNum===12&&<p style={{fontSize:"0.85rem",color:C.green,lineHeight:1.6}}>✦ Tu as tenu les 90 jours. Peu de gens peuvent dire ça.</p>}
       </div>
-      <button onClick={()=>setShowWeekDone(false)} style={{position:"relative",zIndex:1,width:"100%",padding:"0.9rem",background:pc,border:"none",color:C.bg,fontSize:"0.74rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,cursor:"pointer"}}>
+      <button onClick={()=>setShowWeekDone(false)} style={{position:"relative",zIndex:1,width:"100%",padding:"0.9rem",background:pc,border:"none",color:pc===C.gold?C.onGold:C.bg,fontSize:"0.74rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,cursor:"pointer"}}>
         Voir la semaine ✦
       </button>
     </div>
   );
 
-  // Semaine verrouillée
   if(isLocked) return(
     <div style={{marginBottom:"0.5rem",border:`1px solid ${C.border}30`,background:`${C.bg2}80`,opacity:0.65}}>
       <div style={{padding:"0.75rem 0.85rem",display:"flex",alignItems:"center",gap:"0.65rem"}}>
@@ -1459,30 +1406,27 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
     </div>
   );
 
-  // Semaine active
   return <div style={{marginBottom:"0.5rem",border:`1px solid ${semainePasse&&debloque?C.green:semainePasse?C.red:C.border}`,background:C.bg2,transition:"border 0.3s"}}>
     <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",padding:"0.75rem 0.85rem",background:"transparent",border:"none",display:"flex",alignItems:"center",gap:"0.65rem",textAlign:"left",cursor:"pointer"}}>
       <span style={{...MN,fontSize:"0.63rem",color:C.textDim,minWidth:"2rem"}}>S{weekNum}</span>
       <Tag color={pc}>{ph}</Tag>
       <span style={{flex:1,color:C.text,fontSize:"0.83rem"}}>{w.titre||w.t}</span>
-      {scoreTotal!==null&&<span style={{...MN,fontSize:"0.65rem",color:scoreColor,fontWeight:500}}>{scoreTotal}/10</span>}
-      {daysDone>0&&scoreTotal===null&&<span style={{...MN,fontSize:"0.58rem",color:C.gold}}>{daysDone}/4j</span>}
+      {scoreTotal!==null&&<span style={{...MN,fontSize:"0.65rem",color:C.text,fontWeight:500}}>{scoreTotal}/10</span>}
+      {daysDone>0&&scoreTotal===null&&<span style={{...MN,fontSize:"0.58rem",color:C.text}}>{daysDone}/4j</span>}
       <span style={{color:C.textDim,fontSize:"0.78rem",flexShrink:0}}>{open?"−":"+"}</span>
     </button>
 
     {open&&<div style={{padding:"0 0.85rem 0.85rem",borderTop:`1px solid ${C.border}`}}>
-      {/* Objectif + Métrique */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.55rem",margin:"0.65rem 0"}}>
         {[["Objectif",w.objectif||w.o],["Métrique",w.metrique||w.m]].map(([l,v])=>(
           <div key={l}>
-            <div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>{l}</div>
+            <div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>{l}</div>
             <div style={{fontSize:"0.76rem",color:C.textMid,lineHeight:1.5}}>{v}</div>
           </div>
         ))}
       </div>
 
-      {/* Planning 4 jours */}
-      <div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.5rem"}}>Planning semaine</div>
+      <div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.5rem"}}>Planning semaine</div>
       {days.map(({key,label,emoji})=>{
         const ck=`${weekNum}-${key}`;
         const done=!!checked[ck];
@@ -1497,7 +1441,7 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
             <span style={{color:done?C.green:C.textDim,fontSize:"0.72rem",marginTop:"0.05rem",flexShrink:0}}>{done?"✓":"○"}</span>
             <div style={{flex:1}}>
               <div style={{display:"flex",gap:"0.5rem",alignItems:"center",marginBottom:"0.2rem"}}>
-                <span style={{fontSize:"0.58rem",color:isDimanche?C.gold:pc,...MN,letterSpacing:"0.08em"}}>{emoji} {label}</span>
+                <span style={{fontSize:"0.58rem",color:isDimanche?C.text:C.textMid,...MN,letterSpacing:"0.08em"}}>{emoji} {label}</span>
                 {dayData.h&&<span style={{fontSize:"0.56rem",color:C.textDim,...MN}}>{dayData.h}</span>}
                 {dayData.dur&&<span style={{fontSize:"0.54rem",color:C.textDim,...MN}}>· {dayData.dur}</span>}
               </div>
@@ -1509,12 +1453,11 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
         );
       })}
 
-      {/* Score automatique */}
       {score&&(
         <div style={{marginTop:"0.75rem",background:`${scoreColor}0A`,border:`1px solid ${scoreColor}25`,padding:"0.65rem 0.8rem"}}>
-          <div style={{fontSize:"0.54rem",color:scoreColor,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.4rem"}}>Score automatique — Semaine {weekNum}</div>
+          <div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.4rem"}}>Score automatique — Semaine {weekNum}</div>
           <div style={{display:"flex",gap:"0.5rem",alignItems:"baseline",marginBottom:"0.4rem"}}>
-            <span style={{...SF,fontSize:"1.6rem",color:scoreColor}}>{scoreTotal}</span>
+            <span style={{...SF,fontSize:"1.6rem",color:C.text}}>{scoreTotal}</span>
             <span style={{fontSize:"0.7rem",color:C.textMid}}>/10 · seuil {seuil}/10</span>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.3rem",fontSize:"0.66rem",color:C.textMid}}>
@@ -1523,7 +1466,7 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
             <span>Énergie : {score.ePts}/2</span>
             <span>Rechutes : {score.rechutePts}/1</span>
           </div>
-          <div style={{marginTop:"0.4rem",fontSize:"0.7rem",color:scoreColor,fontWeight:500}}>
+          <div style={{marginTop:"0.4rem",fontSize:"0.7rem",color:C.text,fontWeight:500}}>
             {debloque?`✓ Semaine ${weekNum+1} débloquée`:`✗ Score insuffisant — continue le tracker`}
           </div>
           {score.logsCount<7&&<div style={{fontSize:"0.62rem",color:C.textDim,marginTop:"0.3rem",fontStyle:"italic"}}>({score.logsCount}/7 jours loggués — score provisoire)</div>}
@@ -1535,7 +1478,6 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
         </div>
       )}
 
-      {/* Risque + Victoire */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.45rem",marginTop:"0.6rem"}}>
         {[["⚠ Risque",w.risque||w.r,C.red],["✓ Victoire",w.victoire||w.v,C.green]].map(([l,v,c])=>(
           <div key={l} style={{background:`${c}0A`,border:`1px solid ${c}20`,padding:"0.42rem 0.6rem"}}>
@@ -1549,7 +1491,6 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
 }
 
 function CoachChat({plan,plan2,weeks,dailyLogs}){
-  // Mémoire persistante localStorage
   const COACH_KEY = `coach_history_${plan?.nom_guerre||'user'}`;
   const savedHistory = React.useMemo(()=>{
     try{ const h=localStorage.getItem(COACH_KEY); return h?JSON.parse(h):null; }catch{return null;}
@@ -1559,7 +1500,6 @@ function CoachChat({plan,plan2,weeks,dailyLogs}){
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
 
-  // Sauvegarder l'historique à chaque nouveau message
   useEffect(()=>{
     try{ localStorage.setItem(COACH_KEY, JSON.stringify(msgs.slice(-20))); }catch{}
   },[msgs]);
@@ -1579,15 +1519,15 @@ function CoachChat({plan,plan2,weeks,dailyLogs}){
     }catch(e){setMsgs(m=>[...m,{role:"assistant",content:`[Erreur coach: ${e.message}]`}]);}
     finally{setLoading(false);}
   };
-  return <Card accent>
+  return <Card>
     <SH icon="💬" label="Coach IA" sub="Mémoire comportementale · Contextuel"/>
     <div style={{maxHeight:"260px",overflowY:"auto",marginBottom:"0.65rem",display:"flex",flexDirection:"column",gap:"0.45rem"}}>
       {msgs.map((m,i)=><div key={i} style={{padding:"0.6rem 0.8rem",background:m.role==="user"?`${C.gold}0E`:C.bg3,border:`1px solid ${m.role==="user"?C.goldD:C.border}`,borderLeft:`3px solid ${m.role==="user"?C.gold:C.textDim}`,alignSelf:m.role==="user"?"flex-end":"flex-start",maxWidth:"92%"}}>
-        <div style={{fontSize:"0.53rem",color:m.role==="user"?C.goldD:C.textDim,letterSpacing:"0.12em",textTransform:"uppercase",...MN,marginBottom:"0.18rem"}}>{m.role==="user"?"Toi":"Coach"}</div>
+        <div style={{fontSize:"0.53rem",color:m.role==="user"?C.text:C.textDim,letterSpacing:"0.12em",textTransform:"uppercase",...MN,marginBottom:"0.18rem"}}>{m.role==="user"?"Toi":"Coach"}</div>
         <div style={{fontSize:"0.81rem",color:C.text,lineHeight:1.6}}>{m.content}</div>
       </div>)}
       {loading&&<div style={{padding:"0.7rem 0.9rem",background:C.bg3,border:`1px solid ${C.border}`,borderLeft:`3px solid ${C.gold}`,alignSelf:"flex-start",display:"flex",alignItems:"center",gap:"0.5rem"}}>
-        <div style={{fontSize:"0.58rem",color:C.goldD,letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>Coach</div>
+        <div style={{fontSize:"0.58rem",color:C.textDim,letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>Coach</div>
         <div style={{display:"flex",gap:"0.25rem",alignItems:"center"}}>
           {[0,1,2].map(i=><span key={i} style={{width:"5px",height:"5px",background:C.gold,borderRadius:"50%",display:"inline-block",animation:`dotBounce 1.2s ease ${i*0.15}s infinite`}}/>)}
         </div>
@@ -1596,7 +1536,7 @@ function CoachChat({plan,plan2,weeks,dailyLogs}){
     </div>
     <div style={{display:"flex",gap:"0.35rem"}}>
       <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&send()} placeholder="Ta question…" style={{flex:1,padding:"0.68rem",background:C.bg,border:`1px solid ${C.border}`,borderBottom:`2px solid ${C.goldD}`,color:C.text,fontSize:"0.81rem",outline:"none"}}/>
-      <button onClick={send} disabled={!input.trim()||loading} style={{padding:"0.68rem 0.85rem",background:input.trim()&&!loading?C.gold:C.bg3,border:"none",color:input.trim()&&!loading?C.bg:C.textDim,fontSize:"0.75rem",cursor:input.trim()&&!loading?"pointer":"default",transition:"all 0.2s"}}>→</button>
+      <button onClick={send} disabled={!input.trim()||loading} style={{padding:"0.68rem 0.85rem",background:input.trim()&&!loading?C.gold:C.bg3,border:"none",color:input.trim()&&!loading?C.onGold:C.textDim,fontSize:"0.75rem",cursor:input.trim()&&!loading?"pointer":"default",transition:"all 0.2s"}}>→</button>
     </div>
   </Card>;
 }
@@ -1665,11 +1605,9 @@ function EngagementTab({plan, plan2, firstName}){
     canvas.width = 900; canvas.height = 1200;
     const ctx = canvas.getContext("2d");
 
-    // Fond noir
     ctx.fillStyle = "#080808";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Bordure dorée
     ctx.strokeStyle = "#8B6914";
     ctx.lineWidth = 1;
     ctx.strokeRect(40, 40, 820, 1120);
@@ -1677,7 +1615,6 @@ function EngagementTab({plan, plan2, firstName}){
     ctx.lineWidth = 0.5;
     ctx.strokeRect(50, 50, 800, 1100);
 
-    // Titre
     ctx.fillStyle = "#8B6914";
     ctx.font = "13px 'DM Mono', monospace";
     ctx.textAlign = "center";
@@ -1687,12 +1624,10 @@ function EngagementTab({plan, plan2, firstName}){
     ctx.font = "bold 46px Georgia, serif";
     ctx.fillText(plan?.nom_guerre||"", 450, 180);
 
-    // Ligne décorative
     ctx.strokeStyle = "#8B6914";
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(150,205); ctx.lineTo(750,205); ctx.stroke();
 
-    // Texte engagement
     const textLines = [
       `Je soussigné(e) ${signerNom},`,
       "",
@@ -1731,7 +1666,6 @@ function EngagementTab({plan, plan2, firstName}){
       y += line === "" ? 15 : 30;
     });
 
-    // Zone signature
     const sigCanvas = canvasRef.current;
     y = Math.max(y + 40, 880);
     ctx.strokeStyle = "#2A2A2A";
@@ -1739,7 +1673,6 @@ function EngagementTab({plan, plan2, firstName}){
     ctx.beginPath(); ctx.moveTo(150, y+80); ctx.lineTo(480, y+80); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(520, y+80); ctx.lineTo(750, y+80); ctx.stroke();
 
-    // Coller la signature du canvas
     if (sigCanvas && hasStrokes) {
       ctx.drawImage(sigCanvas, 150, y, 330, 80);
     }
@@ -1750,12 +1683,10 @@ function EngagementTab({plan, plan2, firstName}){
     ctx.fillText("Signature", 315, y+100);
     ctx.fillText(today, 635, y+100);
 
-    // Footer
     ctx.fillStyle = "#8B6914";
     ctx.font = "11px monospace";
     ctx.fillText("✦ Créé par Lamine Diabaté · Mon Plan de Vie 90 Jours ✦", 450, 1160);
 
-    // Télécharger
     const link = document.createElement("a");
     link.download = `engagement-${(plan?.nom_guerre||"plan").replace(/\s+/g,"-").toLowerCase()}.png`;
     link.href = canvas.toDataURL("image/png");
@@ -1771,22 +1702,21 @@ function EngagementTab({plan, plan2, firstName}){
       <Card accent>
         <SH icon="✦" label="Mon Engagement Personnel" sub="Signe et télécharge ton contrat"/>
 
-        {/* Document d'engagement */}
         <div style={{
           padding:"1.4rem",background:`${C.gold}06`,
           border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`,
           marginBottom:"1.2rem",position:"relative"
         }}>
-          <div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.25em",textTransform:"uppercase",...MN,textAlign:"center",marginBottom:"0.8rem"}}>Engagement Personnel</div>
+          <div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.25em",textTransform:"uppercase",...MN,textAlign:"center",marginBottom:"0.8rem"}}>Engagement Personnel</div>
 
-          <div style={{...SF,fontSize:"1.3rem",color:C.gold,textAlign:"center",marginBottom:"1rem",fontWeight:500}}>{plan?.nom_guerre||"…"}</div>
+          <div style={{...SF,fontSize:"1.3rem",color:C.text,textAlign:"center",marginBottom:"1rem",fontWeight:500}}>{plan?.nom_guerre||"…"}</div>
 
-          <div style={{fontSize:"0.52rem",color:C.goldD,letterSpacing:"0.12em",textTransform:"uppercase",...MN,marginBottom:"0.25rem"}}>Je soussigné(e)</div>
+          <div style={{fontSize:"0.52rem",color:C.textDim,letterSpacing:"0.12em",textTransform:"uppercase",...MN,marginBottom:"0.25rem"}}>Je soussigné(e)</div>
           <input
             value={signerNom}
             onChange={e=>setSignerNom(e.target.value)}
             placeholder="Entre ton prénom et nom"
-            style={{width:"100%",padding:"0.6rem 0.75rem",background:C.bg,border:`1px solid ${C.goldD}`,color:C.gold,fontSize:"0.9rem",outline:"none",marginBottom:"1rem",...SF}}
+            style={{width:"100%",padding:"0.6rem 0.75rem",background:C.bg,border:`1px solid ${C.goldD}`,color:C.text,fontSize:"0.9rem",outline:"none",marginBottom:"1rem",...SF}}
           />
 
           <div style={{fontSize:"0.82rem",color:C.textMid,lineHeight:1.85,marginBottom:"1rem"}}>
@@ -1794,12 +1724,12 @@ function EngagementTab({plan, plan2, firstName}){
           </div>
 
           <div style={{padding:"0.7rem 0.9rem",background:C.bg3,borderLeft:`3px solid ${C.gold}`,marginBottom:"0.6rem"}}>
-            <div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.2rem"}}>Objectif</div>
+            <div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.2rem"}}>Objectif</div>
             <div style={{fontSize:"0.82rem",color:C.text,lineHeight:1.5}}>{contrat}</div>
           </div>
 
           <div style={{padding:"0.7rem 0.9rem",background:C.bg3,borderLeft:`3px solid ${C.goldD}`,marginBottom:"0.6rem"}}>
-            <div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.2rem"}}>Mission centrale</div>
+            <div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.2rem"}}>Mission centrale</div>
             <div style={{fontSize:"0.82rem",color:C.text,lineHeight:1.5}}>{mission}</div>
           </div>
 
@@ -1809,13 +1739,12 @@ function EngagementTab({plan, plan2, firstName}){
             À revenir même après une rechute.
           </div>
 
-          {citation&&<div style={{...SF,fontSize:"0.88rem",color:C.goldL,fontStyle:"italic",textAlign:"center",padding:"0.6rem",borderTop:`1px solid ${C.goldD}40`}}>"{citation}"</div>}
+          {citation&&<div style={{...SF,fontSize:"0.88rem",color:C.text,fontStyle:"italic",textAlign:"center",padding:"0.6rem",borderTop:`1px solid ${C.goldD}40`}}>"{citation}"</div>}
         </div>
 
-        {/* Zone de signature */}
         <div style={{marginBottom:"1rem"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.4rem"}}>
-            <div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.15em",textTransform:"uppercase",...MN}}>Signature au doigt</div>
+            <div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN}}>Signature au doigt</div>
             <button onClick={clearCanvas} style={{background:"none",border:"none",color:C.textDim,fontSize:"0.68rem",cursor:"pointer",...MN}}>Effacer</button>
           </div>
           <div style={{position:"relative",border:`1px solid ${C.goldD}`,background:C.bg,borderRadius:"2px"}}>
@@ -1834,14 +1763,13 @@ function EngagementTab({plan, plan2, firstName}){
           </div>
         </div>
 
-        {/* Bouton télécharger */}
         <button
           onClick={()=>{setSigned(true);downloadEngagement();}}
           disabled={!signerNom.trim()||!hasStrokes}
           style={{
             width:"100%",padding:"1rem",
             background:signerNom.trim()&&hasStrokes?C.gold:C.bg3,
-            border:"none",color:signerNom.trim()&&hasStrokes?C.bg:C.textDim,
+            border:"none",color:signerNom.trim()&&hasStrokes?C.onGold:C.textDim,
             fontSize:"0.74rem",letterSpacing:"0.18em",textTransform:"uppercase",fontWeight:500,
             cursor:signerNom.trim()&&hasStrokes?"pointer":"not-allowed",
             opacity:signerNom.trim()&&hasStrokes?1:0.5,
@@ -1858,7 +1786,7 @@ function EngagementTab({plan, plan2, firstName}){
   );
 }
 
-// ── Composant Victory hebdomadaire — extrait de l'IIFE pour respecter les Rules of Hooks ──
+// ── Composant Victory hebdomadaire ──
 function WeeklyVictory({logs}){
   const wk=Math.ceil((Object.keys(logs||{}).length||1)/7);
   const vKey=`victory_w${wk}`;
@@ -1875,22 +1803,21 @@ function WeeklyVictory({logs}){
 
 export default function App(){
   const [screen,setScreen]=useState("landing");
-  const [activeDomain,setActiveDomain]=useState(null); // domaine actif
+  const [activeDomain,setActiveDomain]=useState(null);
 
-  // ── Chargement XLSX via script dynamique (React ignore les <script> JSX) ──
   useEffect(()=>{
-    if(window.XLSX)return; // déjà chargé
+    if(window.XLSX)return;
     const s=document.createElement("script");
     s.src=SHEETJS_URL;s.async=true;
     s.onload=()=>console.log("XLSX ready");
     s.onerror=()=>console.warn("XLSX load error");
     document.head.appendChild(s);
   },[]);
-  const [si,setSi]=useState(0); // segment index
-  const [qi,setQi]=useState(0); // question index
+  const [si,setSi]=useState(0);
+  const [qi,setQi]=useState(0);
   const [answers,setAnswers]=useState({});
-  const [plan,setPlan]=useState(null);   // appel 1 : identité+diagnostic+scorecard
-  const [plan2,setPlan2]=useState(null); // appel 2 : rituel+protocoles+lectures
+  const [plan,setPlan]=useState(null);
+  const [plan2,setPlan2]=useState(null);
   const [weeks,setWeeks]=useState(null);
   const [weeksLoading,setWeeksLoading]=useState(false);
   const [checks,setChecks]=useState({});
@@ -1901,8 +1828,8 @@ export default function App(){
   const [email,setEmail]=email_s,[code,setCode]=code_s;
   const [accessErr,setAccessErr]=useState("");
   const [accessShake,setAccessShake]=useState(false);
-  const [qError,setQError]=useState("");       // message d'erreur question
-  const [qShake,setQShake]=useState(false);    // animation shake sur question
+  const [qError,setQError]=useState("");
+  const [qShake,setQShake]=useState(false);
   const [showAide,setShowAide]=useState(false);
   const [showReward,setShowReward]=useState("");
   const [copied,setCopied]=useState(false);
@@ -1911,11 +1838,9 @@ export default function App(){
   const [trackerOpen,setTrackerOpen]=useState(false);
   const [foc,setFoc]=useState({});
 
-  // ── HYDRATION MULTI-PLANS (local + cloud) ──
   useEffect(()=>{
     const hydrate = async () => {
       const lastDomain = getLastDomain();
-      // 1. Essai local d'abord (instantané)
       const allLocal = loadAllDomains();
       const hasLocal = Object.keys(allLocal).length > 0;
       if(hasLocal && lastDomain && allLocal[lastDomain]){
@@ -1926,7 +1851,6 @@ export default function App(){
         if(saved.checks)setChecks(saved.checks);if(saved.logs)setLogs(saved.logs);
         if(saved.startDate)setStartDate(saved.startDate);if(saved.nom)setNom(saved.nom);
         setScreen("home");
-        // 2. Sync cloud en arrière-plan — met à jour si plus récent
         const userKey = saved.nom || saved.email || lastDomain;
         const cloudData = await sbLoad(userKey, lastDomain);
         if(cloudData?.plan && cloudData.updated_at > (saved.updated_at||"")){
@@ -1937,7 +1861,6 @@ export default function App(){
           saveByDomain(lastDomain, cloudData);
         }
       } else {
-        // Fallback ancien storage local
         const saved=load();
         if(!saved)return;
         if(saved.plan){
@@ -1962,7 +1885,6 @@ export default function App(){
       const dataToSave={plan,plan2,weeks,answers,nom,email,checks,logs,startDate,updated_at:new Date().toISOString()};
       saveByDomain(d,dataToSave);
       if(!activeDomain)setActiveDomain(d);
-      // Sauvegarde cloud en arrière-plan
       const userKey=nom||email||d;
       sbSave(userKey, d, dataToSave);
     }else{const s=load()||{};save({...s,plan,plan2,weeks,answers,nom,email,checks,logs,startDate});}
@@ -1980,15 +1902,13 @@ export default function App(){
   const dn=dayNum(startDate);const lv=getLevel(dn);
   const stats=computeStats(logs);const todayLog=logs[todayKey()];const contMsg=getContMsg(dn);
 
-  // Auto-ouvre le tracker si journée pas encore enregistrée — après dn
   useEffect(()=>{ if(plan&&!logs[todayKey()]) setTrackerOpen(true); },[plan,startDate]);
 
   const LOAD_STEPS=["Analyse psychologique du profil…","Construction du diagnostic…","Calcul du scorecard comportemental…","Génération du rituel et protocoles…","Finalisation du plan…"];
   const setF=(k,v)=>setFoc(p=>({...p,[k]:v}));
-  const iSt=k=>({width:"100%",padding:"0.82rem 0.95rem",background:C.bg,border:`1px solid ${foc[k]?C.goldD:C.border}`,borderBottom:`2px solid ${foc[k]?C.gold:C.border}`,color:C.text,fontSize:"0.88rem",fontWeight:300,outline:"none",transition:"all 0.25s"});
-  const BG={padding:"1rem 2.5rem",background:C.gold,border:"none",color:C.bg,fontSize:"0.75rem",letterSpacing:"0.18em",textTransform:"uppercase",fontWeight:500,cursor:"pointer",boxShadow:`0 4px 22px ${C.gold}35`};
+  const iSt=k=>({width:"100%",padding:"1rem 1.1rem",borderRadius:"12px",background:C.bg2,border:`1px solid ${foc[k]?C.gold:C.border}`,boxShadow:foc[k]?`0 0 0 4px ${C.gold}1A`:"none",color:C.text,fontSize:"0.88rem",fontWeight:400,outline:"none",transition:"all 220ms ease-out"});
+  const BG={padding:"1.1rem 2.5rem",minHeight:"60px",background:C.gold,border:"none",borderRadius:"14px",color:C.onGold,fontSize:"0.75rem",letterSpacing:"0.18em",textTransform:"uppercase",fontWeight:500,cursor:"pointer",boxShadow:`0 10px 40px rgba(0,0,0,.18)`,transition:"all 220ms ease-out"};
 
-  // ── ACCESS ──
   const doAccess=()=>{
     if(!nom.trim()||nom.trim().length<2){setAccessErr("Entre ton nom complet.");setAccessShake(true);setTimeout(()=>setAccessShake(false),500);return;}
     if(!email.trim()||!email.includes("@")){setAccessErr("Email invalide.");setAccessShake(true);setTimeout(()=>setAccessShake(false),500);return;}
@@ -2004,7 +1924,6 @@ export default function App(){
   const [transitionData, setTransitionData] = useState(null);
   const [showTransition, setShowTransition] = useState(false);
 
-  // ── QUIZ VALIDATION & NAVIGATION ──
   const trigQError=(msg)=>{setQError(msg);setQShake(true);setTimeout(()=>setQShake(false),500);setTimeout(()=>setQError(""),3000);};
   const setVal=v=>{setQError("");setAnswers(p=>({...p,[q.id]:v}));};
   const setSubVal=(parentId,subKey,v)=>{setQError("");setAnswers(p=>({...p,[parentId]:{...(p[parentId]||{}),[subKey]:v}}));};
@@ -2051,7 +1970,6 @@ export default function App(){
 
   const goBack=()=>{
     setShowAide(false);setQError("");
-    // Retour en arrière en sautant les domainOnly si nécessaire
     if(qi>0){
       let prevQi = qi-1;
       while(prevQi > 0){
@@ -2065,7 +1983,6 @@ export default function App(){
       setQi((getSegments(answers.q_domaine_principal)||SEGMENTS_FINANCES)[si-1].questions.length-1);
     }
   };
-  // ── GENERATE — 2 appels séquentiels (p2 reçoit nom_guerre de p1) ──
   const generate=async()=>{
     const dom = answers.q_domaine_principal || "Finances";
     setActiveDomain(dom);
@@ -2082,15 +1999,13 @@ export default function App(){
       return parsedC;
     };
     try{
-      // Appel 1 — identité + diagnostic + scorecard
       const p1=await call(buildPrompt1(answers),3500);
       setLoadStep(2);
-      // Appel 2 — rituel + protocoles + lectures (avec vrai nom_guerre)
       const p2=await call(buildPrompt2(answers,p1.nom_guerre||""),4000);
       timers.forEach(clearTimeout);
       setPlan(p1);setPlan2(p2);
       setStartDate(new Date().toISOString().split('T')[0]);
-      setShowEmailPopup(true); // Afficher popup email avant home
+      setShowEmailPopup(true);
       setScreen("home");
     }catch(e){
       timers.forEach(clearTimeout);
@@ -2099,7 +2014,6 @@ export default function App(){
     }
   };
 
-  // ── GENERATE WEEKS ──
   const generateWeeks=async(p1)=>{
     if(weeks||weeksLoading)return;setWeeksLoading(true);
     const ng=p1?.nom_guerre||"";
@@ -2124,9 +2038,7 @@ export default function App(){
       return parsed.semaines;
     };
     try{
-      // Appel 1 : S1-S6
       const part1=await callAPI(buildPromptWeeksA(answers,ng));
-      // Appel 2 : S7-S12 (avec délai pour éviter rate limit)
       await new Promise(r=>setTimeout(r,1500));
       const part2=await callAPI(buildPromptWeeksB(answers,ng));
       const all=[...part1,...part2].map(norm).filter(w=>w.semaine).sort((a,b)=>a.semaine-b.semaine);
@@ -2194,7 +2106,6 @@ export default function App(){
     if(!window.XLSX){alert("Chargement en cours, réessaye dans 2 secondes.");return;}
     try{
       const wb=window.XLSX.utils.book_new();
-      // ── Profil & Diagnostic ──
       const profil=[
         ["MON PLAN DE VIE 90 JOURS",""],["",""],
         ["Nom de Guerre",plan.nom_guerre||"—"],["Domaine",answers.q_domaine_principal||"—"],
@@ -2218,21 +2129,18 @@ export default function App(){
       const wsProfil=window.XLSX.utils.aoa_to_sheet(profil);
       wsProfil["!cols"]=[{wch:26},{wch:65}];
       window.XLSX.utils.book_append_sheet(wb,wsProfil,"Profil & Diagnostic");
-      // ── Plan 12 Semaines ──
       const weeksData=[["Sem","Phase","Rôle","Titre","Objectif","Action 1","Action 2","Action 3","Métrique","Victoire","Risque"]];
       (weeks||[]).forEach(w=>weeksData.push([`S${w.s||w.semaine||"?"}`,w.ph||w.phase||"—",w.role||"—",w.t||w.titre||"—",w.o||w.objectif||"—",(w.a||w.actions||[])[0]||"—",(w.a||w.actions||[])[1]||"—",(w.a||w.actions||[])[2]||"—",w.m||w.metrique||"—",w.v||w.victoire||"—",w.r||w.risque||"—"]));
       if(weeksData.length===1)weeksData.push(["Génération en cours...","","","","","","","","","",""]);
       const wsWeeks=window.XLSX.utils.aoa_to_sheet(weeksData);
       wsWeeks["!cols"]=[{wch:6},{wch:12},{wch:22},{wch:22},{wch:35},{wch:38},{wch:38},{wch:38},{wch:22},{wch:22},{wch:22}];
       window.XLSX.utils.book_append_sheet(wb,wsWeeks,"Plan 12 Semaines");
-      // ── Tracker J1-J90 ──
       const tracker=[["Jour","Date","Humeur","Énergie","Focus","Action","Rituel","Rechute","Temps(min)","Notes"]];
       const start=startDate?new Date(startDate):new Date();
       for(let i=1;i<=90;i++){const d=new Date(start);d.setDate(d.getDate()+i-1);const key=d.toISOString().split("T")[0];const log=logs[key]||{};tracker.push([`J${i}`,d.toLocaleDateString("fr-FR"),log.humeur||"",log.energie||"",log.focus||"",log.action_done?"✓":"",log.rituel?"✓":"",log.rechute?"⚠":"",log.temps||"",log.notes||""]);}
       const wsTracker=window.XLSX.utils.aoa_to_sheet(tracker);
       wsTracker["!cols"]=[{wch:6},{wch:14},{wch:10},{wch:10},{wch:8},{wch:10},{wch:8},{wch:10},{wch:12},{wch:35}];
       window.XLSX.utils.book_append_sheet(wb,wsTracker,"Tracker J1-J90");
-      // ── Rituel & Protocoles ──
       const rituel=[["RITUEL",""],["Autosuggestion",plan2?.rituel?.autosuggestion||"—"],["",""],["MATIN",""]];
       (plan2?.rituel?.matin||[]).forEach(e=>rituel.push([e.etape,`${e.duree} — ${e.action}`]));
       rituel.push(["Première action",plan2?.rituel?.premiere_action_du_jour||"—"]);
@@ -2246,7 +2154,6 @@ export default function App(){
       const wsRituel=window.XLSX.utils.aoa_to_sheet(rituel);
       wsRituel["!cols"]=[{wch:22},{wch:70}];
       window.XLSX.utils.book_append_sheet(wb,wsRituel,"Rituel & Protocoles");
-      // ── Lectures ──
       const lectures=[["Titre","Auteur","Pourquoi"]];
       (plan2?.lectures||[]).forEach(l=>lectures.push([l.titre||"—",l.auteur||"—",l.pourquoi||"—"]));
       const wsL=window.XLSX.utils.aoa_to_sheet(lectures);
@@ -2258,7 +2165,7 @@ export default function App(){
   const printPDF=()=>{
     if(!plan)return;const s=plan;const s2=plan2||{};
     const rows=Object.entries({Discipline:s.scorecard?.discipline,Focus:s.scorecard?.focus,Énergie:s.scorecard?.energie,Clarté:s.scorecard?.clarte,Constance:s.scorecard?.constance}).map(([k,v])=>`<tr><td>${k}</td><td style="color:#C9A84C">${v?.score}/100</td><td>${v?.lecture||""}</td></tr>`).join("");
-    const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Plan 90J — ${firstName}</title><style>@import url('${FONT}');*{margin:0;padding:0;box-sizing:border-box}body{background:#080808;color:#F0EAD6;font-family:'Jost',sans-serif;font-weight:300;font-size:10.5pt;line-height:1.75;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{max-width:210mm;margin:0 auto;padding:16mm 20mm}.cover{text-align:center;padding:18mm 0;border-bottom:1px solid #8B6914;margin-bottom:10mm}.nom{font-family:'Cormorant Garamond',serif;font-size:36pt;color:#C9A84C;font-weight:500;margin:5mm 0}.mantra{font-family:'Cormorant Garamond',serif;font-size:13pt;color:#E8C97A;font-style:italic;margin:3mm 0}.mission{font-size:9.5pt;color:#A89880;margin:4mm auto;max-width:140mm}.aa{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin:5mm 0}.col{padding:4mm;border:1px solid #1E1E1E}.col-lbl{font-size:6.5pt;color:#8B6914;letter-spacing:.2em;text-transform:uppercase;margin-bottom:2mm}h2{font-family:'Cormorant Garamond',serif;font-size:11pt;color:#C9A84C;margin-top:7mm;margin-bottom:2mm;border-bottom:1px solid #1E1E1E;padding-bottom:1mm}p{margin:1.5mm 0;color:#D0C8B8;line-height:1.8}ul{padding-left:5mm;margin:2mm 0}li{margin:1.5mm 0;color:#D0C8B8}b{color:#E8C97A;font-weight:400}table{width:100%;border-collapse:collapse;margin:3mm 0;font-size:9pt}th{background:#C9A84C15;color:#E8C97A;font-weight:400;padding:2mm 3mm;border:1px solid #2A2A2A;text-align:left}td{padding:2mm 3mm;border:1px solid #1E1E1E;color:#D0C8B8}.box{background:#C9A84C0A;border:1px solid #8B6914;padding:4mm 5mm;margin:5mm 0;font-style:italic;color:#E8C97A;text-align:center}.footer{margin-top:12mm;padding-top:4mm;border-top:1px solid #8B6914;text-align:center;font-size:6.5pt;color:#8B6914;letter-spacing:.1em}@media print{@page{margin:0;size:A4}}</style></head><body><div class="page">
+    const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Plan 90J — ${firstName}</title><style>@import url('${FONT_PDF}');*{margin:0;padding:0;box-sizing:border-box}body{background:#080808;color:#F0EAD6;font-family:'Jost',sans-serif;font-weight:300;font-size:10.5pt;line-height:1.75;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{max-width:210mm;margin:0 auto;padding:16mm 20mm}.cover{text-align:center;padding:18mm 0;border-bottom:1px solid #8B6914;margin-bottom:10mm}.nom{font-family:'Cormorant Garamond',serif;font-size:36pt;color:#C9A84C;font-weight:500;margin:5mm 0}.mantra{font-family:'Cormorant Garamond',serif;font-size:13pt;color:#E8C97A;font-style:italic;margin:3mm 0}.mission{font-size:9.5pt;color:#A89880;margin:4mm auto;max-width:140mm}.aa{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin:5mm 0}.col{padding:4mm;border:1px solid #1E1E1E}.col-lbl{font-size:6.5pt;color:#8B6914;letter-spacing:.2em;text-transform:uppercase;margin-bottom:2mm}h2{font-family:'Cormorant Garamond',serif;font-size:11pt;color:#C9A84C;margin-top:7mm;margin-bottom:2mm;border-bottom:1px solid #1E1E1E;padding-bottom:1mm}p{margin:1.5mm 0;color:#D0C8B8;line-height:1.8}ul{padding-left:5mm;margin:2mm 0}li{margin:1.5mm 0;color:#D0C8B8}b{color:#E8C97A;font-weight:400}table{width:100%;border-collapse:collapse;margin:3mm 0;font-size:9pt}th{background:#C9A84C15;color:#E8C97A;font-weight:400;padding:2mm 3mm;border:1px solid #2A2A2A;text-align:left}td{padding:2mm 3mm;border:1px solid #1E1E1E;color:#D0C8B8}.box{background:#C9A84C0A;border:1px solid #8B6914;padding:4mm 5mm;margin:5mm 0;font-style:italic;color:#E8C97A;text-align:center}.footer{margin-top:12mm;padding-top:4mm;border-top:1px solid #8B6914;text-align:center;font-size:6.5pt;color:#8B6914;letter-spacing:.1em}@media print{@page{margin:0;size:A4}}</style></head><body><div class="page">
 <div class="cover"><div style="font-size:6.5pt;color:#8B6914;letter-spacing:.3em;text-transform:uppercase">Programme de Transformation Comportementale · 90 Jours</div><div class="nom">${s.nom_guerre}</div><div class="mantra">${(s.citations_personnelles||[])[0]||s2.rituel?.autosuggestion||""}</div><div class="mission">${s.scorecard?.mission_centrale||""}</div><div style="font-size:6.5pt;color:#8B6914;letter-spacing:.2em;text-transform:uppercase;margin-top:3mm">Pour ${firstName} · ${new Date().toLocaleDateString("fr-FR")}</div></div>
 <h2>AVANT / APRÈS</h2><div class="aa"><div class="col"><div class="col-lbl">Aujourd'hui</div><p>${answers.q_etat_now||""}</p></div><div class="col"><div class="col-lbl">Dans 90 jours</div><p style="color:#C9A84C">${answers.q_identite_cible||""}</p></div></div>
 <h2>DIAGNOSTIC LUCIDE</h2><p>${s.diagnostic?.resume||""}</p><p><b>Bloquant :</b> ${s.diagnostic?.bloquant_central||""}</p><p><b>Schéma :</b> ${s.diagnostic?.schema_sabotage||""}</p>
@@ -2272,7 +2179,6 @@ export default function App(){
     const w=window.open("","_blank","width=900,height=700");if(!w){alert("Autorise les popups.");return;}w.document.write(html);w.document.close();
   };
 
-  // Share viewer
   useEffect(()=>{const p=new URLSearchParams(window.location.search).get("share");if(!p)return;try{const d=JSON.parse(decodeURIComponent(atob(p)));setScreen("shareview");window._sp=d;}catch(e){}}, []);
 
   // ══════════════════════════════════════════════════════
@@ -2283,26 +2189,25 @@ export default function App(){
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",fontFamily:"'Jost',sans-serif"}}>
       <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
       <Divider/><div style={{textAlign:"center",margin:"1.5rem 0",maxWidth:"460px",width:"100%"}}>
-        <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.3em",textTransform:"uppercase",...MN,marginBottom:"0.7rem"}}>Plan partagé</div>
+        <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.3em",textTransform:"uppercase",...MN,marginBottom:"0.7rem"}}>Plan partagé</div>
         <div style={{...SF,fontSize:"clamp(1.4rem,5vw,2rem)",color:C.text}}>Mon Plan de Vie 90 Jours</div>
-        <div style={{...SF,fontSize:"0.9rem",fontStyle:"italic",color:C.gold,marginTop:"0.25rem"}}>Pour {p.f}</div>
+        <div style={{...SF,fontSize:"0.9rem",fontStyle:"italic",color:C.text,marginTop:"0.25rem"}}>Pour {p.f}</div>
       </div>
       <div style={{maxWidth:"440px",width:"100%"}}>
         <Card accent>
-          <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>Nom de Guerre</div>
-          <div style={{...SF,fontSize:"1.5rem",color:C.gold,marginBottom:"0.9rem"}}>{p.n}</div>
+          <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>Nom de Guerre</div>
+          <div style={{...SF,fontSize:"1.5rem",color:C.text,marginBottom:"0.9rem"}}>{p.n}</div>
           <div style={{fontSize:"0.85rem",color:C.textMid,lineHeight:1.8,marginBottom:"0.9rem",fontStyle:"italic"}}>{p.m}</div>
-          <div style={{padding:"0.75rem",background:`${C.gold}0A`,border:`1px solid ${C.goldD}`,textAlign:"center",...SF,fontSize:"0.92rem",color:C.gold,fontStyle:"italic"}}>{p.c}</div>
+          <div style={{padding:"0.75rem",background:`${C.gold}0A`,border:`1px solid ${C.goldD}`,textAlign:"center",...SF,fontSize:"0.92rem",color:C.text,fontStyle:"italic"}}>{p.c}</div>
         </Card>
         <div style={{textAlign:"center",marginTop:"0.9rem"}}>
-          <div style={{fontSize:"0.75rem",color:C.textDim,marginBottom:"0.9rem"}}>Généré par <span style={{color:C.gold}}>Lamine Diabaté</span></div>
+          <div style={{fontSize:"0.75rem",color:C.textDim,marginBottom:"0.9rem"}}>Généré par <span style={{color:C.text}}>Lamine Diabaté</span></div>
           <button onClick={()=>setScreen("landing")} style={{...BG}}>Créer mon propre plan ✦</button>
         </div>
       </div>
     </div>
   );}
 
-  // ── EMAIL POPUP ──
   const handleEmailSubscribe = async () => {
     if (!emailInput || !emailInput.includes('@')) return;
     setEmailLoading(true);
@@ -2336,8 +2241,8 @@ export default function App(){
           </div>
         ) : (
           <>
-            <div style={{fontSize:'0.55rem',color:C.goldD,letterSpacing:'0.2em',textTransform:'uppercase',...MN,marginBottom:'0.6rem'}}>Rester dans le mouvement</div>
-            <div style={{...SF,fontSize:'1.2rem',color:C.gold,marginBottom:'0.8rem'}}>Reçois ton plan + tes rappels quotidiens</div>
+            <div style={{fontSize:'0.55rem',color:C.textDim,letterSpacing:'0.2em',textTransform:'uppercase',...MN,marginBottom:'0.6rem'}}>Rester dans le mouvement</div>
+            <div style={{...SF,fontSize:'1.2rem',color:C.text,marginBottom:'0.8rem'}}>Reçois ton plan + tes rappels quotidiens</div>
             <p style={{fontSize:'0.82rem',color:C.textMid,lineHeight:1.7,marginBottom:'1.2rem'}}>J1, J3, J7, J14, J30, J60, J90 — des messages personnalisés pour tenir jusqu'au bout.</p>
             <input
               type="email"
@@ -2347,7 +2252,7 @@ export default function App(){
               onKeyDown={e=>e.key==='Enter'&&handleEmailSubscribe()}
               style={{width:'100%',padding:'0.8rem',background:C.bg3,border:`1px solid ${C.goldD}`,color:C.text,fontSize:'0.85rem',marginBottom:'0.8rem',outline:'none',boxSizing:'border-box'}}
             />
-            <button onClick={handleEmailSubscribe} disabled={emailLoading} style={{width:'100%',padding:'0.85rem',background:C.gold,border:'none',color:C.bg,fontSize:'0.75rem',letterSpacing:'0.15em',fontWeight:500,cursor:'pointer',marginBottom:'0.6rem'}}>
+            <button onClick={handleEmailSubscribe} disabled={emailLoading} style={{width:'100%',padding:'0.85rem',background:C.gold,border:'none',color:C.onGold,fontSize:'0.75rem',letterSpacing:'0.15em',fontWeight:500,cursor:'pointer',marginBottom:'0.6rem'}}>
               {emailLoading ? 'Envoi...' : 'JE M\'INSCRIS →'}
             </button>
             <button onClick={()=>setShowEmailPopup(false)} style={{width:'100%',padding:'0.4rem',background:'transparent',border:'none',color:C.textDim,fontSize:'0.68rem',cursor:'pointer'}}>
@@ -2362,39 +2267,35 @@ export default function App(){
   if(screen==="landing")return(
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",overflowX:"hidden"}}>
       <link rel="stylesheet" href={FONT}/>
-      {/* XLSX chargé via useEffect au démarrage */}
       <script defer data-domain="monplan90.vercel.app" src="https://plausible.io/js/script.js"/>
-      <meta name="theme-color" content="#0A0A0A"/>
+      <meta name="theme-color" content="#0D0C0A"/>
       <meta name="apple-mobile-web-app-capable" content="yes"/>
-      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+      <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
       <meta name="apple-mobile-web-app-title" content="Plan 90"/>
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
       <style>{CSS}</style>
       <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"3rem 1.5rem",textAlign:"center",position:"relative"}}>
-        <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,background:`radial-gradient(ellipse at 50% 0%,${C.gold}08 0%,transparent 55%),radial-gradient(ellipse at 20% 80%,${C.blue}05 0%,transparent 40%)`,pointerEvents:"none"}}/>
+        <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,background:`radial-gradient(ellipse at 50% 0%,${C.gold}22 0%,transparent 55%),radial-gradient(ellipse at 20% 80%,${C.blue}15 0%,transparent 45%),radial-gradient(ellipse at 85% 70%,${C.purple}12 0%,transparent 40%)`,pointerEvents:"none"}}/>
 
-        {/* Logo / titre */}
         <div style={{marginBottom:"0.5rem"}}>
           <Divider/>
-          <div style={{margin:"1.5rem 0 0.4rem",fontSize:"0.52rem",letterSpacing:"0.4em",color:C.goldD,textTransform:"uppercase",...MN}}>Système de Transformation Comportementale</div>
+          <div style={{margin:"1.5rem 0 0.4rem",fontSize:"0.52rem",letterSpacing:"0.4em",color:C.textDim,textTransform:"uppercase",...MN}}>Système de Transformation Comportementale</div>
         </div>
         <h1 style={{...SF,fontSize:"clamp(3.2rem,11vw,6rem)",fontWeight:400,color:C.text,lineHeight:0.88,marginBottom:"0.1rem"}}>Mon Plan</h1>
-        <h1 style={{...SF,fontSize:"clamp(3.2rem,11vw,6rem)",fontWeight:300,fontStyle:"italic",color:C.gold,lineHeight:0.88,marginBottom:"1.5rem"}}>de Vie</h1>
-        <div style={{display:"inline-block",padding:"0.45rem 1.6rem",border:`1px solid ${C.goldD}`,background:`${C.gold}08`,...SF,fontSize:"clamp(1.1rem,3.5vw,1.8rem)",color:C.gold,letterSpacing:"0.2em",marginBottom:"2rem"}}>90 Jours</div>
+        <h1 style={{...SF,fontSize:"clamp(3.2rem,11vw,6rem)",fontWeight:300,fontStyle:"italic",color:C.text,lineHeight:0.88,marginBottom:"1.5rem"}}>de Vie</h1>
+        <div style={{display:"inline-block",padding:"0.5rem 1.8rem",border:`2px solid ${C.gold}`,background:`${C.gold}20`,...SF,fontSize:"clamp(1.1rem,3.5vw,1.8rem)",color:C.text,fontWeight:500,letterSpacing:"0.2em",marginBottom:"2rem",boxShadow:`0 3px 14px ${C.gold}30`}}>90 Jours</div>
 
-        {/* Tagline */}
         <p style={{maxWidth:"360px",color:C.textMid,lineHeight:1.9,fontSize:"clamp(0.85rem,2.5vw,0.95rem)",marginBottom:"2rem"}}>
           Pas un texte inspirant.<br/>
           Un <strong style={{color:C.text}}>système d'exécution</strong> construit sur ta psychologie réelle.
         </p>
 
-        {/* 3 domaines */}
         <div style={{display:"flex",gap:"0.5rem",marginBottom:"2rem",flexWrap:"wrap",justifyContent:"center"}}>
           {Object.entries(DOMAIN_CONFIG).map(([name,cfg])=>(
-            <div key={name} style={{padding:"0.5rem 0.9rem",background:`${cfg.color}10`,border:`1px solid ${cfg.color}30`,display:"flex",alignItems:"center",gap:"0.4rem"}}>
-              <span style={{fontSize:"0.9rem"}}>{cfg.icon}</span>
+            <div key={name} style={{padding:"0.55rem 1rem",background:`${cfg.color}14`,border:`2px solid ${cfg.color}`,display:"flex",alignItems:"center",gap:"0.45rem",boxShadow:`0 2px 8px ${cfg.color}25`}}>
+              <span style={{fontSize:"1.1rem"}}>{cfg.icon}</span>
               <div style={{textAlign:"left"}}>
-                <div style={{fontSize:"0.75rem",color:cfg.color,fontWeight:400}}>{name}</div>
+                <div style={{fontSize:"0.75rem",color:C.text,fontWeight:600}}>{name}</div>
                 <div style={{fontSize:"0.58rem",color:C.textDim,...MN}}>{cfg.desc}</div>
               </div>
             </div>
@@ -2403,11 +2304,10 @@ export default function App(){
 
         <button onClick={()=>setScreen("access")} style={{...BG,padding:"1.1rem 3rem",marginBottom:"2rem"}}>Accéder à mon programme ✦</button>
 
-        {/* Stats */}
         <div style={{display:"flex",gap:"1.8rem",flexWrap:"wrap",justifyContent:"center"}}>
           {[["22","Questions ciblées"],["~12'","Pour remplir"],["12","Semaines structurées"],["90","Jours transformants"]].map(([n,l])=>(
             <div key={n} style={{textAlign:"center"}}>
-              <div style={{...SF,fontSize:"1.8rem",color:C.gold}}>{n}</div>
+              <div style={{...SF,fontSize:"1.8rem",color:"#8B6914",fontWeight:500}}>{n}</div>
               <div style={{fontSize:"0.6rem",color:C.textDim,letterSpacing:"0.1em",textTransform:"uppercase",...MN}}>{l}</div>
             </div>
           ))}
@@ -2420,29 +2320,28 @@ export default function App(){
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",fontFamily:"'Jost',sans-serif"}}>
       <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
       <Divider/><div style={{textAlign:"center",margin:"1.5rem 0"}}>
-        <div style={{fontSize:"0.54rem",letterSpacing:"0.35em",color:C.goldD,textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>Accès Personnel</div>
-        <h1 style={{...SF,fontSize:"clamp(1.6rem,5vw,2.3rem)",fontWeight:400,color:C.text}}>Mon Plan de Vie <span style={{fontStyle:"italic",color:C.gold}}>90 Jours</span></h1>
+        <div style={{fontSize:"0.54rem",letterSpacing:"0.35em",color:C.textDim,textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>Accès Personnel</div>
+        <h1 style={{...SF,fontSize:"clamp(1.6rem,5vw,2.3rem)",fontWeight:400,color:C.text}}>Mon Plan de Vie <span style={{fontStyle:"italic",color:C.text}}>90 Jours</span></h1>
       </div>
       <div style={{width:"100%",maxWidth:"360px",animation:accessShake?"shake 0.45s ease":"none"}}>
         <Card accent>
-          <div style={{fontSize:"0.68rem",color:C.textDim,marginBottom:"1.6rem",lineHeight:1.7,textAlign:"center"}}>Identifie-toi pour accéder.<br/><span style={{color:C.goldD,fontSize:"0.63rem"}}>Informations confidentielles.</span></div>
+          <div style={{fontSize:"0.68rem",color:C.textDim,marginBottom:"1.6rem",lineHeight:1.7,textAlign:"center"}}>Identifie-toi pour accéder.<br/><span style={{color:C.text,fontSize:"0.63rem"}}>Informations confidentielles.</span></div>
           {[{lbl:"Nom complet",val:nom,set:setNom,ph:"Prénom Nom",type:"text",k:"nom"},{lbl:"Email",val:email,set:setEmail,ph:"ton@email.com",type:"email",k:"eml"}].map(({lbl,val,set,ph,type,k})=>(
             <div key={k} style={{marginBottom:"1rem"}}>
-              <div style={{fontSize:"0.6rem",color:C.goldD,letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:"0.32rem",...MN}}>{lbl}</div>
+              <div style={{fontSize:"0.6rem",color:C.textDim,letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:"0.32rem",...MN}}>{lbl}</div>
               <input type={type} value={val} placeholder={ph} onChange={e=>{setAccessErr("");set(e.target.value);}} onKeyDown={e=>e.key==="Enter"&&doAccess()} onFocus={()=>setF(k,true)} onBlur={()=>setF(k,false)} style={iSt(k)}/>
             </div>
           ))}
           <div style={{marginBottom:"1.2rem"}}>
-            <div style={{fontSize:"0.6rem",color:C.goldD,letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:"0.32rem",...MN}}>Code secret</div>
-            <input type="text" value={code} placeholder="LD-XXXXX" onChange={e=>{setAccessErr("");setCode(e.target.value.toUpperCase());}} onKeyDown={e=>e.key==="Enter"&&doAccess()} onFocus={()=>setF("cod",true)} onBlur={()=>setF("cod",false)} style={{...iSt("cod"),textAlign:"center",letterSpacing:"0.25em",...MN,color:C.gold,fontSize:"1.05rem"}}/>
+            <div style={{fontSize:"0.6rem",color:C.textDim,letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:"0.32rem",...MN}}>Code secret</div>
+            <input type="text" value={code} placeholder="LD-XXXXX" onChange={e=>{setAccessErr("");setCode(e.target.value.toUpperCase());}} onKeyDown={e=>e.key==="Enter"&&doAccess()} onFocus={()=>setF("cod",true)} onBlur={()=>setF("cod",false)} style={{...iSt("cod"),textAlign:"center",letterSpacing:"0.25em",...MN,color:C.text,fontSize:"1.05rem"}}/>
           </div>
           {accessErr&&<div style={{fontSize:"0.7rem",color:C.red,textAlign:"center",marginBottom:"0.8rem"}}>{accessErr}</div>}
           <button onClick={doAccess} style={{...BG,width:"100%",padding:"0.92rem"}}>Accéder ✦</button>
         </Card>
         <div style={{textAlign:"center",marginTop:"0.5rem"}}><button onClick={()=>setScreen("landing")} style={{background:"none",border:"none",color:C.textDim,fontSize:"0.68rem",cursor:"pointer"}}>← Présentation</button></div>
-        {/* Page d'attente pour ceux qui n'ont pas de code */}
         <div style={{textAlign:"center",marginTop:"1.5rem",padding:"1.2rem",background:C.bg2,border:`1px solid ${C.border}`}}>
-          <div style={{fontSize:"0.58rem",color:C.goldD,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.5rem"}}>Pas encore de code ?</div>
+          <div style={{fontSize:"0.58rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.5rem"}}>Pas encore de code ?</div>
           <p style={{fontSize:"0.78rem",color:C.textMid,lineHeight:1.7,marginBottom:"0.85rem"}}>Rejoins la communauté et demande ton accès. Les premières places sont limitées.</p>
           <button onClick={joinCommunity} style={{width:"100%",padding:"0.75rem",background:"#25D36618",border:"1px solid #25D36640",color:"#25D366",fontSize:"0.72rem",letterSpacing:"0.08em",...MN,cursor:"pointer"}}>
             💬 Rejoindre la Communauté → Demander un code
@@ -2458,12 +2357,12 @@ export default function App(){
 
       <div style={{textAlign:"center",marginBottom:"2rem"}}>
         <Divider/>
-        <div style={{margin:"1.5rem 0 0.4rem",fontSize:"0.54rem",letterSpacing:"0.28em",color:C.goldD,textTransform:"uppercase",...MN}}>Programme de Transformation · 90 Jours</div>
+        <div style={{margin:"1.5rem 0 0.4rem",fontSize:"0.54rem",letterSpacing:"0.28em",color:C.textDim,textTransform:"uppercase",...MN}}>Programme de Transformation · 90 Jours</div>
         <h1 style={{...SF,fontSize:"clamp(1.7rem,5vw,2.6rem)",fontWeight:400,color:C.text}}>Bienvenue, {nom.split(" ")[0]}.</h1>
       </div>
 
       <Card accent>
-        <p style={{...SF,fontSize:"1.3rem",color:C.gold,marginBottom:"1.2rem"}}>Félicitations.</p>
+        <p style={{...SF,fontSize:"1.3rem",color:C.text,marginBottom:"1.2rem"}}>Félicitations.</p>
 
         <p style={{color:C.text,fontSize:"0.9rem",lineHeight:1.9,marginBottom:"1.2rem"}}>
           Si tu es ici, c'est qu'une partie de toi a compris que continuer comme avant a un prix.
@@ -2485,7 +2384,7 @@ export default function App(){
         </p>
 
         <div style={{borderTop:`1px solid ${C.border}`,paddingTop:"1.2rem",marginBottom:"1.2rem"}}>
-          <p style={{fontSize:"0.72rem",color:C.gold,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.9rem"}}>Pourquoi 90 jours ?</p>
+          <p style={{fontSize:"0.72rem",color:C.text,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.9rem"}}>Pourquoi 90 jours ?</p>
 
           <p style={{color:C.textMid,fontSize:"0.87rem",lineHeight:1.9,marginBottom:"0.9rem"}}>
             Parce qu'arrêter une vieille habitude est une chose.<br/>
@@ -2502,7 +2401,7 @@ export default function App(){
           </p>
 
           <div style={{display:"flex",gap:"1.2rem",justifyContent:"center",margin:"1.2rem 0"}}>
-            {[["Pas 30 jours.",C.textDim],["Pas 45.",C.textDim],["90.",C.gold]].map(([t,c])=>(
+            {[["Pas 30 jours.",C.textDim],["Pas 45.",C.textDim],["90.",C.text]].map(([t,c])=>(
               <span key={t} style={{...SF,fontSize:"1.1rem",color:c,fontStyle:"italic"}}>{t}</span>
             ))}
           </div>
@@ -2523,7 +2422,7 @@ export default function App(){
             Aucun masque à porter.
           </p>
 
-          <p style={{...SF,color:C.goldL,fontSize:"0.95rem",lineHeight:1.8,fontStyle:"italic"}}>
+          <p style={{...SF,color:C.text,fontSize:"0.95rem",lineHeight:1.8,fontStyle:"italic"}}>
             Seulement la vérité.
           </p>
         </div>
@@ -2531,7 +2430,7 @@ export default function App(){
 
       <div style={{display:"flex",gap:"0.5rem",marginBottom:"1rem"}}>
         {(getSegments(answers.q_domaine_principal)||SEGMENTS_FINANCES).map(sg=><div key={sg.id} style={{flex:1,textAlign:"center",padding:"0.65rem 0.35rem",border:`1px solid ${C.border}`,background:C.bg2}}>
-          <div style={{fontSize:"0.9rem",color:C.gold,marginBottom:"0.2rem"}}>{sg.icon}</div>
+          <div style={{fontSize:"0.9rem",color:C.textDim,marginBottom:"0.2rem"}}>{sg.icon}</div>
           <div style={{fontSize:"0.56rem",letterSpacing:"0.1em",color:C.textDim,textTransform:"uppercase",...MN}}>{sg.label}</div>
           <div style={{fontSize:"0.6rem",color:C.textDim}}>{sg.questions.length}Q</div>
         </div>)}
@@ -2562,10 +2461,8 @@ export default function App(){
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem 1.5rem",maxWidth:"540px",margin:"0 auto",position:"relative",overflow:"hidden"}}>
         <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
 
-        {/* Fond animé — halo coloré du bloc précédent qui s'efface */}
         <div style={{position:"absolute",top:"-20%",left:"-20%",width:"140%",height:"140%",background:`radial-gradient(ellipse at 30% 20%, ${prevColor}12 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, ${nextColor}08 0%, transparent 50%)`,pointerEvents:"none",animation:"fadeIn 0.8s ease"}}/>
 
-        {/* Particules dorées */}
         <div style={{position:"absolute",inset:0,pointerEvents:"none",overflow:"hidden"}}>
           {[...Array(8)].map((_,i)=>(
             <div key={i} style={{
@@ -2581,37 +2478,32 @@ export default function App(){
           ))}
         </div>
 
-        {/* Bloc complété — badge */}
         <div style={{animation:"fadeUp 0.4s ease",marginBottom:"1.5rem",textAlign:"center"}}>
           <div style={{display:"inline-flex",alignItems:"center",gap:"0.5rem",padding:"0.4rem 1rem",background:`${prevColor}15`,border:`1px solid ${prevColor}40`,marginBottom:"0.8rem"}}>
-            <span style={{color:prevColor,fontSize:"0.9rem"}}>{prevSeg?.icon}</span>
-            <span style={{fontSize:"0.58rem",color:prevColor,letterSpacing:"0.2em",textTransform:"uppercase",...MN}}>{prevSeg?.label} · Complété ✓</span>
+            <span style={{color:C.textMid,fontSize:"0.9rem"}}>{prevSeg?.icon}</span>
+            <span style={{fontSize:"0.58rem",color:C.textMid,letterSpacing:"0.2em",textTransform:"uppercase",...MN}}>{prevSeg?.label} · Complété ✓</span>
           </div>
         </div>
 
-        {/* Titre principal */}
         <div style={{textAlign:"center",animation:"fadeUp 0.5s ease 0.1s both",marginBottom:"1.5rem"}}>
-          <div style={{...SF,fontSize:"clamp(1.8rem,6vw,2.8rem)",color:C.gold,fontWeight:400,lineHeight:1.1,marginBottom:"0.8rem"}}>{transitionData.title}</div>
+          <div style={{...SF,fontSize:"clamp(1.8rem,6vw,2.8rem)",color:C.text,fontWeight:400,lineHeight:1.1,marginBottom:"0.8rem"}}>{transitionData.title}</div>
           <p style={{color:C.textMid,fontSize:"0.88rem",lineHeight:1.85}}>{transitionData.sub}</p>
         </div>
 
-        {/* Ligne de séparation animée */}
         <div style={{width:"100%",maxWidth:"320px",marginBottom:"1.5rem",animation:"fadeIn 0.6s ease 0.2s both"}}>
           <div style={{height:"1px",background:`linear-gradient(90deg,transparent,${C.gold},transparent)`}}/>
           <div style={{display:"flex",justifyContent:"center",marginTop:"-0.5rem"}}>
-            <div style={{padding:"0.2rem 0.6rem",background:C.bg,border:`1px solid ${C.goldD}`,fontSize:"0.6rem",color:C.goldD,...MN,letterSpacing:"0.15em"}}>{pctDone}% du questionnaire</div>
+            <div style={{padding:"0.2rem 0.6rem",background:C.bg,border:`1px solid ${C.goldD}`,fontSize:"0.6rem",color:C.text,...MN,letterSpacing:"0.15em"}}>{pctDone}% du questionnaire</div>
           </div>
         </div>
 
-        {/* Message transition */}
         <div style={{animation:"fadeUp 0.5s ease 0.3s both",marginBottom:"1.5rem",textAlign:"center",maxWidth:"380px"}}>
           <p style={{color:C.text,fontSize:"0.9rem",lineHeight:1.85,marginBottom:transitionData.warn?"1rem":"0"}}>{transitionData.next}</p>
           {transitionData.warn&&<div style={{padding:"0.75rem 1rem",background:`${C.gold}08`,borderLeft:`3px solid ${C.gold}`,marginTop:"0.8rem",textAlign:"left"}}>
-            <p style={{color:C.goldL,fontSize:"0.82rem",lineHeight:1.7,fontStyle:"italic"}}>✦ {transitionData.warn}</p>
+            <p style={{color:C.text,fontSize:"0.82rem",lineHeight:1.7,fontStyle:"italic"}}>✦ {transitionData.warn}</p>
           </div>}
         </div>
 
-        {/* Prochain bloc — card avec couleur du prochain */}
         <div style={{
           animation:"fadeUp 0.5s ease 0.4s both",
           width:"100%",maxWidth:"380px",marginBottom:"2rem",
@@ -2623,13 +2515,12 @@ export default function App(){
         }}>
           <span style={{fontSize:"1.5rem"}}>{nextSeg?.icon}</span>
           <div>
-            <div style={{fontSize:"0.58rem",color:nextColor,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.2rem"}}>Prochain bloc</div>
+            <div style={{fontSize:"0.58rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.2rem"}}>Prochain bloc</div>
             <div style={{fontSize:"0.9rem",color:C.text,fontWeight:400}}>{nextSeg?.label}</div>
             <div style={{fontSize:"0.68rem",color:C.textDim,marginTop:"0.15rem"}}>{nextSeg?.subtitle} · {nextSeg?.questions.length} questions</div>
           </div>
         </div>
 
-        {/* Bouton */}
         <div style={{animation:"fadeUp 0.5s ease 0.5s both",width:"100%",maxWidth:"380px"}}>
           <button onClick={continueAfterTransition} style={{...BG,width:"100%",padding:"1.1rem",fontSize:"0.75rem",letterSpacing:"0.15em"}}>
             {transitionData.cta}
@@ -2647,13 +2538,11 @@ export default function App(){
     const btnLabel=isLastSegBtn&&isLastQBtn?"Voir le récap ✦":"Continuer →";
     const hasContent=validateAnswer(q,val).valid;
 
-    // Adaptation contextuelle selon le domaine choisi
     const cfg = getDomainCfg(answers);
     const domainLabel = answers.q_domaine_principal || "";
     const ADAPTED_IDS = ["q_objectif","q_sacrifice","q_si_pas","q_mensonge","q_perte_succes","q_adaptive","q_environnement","q_charge_mentale","q_pari","q_engagement"];
     const isAdapted = ADAPTED_IDS.includes(q.id) && !!domainLabel;
 
-    // Résout le label adapté
     const resolveLabel = (q) => {
       if (!cfg) return q.label === "_adapté_" ? "" : q.label;
       const labelMap = {
@@ -2709,103 +2598,94 @@ export default function App(){
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",display:"flex",flexDirection:"column",padding:"1.4rem",maxWidth:"540px",margin:"0 auto"}}>
         <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
 
-        {/* Progress */}
         <div style={{paddingTop:"0.6rem",marginBottom:"1.2rem"}}>
-          <div style={{display:"flex",gap:"0.28rem",marginBottom:"0.65rem"}}>{(getSegments(answers.q_domaine_principal)||SEGMENTS_FINANCES).map((sg,i)=><div key={sg.id} style={{flex:1,padding:"0.28rem",textAlign:"center",border:`1px solid ${i===si?C.goldD:C.border}`,background:i===si?`${C.gold}10`:"transparent",transition:"all 0.3s"}}><div style={{fontSize:"0.56rem",color:i===si?C.gold:C.textDim,...MN}}>{sg.icon} {sg.label}</div></div>)}</div>
+          <div style={{display:"flex",gap:"0.28rem",marginBottom:"0.65rem"}}>{(getSegments(answers.q_domaine_principal)||SEGMENTS_FINANCES).map((sg,i)=><div key={sg.id} style={{flex:1,padding:"0.28rem",textAlign:"center",border:`1px solid ${i===si?C.goldD:C.border}`,background:i===si?`${C.gold}10`:"transparent",transition:"all 0.3s"}}><div style={{fontSize:"0.56rem",color:i===si?C.text:C.textDim,...MN}}>{sg.icon} {sg.label}</div></div>)}</div>
           <div style={{display:"flex",justifyContent:"space-between",fontSize:"0.6rem",color:C.textDim,marginBottom:"0.22rem",...MN}}>
             <span>{doneQ+1}/{totalQ}</span>
-            <span style={{color:C.goldD}}>≈ {timeLeft} min restantes</span>
-            <span style={{color:C.gold}}>{pct}%</span>
+            <span style={{color:C.text}}>≈ {timeLeft} min restantes</span>
+            <span style={{color:C.text}}>{pct}%</span>
           </div>
           <div style={{height:"2px",background:C.bg3}}><div style={{height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${C.goldD},${C.goldL})`,transition:"width 0.5s ease",boxShadow:`0 0 7px ${C.gold}50`}}/></div>
         </div>
 
-        {/* Reward */}
         {showReward&&<div style={{padding:"0.5rem 0.85rem",background:`${C.green}10`,border:`1px solid ${C.green}28`,borderLeft:`3px solid ${C.green}`,marginBottom:"0.7rem",animation:"fadeIn 0.3s ease",fontSize:"0.75rem",color:C.green}}>✓ {showReward}</div>}
 
-        {/* Error */}
         {qError&&<div style={{padding:"0.5rem 0.85rem",background:`${C.red}10`,border:`1px solid ${C.red}40`,borderLeft:`3px solid ${C.red}`,marginBottom:"0.7rem",animation:"fadeIn 0.25s ease",fontSize:"0.75rem",color:C.red}}>⚠ {qError}</div>}
 
-        {/* Question */}
         <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",animation:qShake?"shake 0.45s ease":"slideIn 0.3s ease"}}>
-          <div style={{fontSize:"1.3rem",color:C.gold,opacity:0.5,marginBottom:"0.5rem"}}>{seg.icon}</div>
+          <div style={{fontSize:"1.3rem",color:C.text,opacity:0.5,marginBottom:"0.5rem"}}>{seg.icon}</div>
           <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:"0.65rem",marginBottom:"0.28rem"}}>
             <h2 style={{...SF,fontSize:"clamp(1rem,3.5vw,1.45rem)",color:C.text,fontWeight:500,lineHeight:1.3,flex:1}}>{adaptedLabel||q.label}</h2>
-            {q.aide&&<button onClick={()=>setShowAide(a=>!a)} style={{padding:"0.2rem 0.48rem",background:showAide?`${C.gold}18`:"transparent",border:`1px solid ${showAide?C.gold:C.goldD}`,color:C.gold,...MN,fontSize:"0.6rem",flexShrink:0,marginTop:"0.18rem",cursor:"pointer",transition:"all 0.2s"}}>? aide</button>}
+            {q.aide&&<button onClick={()=>setShowAide(a=>!a)} style={{padding:"0.2rem 0.48rem",background:showAide?`${C.gold}18`:"transparent",border:`1px solid ${showAide?C.gold:C.goldD}`,color:C.text,...MN,fontSize:"0.6rem",flexShrink:0,marginTop:"0.18rem",cursor:"pointer",transition:"all 0.2s"}}>? aide</button>}
           </div>
           {isAdapted&&domainLabel&&<div style={{display:"inline-flex",alignItems:"center",gap:"0.3rem",padding:"0.18rem 0.55rem",background:`${C.gold}12`,border:`1px solid ${C.goldD}40`,marginBottom:"0.5rem"}}>
-            <span style={{fontSize:"0.52rem",color:C.goldD}}>✦</span>
-            <span style={{fontSize:"0.58rem",color:C.goldD,letterSpacing:"0.1em",...MN}}>Adapté · {domainLabel}</span>
+            <span style={{fontSize:"0.52rem",color:C.text}}>✦</span>
+            <span style={{fontSize:"0.58rem",color:C.text,letterSpacing:"0.1em",...MN}}>Adapté · {domainLabel}</span>
           </div>}
 
           {showAide&&q.aide&&<div style={{background:`${C.gold}07`,borderLeft:`3px solid ${C.gold}`,border:`1px solid ${C.goldD}`,padding:"0.75rem 0.85rem",marginBottom:"0.65rem",animation:"fadeIn 0.2s ease"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.3rem"}}><span style={{fontSize:"0.56rem",color:C.gold,letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>Guide</span><button onClick={()=>setShowAide(false)} style={{background:"none",border:"none",color:C.textDim,fontSize:"0.88rem",cursor:"pointer"}}>✕</button></div>
-            {[["Ce qu'on cherche",q.aide.quoi,C.textDim],["Exemple",aidEx||q.aide.ex,C.goldL],["À éviter",q.aide.evite,C.textDim]].map(([t,v,c])=><div key={t} style={{marginBottom:"0.32rem"}}><div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.1rem"}}>{t}</div><div style={{fontSize:"0.75rem",color:c,lineHeight:1.5,fontStyle:t==="Exemple"?"italic":"normal"}}>{v}</div></div>)}
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.3rem"}}><span style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>Guide</span><button onClick={()=>setShowAide(false)} style={{background:"none",border:"none",color:C.textDim,fontSize:"0.88rem",cursor:"pointer"}}>✕</button></div>
+            {[["Ce qu'on cherche",q.aide.quoi,C.textDim],["Exemple",aidEx||q.aide.ex,C.text],["À éviter",q.aide.evite,C.textDim]].map(([t,v,c])=><div key={t} style={{marginBottom:"0.32rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.1rem"}}>{t}</div><div style={{fontSize:"0.75rem",color:c,lineHeight:1.5,fontStyle:t==="Exemple"?"italic":"normal"}}>{v}</div></div>)}
           </div>}
 
           <div style={{width:"24px",height:"1px",background:C.gold,opacity:0.4,marginBottom:"0.85rem"}}/>
 
-          {/* RENDU PAR TYPE */}
           {q.type==="text"&&<input type="text" value={val||""} onChange={e=>setVal(e.target.value)} placeholder={ph} onKeyDown={e=>e.key==="Enter"&&tryNext()}
             style={{...iSt("q"),borderColor:qError?C.red:foc["q"]?C.goldD:C.border,borderBottomColor:qError?C.red:foc["q"]?C.gold:C.border,animation:qShake?"shake 0.45s ease":"none"}}
             onFocus={()=>setF("q",true)} onBlur={()=>setF("q",false)}/>}
 
           {q.type==="textarea"&&<textarea value={val||""} onChange={e=>setVal(e.target.value)} placeholder={ph} rows={4}
-            style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${qError?C.red:C.border}`,borderBottom:`2px solid ${qError?C.red:C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:300,animation:qShake?"shake 0.45s ease":"none"}}
+            style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${qError?C.red:C.border}`,borderBottom:`2px solid ${qError?C.red:C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:400,animation:qShake?"shake 0.45s ease":"none"}}
             onFocus={e=>{e.target.style.borderColor=`${C.gold}55`;e.target.style.borderBottomColor=`${C.gold}55`;}} onBlur={e=>{e.target.style.borderColor=qError?C.red:C.border;e.target.style.borderBottomColor=qError?C.red:C.border;}}/>}
 
-          {q.type==="select"&&<div style={{animation:qShake?"shake 0.45s ease":"none"}}>{q.opts.map(opt=><button key={opt} onClick={()=>setVal(opt)} style={{width:"100%",display:"flex",gap:"0.6rem",marginBottom:"0.38rem",alignItems:"center",background:val===opt?`${C.gold}14`:"transparent",border:`1px solid ${val===opt?C.gold:C.border}`,color:val===opt?C.gold:C.textMid,padding:"0.68rem 0.85rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.84rem",cursor:"pointer"}}><span style={{fontSize:"0.58rem"}}>{val===opt?"◉":"◎"}</span>{opt}</button>)}</div>}
+          {q.type==="select"&&<div style={{animation:qShake?"shake 0.45s ease":"none"}}>{q.opts.map(opt=><button key={opt} onClick={()=>setVal(opt)} style={{width:"100%",display:"flex",gap:"0.6rem",marginBottom:"0.38rem",alignItems:"center",background:val===opt?`${C.gold}14`:"transparent",border:`1px solid ${val===opt?C.gold:C.border}`,color:val===opt?C.text:C.textMid,padding:"0.68rem 0.85rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.84rem",cursor:"pointer"}}><span style={{fontSize:"0.58rem"}}>{val===opt?"◉":"◎"}</span>{opt}</button>)}</div>}
 
           {q.type==="dual_select"&&<div style={{animation:qShake?"shake 0.45s ease":"none",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.75rem"}}>
             {q.selects.map(sel=>{const sv=(val||{})[sel.id];return <div key={sel.id}>
-              <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>{sel.label}</div>
-              {sel.opts.map(opt=><button key={opt} onClick={()=>setSubVal(q.id,sel.id,opt)} style={{width:"100%",display:"flex",gap:"0.45rem",marginBottom:"0.3rem",alignItems:"center",background:sv===opt?`${C.gold}14`:"transparent",border:`1px solid ${sv===opt?C.gold:C.border}`,color:sv===opt?C.gold:C.textMid,padding:"0.55rem 0.65rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.78rem",cursor:"pointer"}}><span style={{fontSize:"0.55rem"}}>{sv===opt?"◉":"◎"}</span>{opt.split("(")[0].trim()}</button>)}
+              <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>{sel.label}</div>
+              {sel.opts.map(opt=><button key={opt} onClick={()=>setSubVal(q.id,sel.id,opt)} style={{width:"100%",display:"flex",gap:"0.45rem",marginBottom:"0.3rem",alignItems:"center",background:sv===opt?`${C.gold}14`:"transparent",border:`1px solid ${sv===opt?C.gold:C.border}`,color:sv===opt?C.text:C.textMid,padding:"0.55rem 0.65rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.78rem",cursor:"pointer"}}><span style={{fontSize:"0.55rem"}}>{sv===opt?"◉":"◎"}</span>{opt.split("(")[0].trim()}</button>)}
             </div>;})}
           </div>}
 
           {q.type==="combo"&&<div style={{animation:qShake?"shake 0.45s ease":"none"}}>
             <div style={{marginBottom:"0.8rem"}}>
-              <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>{q.multi.label} <span style={{color:C.textDim}}>max {q.multi.max}</span></div>
+              <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>{q.multi.label} <span style={{color:C.textDim}}>max {q.multi.max}</span></div>
               {q.multi.opts.map(opt=>{const sel=((val||{}).domaines||[]).includes(opt);const atMax=((val||{}).domaines||[]).length>=q.multi.max&&!sel;
-                return <button key={opt} onClick={()=>{if(atMax)return;const cur=(val||{}).domaines||[];setSubVal(q.id,"domaines",sel?cur.filter(v=>v!==opt):[...cur,opt]);}} style={{width:"100%",display:"flex",gap:"0.55rem",marginBottom:"0.3rem",alignItems:"center",background:sel?`${C.gold}14`:"transparent",border:`1px solid ${sel?C.gold:atMax?C.bg3:C.border}`,color:sel?C.gold:atMax?C.bg3:C.textMid,padding:"0.58rem 0.75rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.82rem",opacity:atMax?0.3:1,cursor:atMax?"not-allowed":"pointer"}}><span style={{fontSize:"0.56rem"}}>{sel?"◉":"◎"}</span>{opt}</button>;
+                return <button key={opt} onClick={()=>{if(atMax)return;const cur=(val||{}).domaines||[];setSubVal(q.id,"domaines",sel?cur.filter(v=>v!==opt):[...cur,opt]);}} style={{width:"100%",display:"flex",gap:"0.55rem",marginBottom:"0.3rem",alignItems:"center",background:sel?`${C.gold}14`:"transparent",border:`1px solid ${sel?C.gold:atMax?C.bg3:C.border}`,color:sel?C.text:atMax?C.bg3:C.textMid,padding:"0.58rem 0.75rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.82rem",opacity:atMax?0.3:1,cursor:atMax?"not-allowed":"pointer"}}><span style={{fontSize:"0.56rem"}}>{sel?"◉":"◎"}</span>{opt}</button>;
               })}
             </div>
             <div>
-              <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>{q.text.label}</div>
+              <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>{q.text.label}</div>
               <input type="text" value={(val||{}).montant||""} placeholder={q.text.ph} onChange={e=>setSubVal(q.id,"montant",e.target.value)} style={{...iSt("montant"),borderColor:qError&&!((val||{}).montant)?C.red:foc["montant"]?C.goldD:C.border,borderBottomColor:qError&&!((val||{}).montant)?C.red:foc["montant"]?C.gold:C.border}} onFocus={()=>setF("montant",true)} onBlur={()=>setF("montant",false)}/>
             </div>
           </div>}
 
           {q.type==="adaptive_select"&&<div style={{animation:qShake?"shake 0.45s ease":"none"}}>
-            {/* Choix principal */}
             <div style={{marginBottom:"0.8rem"}}>
               {q.opts.map(opt=><button key={opt} onClick={()=>setSubVal(q.id,"choice",opt)} style={{width:"100%",display:"flex",gap:"0.6rem",marginBottom:"0.38rem",alignItems:"center",background:(val||{}).choice===opt?`${C.gold}14`:"transparent",border:`1px solid ${(val||{}).choice===opt?C.gold:C.border}`,color:(val||{}).choice===opt?C.gold:C.textMid,padding:"0.68rem 0.85rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.84rem",cursor:"pointer"}}><span style={{fontSize:"0.58rem"}}>{(val||{}).choice===opt?"◉":"◎"}</span>{opt}</button>)}
             </div>
-            {/* Question conditionnelle */}
             {(val||{}).choice&&<div style={{marginBottom:"0.8rem",animation:"fadeIn 0.3s ease"}}>
               <div style={{padding:"0.6rem 0.85rem",background:`${C.gold}08`,borderLeft:`3px solid ${C.goldD}`,marginBottom:"0.5rem"}}>
-                <div style={{fontSize:"0.72rem",color:C.goldL,lineHeight:1.5}}>{q.follow?.[(val||{}).choice]?.ph||""}</div>
+                <div style={{fontSize:"0.72rem",color:C.text,lineHeight:1.5}}>{q.follow?.[(val||{}).choice]?.ph||""}</div>
               </div>
               <textarea value={(val||{}).follow_answer||""} onChange={e=>setSubVal(q.id,"follow_answer",e.target.value)} placeholder={(val||{}).choice==="Oui, je les ai définis"?"Décris tes objectifs à 10 ans...":(val||{}).choice==="Pas encore"?"Qu'est-ce qui t'a empêché...":"Décris concrètement ce qui se passerait..."} rows={3}
-                style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:300}}
+                style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:400}}
                 onFocus={e=>e.target.style.borderColor=`${C.gold}55`} onBlur={e=>e.target.style.borderColor=C.border}/>
             </div>}
-            {/* Question fixe — toujours affichée */}
             {(val||{}).choice&&<div style={{animation:"fadeIn 0.3s ease"}}>
               <div style={{height:"1px",background:C.border,marginBottom:"0.8rem"}}/>
               <div style={{fontSize:"0.75rem",color:C.text,lineHeight:1.6,marginBottom:"0.5rem",fontWeight:400}}>{q.fixed?.label}</div>
               <textarea value={(val||{}).fixed_answer||""} onChange={e=>setSubVal(q.id,"fixed_answer",e.target.value)} placeholder={q.fixed?.ph||""} rows={3}
-                style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:300}}
+                style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:400}}
                 onFocus={e=>e.target.style.borderColor=`${C.gold}55`} onBlur={e=>e.target.style.borderColor=C.border}/>
             </div>}
           </div>}
         </div>
 
-        {/* Nav */}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingBottom:"1.8rem",gap:"0.65rem",marginTop:"1.2rem"}}>
           {doneQ>0?<button onClick={goBack} style={{padding:"0.68rem 1rem",background:"transparent",border:`1px solid ${C.border}`,color:C.textDim,fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>← Retour</button>:<div/>}
           <button onClick={tryNext} style={{
-            padding:"0.85rem 1.6rem",background:C.gold,border:"none",color:C.bg,
+            padding:"0.85rem 1.6rem",background:C.gold,border:"none",color:C.onGold,
             fontSize:"0.74rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,
             boxShadow:`0 4px 18px ${C.gold}35`,transition:"all 0.25s",cursor:"pointer",
             flex:doneQ===0?1:"auto"
@@ -2823,7 +2703,7 @@ export default function App(){
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",padding:"2rem 1.4rem",maxWidth:"560px",margin:"0 auto",animation:"fadeUp 0.5s ease"}}>
         <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
         <div style={{textAlign:"center",marginBottom:"1.4rem"}}>
-          <div style={{fontSize:"0.54rem",letterSpacing:"0.28em",color:C.goldD,textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>Récapitulatif</div>
+          <div style={{fontSize:"0.54rem",letterSpacing:"0.28em",color:C.textDim,textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>Récapitulatif</div>
           <h2 style={{...SF,fontSize:"1.6rem",color:C.text,fontWeight:400}}>Vérifie tes réponses</h2>
           <p style={{fontSize:"0.78rem",color:C.textDim,marginTop:"0.28rem"}}>Tout est bon ? Lance la génération. Sinon — ✎ pour modifier.</p>
         </div>
@@ -2845,10 +2725,10 @@ export default function App(){
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",fontFamily:"'Jost',sans-serif"}}>
       <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
       <div style={{width:"48px",height:"48px",border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`,borderRadius:"50%",animation:"spin 1.1s linear infinite",marginBottom:"1.8rem"}}/>
-      <div style={{...SF,fontSize:"1.4rem",color:C.gold,marginBottom:"0.35rem",textAlign:"center"}}>Ton système se construit</div>
+      <div style={{...SF,fontSize:"1.4rem",color:C.text,marginBottom:"0.35rem",textAlign:"center"}}>Ton système se construit</div>
       <div style={{color:C.textDim,fontSize:"0.76rem",marginBottom:"2.2rem",...MN}}>~20 secondes · 2 appels parallèles</div>
       <div style={{width:"100%",maxWidth:"290px"}}>{LOAD_STEPS.map((s,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:"0.6rem",padding:"0.42rem 0",borderBottom:`1px solid ${C.bg3}`,opacity:i<=loadStep?1:0.18,transition:"opacity 0.5s"}}>
-        <span style={{color:i<=loadStep?C.gold:C.textDim,animation:i===loadStep?"pulse 1.1s ease-in-out infinite":"none",minWidth:"11px",fontSize:"0.76rem"}}>✦</span>
+        <span style={{color:i<=loadStep?C.text:C.textDim,animation:i===loadStep?"pulse 1.1s ease-in-out infinite":"none",minWidth:"11px",fontSize:"0.76rem"}}>✦</span>
         <span style={{fontSize:"0.76rem",color:i===loadStep?C.text:C.textDim,...(i!==loadStep?MN:{})}}>{s}</span>
         {i<loadStep&&<span style={{marginLeft:"auto",color:C.green,fontSize:"0.68rem"}}>✓</span>}
       </div>)}</div>
@@ -2858,11 +2738,11 @@ export default function App(){
   if(screen==="error")return(
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",fontFamily:"'Jost',sans-serif",textAlign:"center"}}>
       <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
-      <div style={{...SF,fontSize:"1.4rem",color:C.gold,marginBottom:"0.9rem"}}>Une erreur est survenue</div>
+      <div style={{...SF,fontSize:"1.4rem",color:C.text,marginBottom:"0.9rem"}}>Une erreur est survenue</div>
       <p style={{color:C.textDim,marginBottom:"0.5rem",maxWidth:"300px",lineHeight:1.6,fontSize:"0.81rem"}}>{errMsg}</p>
       <p style={{color:C.textDim,marginBottom:"1.8rem",maxWidth:"300px",lineHeight:1.6,fontSize:"0.72rem",fontStyle:"italic"}}>Souvent causé par un problème réseau temporaire. Réessaie d'abord.</p>
       <div style={{display:"flex",gap:"0.65rem",flexWrap:"wrap",justifyContent:"center"}}>
-        <button onClick={()=>generate()} style={{padding:"0.78rem 1.3rem",background:`${C.gold}15`,border:`1px solid ${C.goldD}`,color:C.gold,fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>↺ Réessayer</button>
+        <button onClick={()=>generate()} style={{padding:"0.78rem 1.3rem",background:`${C.gold}15`,border:`1px solid ${C.goldD}`,color:C.text,fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>↺ Réessayer</button>
         <button onClick={()=>setScreen("recap")} style={{padding:"0.78rem 1.3rem",background:"transparent",border:`1px solid ${C.border}`,color:C.textDim,fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>Modifier les réponses</button>
         <button onClick={reset} style={{...BG,padding:"0.78rem 1.3rem"}}>Recommencer</button>
       </div>
@@ -2877,7 +2757,6 @@ export default function App(){
     const autosuggestion=plan2?.rituel?.autosuggestion||"";
     const curStreak=computeStreak(logs);
 
-    // ── Détection d'absence ──
     const logKeys = Object.keys(logs).sort();
     const lastLogDate = logKeys.length > 0 ? logKeys[logKeys.length-1] : null;
     const today_key = todayKey();
@@ -2887,7 +2766,6 @@ export default function App(){
     const isAbsent = daysSinceLastLog !== null && daysSinceLastLog >= 2;
     const absenceDays = daysSinceLastLog;
 
-    // Message retour selon durée absence
     const getRetourMsg = (days) => {
       if(days >= 14) return {
         titre: `${days} jours d'absence.`,
@@ -2913,25 +2791,22 @@ export default function App(){
     return(
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",maxWidth:"660px",margin:"0 auto",padding:"1.1rem 0.9rem 4rem",animation:"fadeUp 0.5s ease"}}>
         <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
-        {/* Top */}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.2rem",paddingBottom:"0.85rem",borderBottom:`1px solid ${C.border}`}}>
           <div>
-            <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.1rem"}}>{today}</div>
-            <div style={{...SF,fontSize:"1rem",color:C.gold}}>{plan.nom_guerre}</div>
+            <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.1rem"}}>{today}</div>
+            <div style={{...SF,fontSize:"1rem",color:C.text}}>{plan.nom_guerre}</div>
           </div>
           <div style={{display:"flex",gap:"0.5rem",alignItems:"center"}}>
-            {/* Streak badge */}
             {curStreak>0&&<div style={{display:"flex",alignItems:"center",gap:"0.25rem",padding:"0.3rem 0.6rem",background:curStreak>=7?`${C.green}18`:curStreak>=3?`${C.gold}18`:`${C.bg3}`,border:`1px solid ${curStreak>=7?C.green:curStreak>=3?C.goldD:C.border}`}}>
               <span style={{fontSize:"0.8rem"}}>🔥</span>
-              <span style={{fontSize:"0.7rem",color:curStreak>=7?C.green:curStreak>=3?C.gold:C.textDim,...MN,fontWeight:400}}>{curStreak}j</span>
+              <span style={{fontSize:"0.7rem",color:curStreak>=7?C.green:curStreak>=3?C.text:C.textDim,...MN,fontWeight:400}}>{curStreak}j</span>
             </div>}
-            <button onClick={()=>setScreen("result")} style={{padding:"0.38rem 0.65rem",background:`${C.gold}12`,border:`1px solid ${C.goldD}`,color:C.gold,fontSize:"0.6rem",letterSpacing:"0.08em",...MN,cursor:"pointer"}}>Plan complet</button>
-            <button onClick={()=>setScreen("plan-select")} style={{padding:"0.38rem 0.65rem",background:"transparent",border:`1px solid ${C.goldD}`,color:C.goldD,fontSize:"0.6rem",...MN,cursor:"pointer"}} title="Mes plans">⊞</button>
+            <button onClick={()=>setScreen("result")} style={{padding:"0.38rem 0.65rem",background:`${C.gold}12`,border:`1px solid ${C.goldD}`,color:C.text,fontSize:"0.6rem",letterSpacing:"0.08em",...MN,cursor:"pointer"}}>Plan complet</button>
+            <button onClick={()=>setScreen("plan-select")} style={{padding:"0.38rem 0.65rem",background:"transparent",border:`1px solid ${C.goldD}`,color:C.text,fontSize:"0.6rem",...MN,cursor:"pointer"}} title="Mes plans">⊞</button>
             <button onClick={reset} style={{padding:"0.38rem 0.5rem",background:"transparent",border:`1px solid ${C.border}`,color:C.textDim,fontSize:"0.6rem",...MN,cursor:"pointer"}}>↩</button>
           </div>
         </div>
 
-        {/* Bouton Communauté WhatsApp */}
         <button onClick={joinCommunity} style={{
           width:"100%",display:"flex",alignItems:"center",gap:"0.75rem",
           padding:"0.85rem 1rem",marginBottom:"1rem",
@@ -2940,13 +2815,12 @@ export default function App(){
         }}>
           <span style={{fontSize:"1.2rem"}}>💬</span>
           <div style={{textAlign:"left",flex:1}}>
-            <div style={{fontSize:"0.78rem",color:"#25D366",fontWeight:400}}>Rejoindre la Communauté 90 Jours ✦</div>
+            <div style={{fontSize:"0.78rem",color:"#0D7A3D",fontWeight:600}}>Rejoindre la Communauté 90 Jours ✦</div>
             <div style={{fontSize:"0.62rem",color:C.textDim,...MN,marginTop:"0.1rem"}}>Des centaines de personnes vivent ce programme · Partage · Questions · Victoires</div>
           </div>
-          <span style={{fontSize:"0.7rem",color:"#25D366"}}>→</span>
+          <span style={{fontSize:"0.7rem",color:"#0D7A3D"}}>→</span>
         </button>
 
-        {/* ── MODE RETOUR APRÈS ABSENCE ── */}
         {retourMsg&&<div style={{
           padding:"1.2rem 1.3rem",marginBottom:"1.2rem",
           background:`${retourMsg.color}08`,
@@ -2954,52 +2828,48 @@ export default function App(){
           borderLeft:`4px solid ${retourMsg.color}`,
           animation:"fadeUp 0.4s ease"
         }}>
-          <div style={{fontSize:"0.56rem",color:retourMsg.color,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.5rem"}}>
+          <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.5rem"}}>
             Bienvenue de retour
           </div>
-          <div style={{...SF,fontSize:"1.1rem",color:retourMsg.color,marginBottom:"0.5rem"}}>{retourMsg.titre}</div>
+          <div style={{...SF,fontSize:"1.1rem",color:C.text,marginBottom:"0.5rem"}}>{retourMsg.titre}</div>
           <p style={{fontSize:"0.85rem",color:C.textMid,lineHeight:1.75,marginBottom:"0.65rem"}}>{retourMsg.corps}</p>
           <div style={{padding:"0.6rem 0.85rem",background:`${retourMsg.color}10`,borderLeft:`2px solid ${retourMsg.color}`,fontSize:"0.82rem",color:C.text,lineHeight:1.6}}>
             ✦ {retourMsg.action}
           </div>
         </div>}
 
-        {/* ── AUTOSUGGESTION — premier élément visible si pas d'absence ── */}
         {!retourMsg&&autosuggestion&&<div style={{
           padding:"1.2rem 1.3rem",marginBottom:"1rem",
           background:`linear-gradient(135deg,${C.gold}12,${C.gold}06)`,
           border:`1px solid ${C.goldD}`,borderTop:`3px solid ${C.gold}`,
           position:"relative",overflow:"hidden"
         }}>
-          <div style={{position:"absolute",top:"0.6rem",right:"0.8rem",fontSize:"0.52rem",color:C.goldD,letterSpacing:"0.2em",textTransform:"uppercase",...MN}}>Autosuggestion · 3× à voix haute</div>
-          <div style={{...SF,fontSize:"clamp(1rem,3.5vw,1.25rem)",color:C.gold,fontStyle:"italic",lineHeight:1.65,marginTop:"0.8rem"}}>{autosuggestion}</div>
+          <div style={{position:"absolute",top:"0.6rem",right:"0.8rem",fontSize:"0.52rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN}}>Autosuggestion · 3× à voix haute</div>
+          <div style={{...SF,fontSize:"clamp(1rem,3.5vw,1.25rem)",color:C.text,fontStyle:"italic",lineHeight:1.65,marginTop:"0.8rem"}}>{autosuggestion}</div>
         </div>}
 
-        {/* Continuation msg */}
         {!retourMsg&&contMsg&&<div style={{padding:"0.75rem 0.9rem",background:`${C.gold}07`,borderLeft:`3px solid ${C.gold}`,marginBottom:"0.9rem"}}>
-          <div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.18em",...MN,marginBottom:"0.2rem"}}>MESSAGE JOUR {dn}</div>
-          <div style={{fontSize:"0.8rem",color:C.goldL,lineHeight:1.65,fontStyle:"italic"}}>{contMsg.msg}</div>
+          <div style={{fontSize:"0.54rem",color:C.text,letterSpacing:"0.18em",...MN,marginBottom:"0.2rem"}}>MESSAGE JOUR {dn}</div>
+          <div style={{fontSize:"0.8rem",color:C.text,lineHeight:1.65,fontStyle:"italic"}}>{contMsg.msg}</div>
         </div>}
-        {/* Dashboard */}
-        <Card accent>
+        <Card>
           <div style={{display:"flex",gap:"0.9rem",alignItems:"center",marginBottom:"0.9rem"}}>
             <ProgressCircle day={Math.min(dn,90)} size={105}/>
             <div style={{flex:1}}>
-              <div style={{fontSize:"0.54rem",color:lv.color,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.25rem"}}>Niveau — {lv.label}</div>
-              <div style={{...SF,fontSize:"0.95rem",color:C.goldL,lineHeight:1.4,marginBottom:"0.5rem"}}>{sc.mission_centrale}</div>
-              <div style={{fontSize:"0.56rem",color:C.textDim,...MN,marginBottom:"0.2rem"}}>Exécution — {stats.execRate}%</div>
+              <div style={{fontSize:"0.54rem",color:C.text,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.25rem"}}>Niveau — {lv.label}</div>
+              <div style={{...SF,fontSize:"0.95rem",color:C.text,lineHeight:1.4,marginBottom:"0.5rem"}}>{sc.mission_centrale}</div>
+              <div style={{fontSize:"0.56rem",color:C.text,...MN,marginBottom:"0.2rem"}}>Exécution — {stats.execRate}%</div>
               <div style={{height:"4px",background:C.bg3,marginBottom:"0.25rem"}}><div style={{height:"100%",width:`${stats.execRate}%`,background:`linear-gradient(90deg,${C.goldD},${C.gold})`,transition:"width 1s ease"}}/></div>
-              <div style={{fontSize:"0.65rem",color:C.textDim}}>{lv.desc}</div>
+              <div style={{fontSize:"0.65rem",color:C.text}}>{lv.desc}</div>
             </div>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"0.35rem",paddingTop:"0.7rem",borderTop:`1px solid ${C.border}`}}>
-            {[{val:`${stats.streak}j`,lbl:"Streak",color:stats.streak>=3?C.green:C.textDim},{val:`${stats.done}`,lbl:"Actions ✓",color:stats.done>0?C.gold:C.textDim},{val:`${stats.relapses}`,lbl:"Rechutes",color:C.textDim},{val:`${Math.round(stats.totalMins/60*10)/10}h`,lbl:"Investies",color:C.blue}].map(({val,lbl,color})=><div key={lbl} style={{textAlign:"center",padding:"0.4rem 0.1rem",background:C.bg3}}>
+            {[{val:`${stats.streak}j`,lbl:"Streak",color:stats.streak>=3?C.green:C.textDim},{val:`${stats.done}`,lbl:"Actions ✓",color:stats.done>0?C.text:C.textDim},{val:`${stats.relapses}`,lbl:"Rechutes",color:C.textDim},{val:`${Math.round(stats.totalMins/60*10)/10}h`,lbl:"Investies",color:C.blue}].map(({val,lbl,color})=><div key={lbl} style={{textAlign:"center",padding:"0.4rem 0.1rem",background:C.bg3}}>
               <div style={{...SF,fontSize:"1rem",color}}>{val}</div>
               <div style={{fontSize:"0.52rem",color:C.textDim,letterSpacing:"0.08em",textTransform:"uppercase",...MN,marginTop:"0.08rem"}}>{lbl}</div>
             </div>)}
           </div>
         </Card>
-        {/* ── ACTION DU JOUR — héros de l'écran ── */}
         <div style={{
           padding:"1.2rem 1.3rem",marginBottom:"1rem",
           background:`linear-gradient(135deg,${C.green}15,${C.green}05)`,
@@ -3019,7 +2889,6 @@ export default function App(){
           </button>
         </div>
 
-        {/* Tracker */}
         <div id="tracker-section">
         <Card>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:trackerOpen?"0.9rem":"0",cursor:"pointer"}} onClick={()=>setTrackerOpen(o=>!o)}>
@@ -3029,11 +2898,8 @@ export default function App(){
           {trackerOpen&&<DailyTracker dayNum={dn} todayLog={todayLog} onSave={log=>{saveLog(log);setTrackerOpen(false);}} logs={logs}/>}
         </Card>
         </div>
-        {/* Rituel */}
         {plan2?.rituel?.matin&&<Card><SH icon="🌬" label="Rituel du jour" sub="< 10 min · Timer intégré"/><RituelTimer steps={plan2.rituel.matin} nomGuerre={plan.nom_guerre} onComplete={()=>{if(todayLog){saveLog({...todayLog,rituel_done:true});}}} /></Card>}
-        {/* Coach */}
         <CoachChat plan={plan} plan2={plan2} weeks={weeks} dailyLogs={logs}/>
-        {/* Quick nav */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.45rem"}}>
           {[{lbl:"📅 Plan semaines",sub:"12 semaines + checklist",action:()=>{setTab("plan");setScreen("result");if(!weeks&&!weeksLoading)generateWeeks(plan);}},{lbl:"📊 Dashboard",sub:"Scorecard + Identité future",action:()=>{setTab("dashboard");setScreen("result");}},{lbl:"🛡 Anti-abandon",sub:"Protocoles de rechute",action:()=>{setTab("anti-abandon");setScreen("result");}},{lbl:"↓ PDF Premium",sub:"Collector · Page identité",action:printPDF}].map(({lbl,sub,action})=><button key={lbl} onClick={action} style={{padding:"0.75rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,textAlign:"left",cursor:"pointer",transition:"all 0.2s"}}>
             <div style={{fontSize:"0.8rem",marginBottom:"0.15rem"}}>{lbl}</div>
@@ -3060,57 +2926,54 @@ export default function App(){
           <button onClick={reset} style={{padding:"0.35rem 0.75rem",background:`${C.red}15`,border:`1px solid ${C.red}50`,color:C.red,fontSize:"0.65rem",letterSpacing:"0.1em",...MN,cursor:"pointer"}}>↩ Nouveau plan</button>
         </div>
         <div style={{textAlign:"center",paddingBottom:"0.9rem",animation:"fadeUp 0.6s ease"}}>
-          <div style={{fontSize:"0.54rem",letterSpacing:"0.28em",color:C.goldD,textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>Plan complet</div>
+          <div style={{fontSize:"0.54rem",letterSpacing:"0.28em",color:C.textDim,textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>Plan complet</div>
           <h1 style={{...SF,fontSize:"clamp(1.4rem,5vw,2rem)",fontWeight:400,color:C.text}}>Mon Plan de Vie 90 Jours</h1>
-          <div style={{...SF,fontSize:"0.9rem",fontStyle:"italic",color:C.gold,marginTop:"0.18rem"}}>Pour {firstName}</div>
+          <div style={{...SF,fontSize:"0.9rem",fontStyle:"italic",color:C.text,marginTop:"0.18rem"}}>Pour {firstName}</div>
           <div style={{margin:"1.1rem auto 0",maxWidth:"420px",padding:"0.9rem",background:`${C.gold}0E`,border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`}}>
-            <div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>Nom de Guerre</div>
-            <div style={{...SF,fontSize:"1.4rem",color:C.gold,fontWeight:500}}>{s.nom_guerre}</div>
+            <div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>Nom de Guerre</div>
+            <div style={{...SF,fontSize:"1.4rem",color:C.text,fontWeight:500}}>{s.nom_guerre}</div>
             <div style={{fontSize:"0.75rem",color:C.textMid,marginTop:"0.45rem",lineHeight:1.5}}>{s.pourquoi_ce_nom}</div>
           </div>
         </div>
-        {/* Share */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.3rem",marginBottom:"1rem"}}>
           {[{lbl:"↓ PDF",a:printPDF,bg:C.gold,c:C.bg},{lbl:"↓ Sheets",a:exportSheets,bg:"#3498DB",c:"#fff"},{lbl:"💬 Communauté",a:joinCommunity,bg:"#25D36618",c:"#25D366"}].map(({lbl,a,bg,c})=><button key={lbl} onClick={a} style={{padding:"0.72rem 0.1rem",background:bg,border:"none",color:c,fontSize:"0.68rem",letterSpacing:"0.05em",cursor:"pointer",transition:"all 0.2s"}}>{lbl}</button>)}
         </div>
-        {/* Tabs */}
         <div style={{display:"flex",gap:"0.22rem",marginBottom:"1rem",overflowX:"auto",paddingBottom:"0.22rem"}}>
-          {tabs.map(t=><button key={t} onClick={()=>{setTab(t);if(t==="plan"&&!weeks&&!weeksLoading)generateWeeks(plan);}} style={{padding:"0.48rem 0.68rem",background:tab===t?`${C.gold}18`:"transparent",border:`1px solid ${tab===t?C.gold:C.border}`,color:tab===t?C.gold:C.textDim,...MN,fontSize:"0.58rem",letterSpacing:"0.08em",cursor:"pointer",whiteSpace:"nowrap",textTransform:"uppercase",transition:"all 0.2s"}}>{tLabels[t]}</button>)}
+          {tabs.map(t=><button key={t} onClick={()=>{setTab(t);if(t==="plan"&&!weeks&&!weeksLoading)generateWeeks(plan);}} style={{padding:"0.55rem 0.7rem",background:"transparent",border:"none",borderBottom:`2px solid ${tab===t?C.gold:"transparent"}`,color:tab===t?C.text:C.textDim,...MN,fontWeight:400,fontSize:"0.58rem",letterSpacing:"0.08em",cursor:"pointer",whiteSpace:"nowrap",textTransform:"uppercase",transition:"all 220ms ease-out"}}>{tLabels[t]}</button>)}
         </div>
 
         {tab==="dashboard"&&<div style={{animation:"fadeUp 0.4s ease"}}>
           {s.identite_future&&<Card><SH icon="◈" label="Identité Future — Jour 90"/>
             <div style={{display:"grid",gridTemplateColumns:"1fr",gap:"0.5rem"}}>
-              {[["Comment je pense",s.identite_future.comment_pense,C.gold],["Comment j'agis",s.identite_future.comment_agit,C.goldL],["Ce que je ne tolère plus",s.identite_future.ne_tolere_plus,C.red],["Mes nouveaux standards",s.identite_future.nouveaux_standards,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.55rem 0.75rem",background:`${c}0A`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:c,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
+              {[["Comment je pense",s.identite_future.comment_pense,C.gold],["Comment j'agis",s.identite_future.comment_agit,C.goldL],["Ce que je ne tolère plus",s.identite_future.ne_tolere_plus,C.red],["Mes nouveaux standards",s.identite_future.nouveaux_standards,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.55rem 0.75rem",background:`${c}0A`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
             </div>
           </Card>}
-          <Card accent><SH icon="◈" label="Diagnostic Lucide"/>
+          <Card><SH icon="◈" label="Diagnostic Lucide"/>
             <p style={{color:C.textMid,lineHeight:1.78,fontSize:"0.87rem",marginBottom:"0.85rem"}}>{s.diagnostic?.resume}</p>
-            {[["Bloquant central",s.diagnostic?.bloquant_central,C.red],["Schéma de sabotage",s.diagnostic?.schema_sabotage,C.gold],["Leçon",s.diagnostic?.lecon_echec,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.58rem 0.78rem",background:`${c}0A`,border:`1px solid ${c}25`,borderLeft:`3px solid ${c}`,marginBottom:"0.5rem"}}><div style={{fontSize:"0.54rem",color:c,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
+            {[["Bloquant central",s.diagnostic?.bloquant_central,C.red],["Schéma de sabotage",s.diagnostic?.schema_sabotage,C.gold],["Leçon",s.diagnostic?.lecon_echec,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.58rem 0.78rem",background:`${c}0A`,border:`1px solid ${c}25`,borderLeft:`3px solid ${c}`,marginBottom:"0.5rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
           </Card>
           <Card><SH icon="📊" label="Scorecard"/>
             {scores.map(({k,d})=>d?<ScoreBar key={k} label={k} score={d.score} lecture={d.lecture}/>:null)}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.5rem",marginTop:"0.75rem"}}>
-              <div style={{padding:"0.68rem",background:`${riskColor}0E`,border:`1px solid ${riskColor}35`}}><div style={{fontSize:"0.54rem",color:riskColor,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Risque abandon</div><div style={{...SF,fontSize:"0.92rem",color:riskColor}}>{sc.risque_abandon}</div><div style={{fontSize:"0.68rem",color:C.textDim,marginTop:"0.15rem",lineHeight:1.4}}>{sc.facteur_risque}</div></div>
+              <div style={{padding:"0.68rem",background:`${riskColor}0E`,border:`1px solid ${riskColor}35`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Risque abandon</div><div style={{...SF,fontSize:"0.92rem",color:C.text}}>{sc.risque_abandon}</div><div style={{fontSize:"0.68rem",color:C.textDim,marginTop:"0.15rem",lineHeight:1.4}}>{sc.facteur_risque}</div></div>
               <div style={{padding:"0.68rem",background:`${C.green}0A`,border:`1px solid ${C.green}35`}}><div style={{fontSize:"0.54rem",color:C.green,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Levier principal</div><div style={{fontSize:"0.77rem",color:C.textMid,lineHeight:1.4}}>{sc.levier_principal}</div></div>
             </div>
-            <div style={{marginTop:"0.5rem",padding:"0.75rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}35`,borderLeft:`3px solid ${C.gold}`}}><div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Mission centrale</div><div style={{...SF,fontSize:"0.92rem",color:C.goldL,lineHeight:1.5}}>{sc.mission_centrale}</div></div>
+            <div style={{marginTop:"0.5rem",padding:"0.75rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}35`,borderLeft:`3px solid ${C.gold}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Mission centrale</div><div style={{...SF,fontSize:"0.92rem",color:C.text,lineHeight:1.5}}>{sc.mission_centrale}</div></div>
 
-            {/* 4 SCORES DE PROGRESSION */}
             {stats.total>0&&(()=>{
               const s4=computeScore4(logs,plan);
               return <div style={{marginTop:"0.75rem",padding:"0.75rem",background:C.bg3,border:`1px solid ${C.border}`}}>
-                <div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.6rem"}}>Progression réelle — Jour {stats.total}</div>
+                <div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.6rem"}}>Progression réelle — Jour {stats.total}</div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.4rem"}}>
-                  {[["⚡ Exécution",s4.execution,C.gold,"Actions réalisées"],[" Identité",s4.identite,C.green,"Rituels accomplis"],["◈ Cohérence",s4.coherence,C.blue,"Jours sans rechute"],["▶ Progression",s4.progression,C.goldL,"Distance parcourue"]].map(([lbl,val,col,sub])=>(
+                  {[["⚡ Exécution",s4.execution,C.gold,"Actions réalisées"],[" Identité",s4.identite,C.green,"Rituels accomplis"],["◈ Cohérence",s4.coherence,C.blue,"Jours sans rechute"],["▶ Progression",s4.progression,C.purple,"Distance parcourue"]].map(([lbl,val,col,sub])=>(
                     <div key={lbl} style={{padding:"0.55rem",background:`${col}08`,border:`1px solid ${col}22`}}>
-                      <div style={{fontSize:"0.6rem",color:col,letterSpacing:"0.08em",...MN}}>{lbl}</div>
-                      <div style={{...SF,fontSize:"1.3rem",color:col,margin:"0.15rem 0"}}>{val}<span style={{fontSize:"0.6rem"}}>%</span></div>
+                      <div style={{fontSize:"0.6rem",color:C.textDim,letterSpacing:"0.08em",...MN}}>{lbl}</div>
+                      <div style={{...SF,fontSize:"1.3rem",color:C.text,margin:"0.15rem 0"}}>{val}<span style={{fontSize:"0.6rem"}}>%</span></div>
                       <div style={{fontSize:"0.58rem",color:C.textDim}}>{sub}</div>
                     </div>
                   ))}
                 </div>
-                <div style={{marginTop:"0.5rem",padding:"0.45rem",background:`${C.gold}08`,borderLeft:`2px solid ${C.gold}`,fontSize:"0.72rem",color:C.goldL}}>
+                <div style={{marginTop:"0.5rem",padding:"0.45rem",background:`${C.gold}08`,borderLeft:`2px solid ${C.gold}`,fontSize:"0.72rem",color:C.text}}>
                   Score global : <strong>{s4.global}%</strong>
                 </div>
               </div>;
@@ -3118,7 +2981,7 @@ export default function App(){
           </Card>
           {stats.total>0&&<Card><SH icon="🏆" label="Ce que tu as déjà prouvé"/>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.45rem"}}>
-              {[[`${stats.streak}j consécutifs`,"de continuité",stats.streak>=3?C.green:C.gold],[`${stats.done} actions`,"exécutées",C.gold],[`${stats.relapses} rechute${stats.relapses!==1?"s":""}`, "récupérée${stats.relapses!==1?'s':''}",C.green],[`${Math.round(stats.totalMins/60*10)/10}h`,"investies",C.blue]].map(([v,l,c])=><div key={l} style={{padding:"0.65rem",background:`${c}0A`,border:`1px solid ${c}22`}}><div style={{...SF,fontSize:"1.05rem",color:c,marginBottom:"0.1rem"}}>{v}</div><div style={{fontSize:"0.62rem",color:C.textDim,lineHeight:1.3}}>{l}</div></div>)}
+              {[[`${stats.streak}j consécutifs`,"de continuité",stats.streak>=3?C.green:C.gold],[`${stats.done} actions`,"exécutées",C.gold],[`${stats.relapses} rechute${stats.relapses!==1?"s":""}`, "récupérée${stats.relapses!==1?'s':''}",C.green],[`${Math.round(stats.totalMins/60*10)/10}h`,"investies",C.blue]].map(([v,l,c])=><div key={l} style={{padding:"0.65rem",background:`${c}0A`,border:`1px solid ${c}22`}}><div style={{...SF,fontSize:"1.05rem",color:C.text,marginBottom:"0.1rem"}}>{v}</div><div style={{fontSize:"0.62rem",color:C.textDim,lineHeight:1.3}}>{l}</div></div>)}
             </div>
           </Card>}
           <Card><SH icon="🏆" label="Ma victoire de la semaine" sub="Le cerveau oublie ses progrès — écris le tien"/>
@@ -3126,38 +2989,37 @@ export default function App(){
           </Card>
 
           {s.citations_personnelles?.length>0&&<Card><SH icon="✦" label="Phrases personnelles" sub="Générées à partir de ton profil"/>
-            {s.citations_personnelles.map((c,i)=><div key={i} style={{padding:"0.65rem 0.85rem",borderLeft:`2px solid ${C.goldD}`,marginBottom:"0.45rem",background:C.bg3}}><div style={{...SF,fontSize:"0.92rem",color:C.goldL,fontStyle:"italic",lineHeight:1.55}}>{c}</div></div>)}
+            {s.citations_personnelles.map((c,i)=><div key={i} style={{padding:"0.65rem 0.85rem",border:`1.5px solid ${C.goldD}`,marginBottom:"0.45rem",background:C.bg3}}><div style={{...SF,fontSize:"0.92rem",color:C.text,fontStyle:"italic",lineHeight:1.55}}>{c}</div></div>)}
           </Card>}
-          <Card accent><SH icon="✦" label="Message Final"/>
+          <Card><SH icon="✦" label="Message Final"/>
             <p style={{color:C.textMid,lineHeight:1.85,fontSize:"0.87rem",fontStyle:"italic"}}>{s2.message_final}</p>
           </Card>
-          <div style={{padding:"0.95rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`,textAlign:"center",marginBottom:"1rem"}}><div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>Contrat</div><div style={{...SF,fontSize:"0.97rem",color:C.gold,fontStyle:"italic",lineHeight:1.6}}>{s2.contrat}</div></div>
+          <div style={{padding:"0.95rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`,textAlign:"center",marginBottom:"1rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>Contrat</div><div style={{...SF,fontSize:"0.97rem",color:C.text,fontStyle:"italic",lineHeight:1.6}}>{s2.contrat}</div></div>
         </div>}
 
         {tab==="rituel"&&<div style={{animation:"fadeUp 0.4s ease"}}>
-          <Card accent><SH icon="🌬" label="Rituel d'Activation" sub="< 10 min · Timer intégré · Chaque jour"/>
-            <div style={{padding:"0.82rem 0.95rem",background:`${C.gold}0E`,border:`1px solid ${C.goldD}`,borderLeft:`3px solid ${C.gold}`,marginBottom:"1rem"}}><div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.28rem"}}>Autosuggestion — 3× à voix haute</div><div style={{...SF,fontSize:"1.02rem",color:C.goldL,fontStyle:"italic",lineHeight:1.6}}>{s2.rituel?.autosuggestion}</div></div>
+          <Card><SH icon="🌬" label="Rituel d'Activation" sub="< 10 min · Timer intégré · Chaque jour"/>
+            <div style={{padding:"0.82rem 0.95rem",background:`${C.gold}0E`,border:`1px solid ${C.goldD}`,borderLeft:`3px solid ${C.gold}`,marginBottom:"1rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.28rem"}}>Autosuggestion — 3× à voix haute</div><div style={{...SF,fontSize:"1.02rem",color:C.text,fontStyle:"italic",lineHeight:1.6}}>{s2.rituel?.autosuggestion}</div></div>
             {s2.rituel?.matin&&<RituelTimer steps={s2.rituel.matin}/>}
             <div style={{marginTop:"0.85rem",padding:"0.68rem 0.82rem",background:`${C.green}0A`,border:`1px solid ${C.green}25`}}><div style={{fontSize:"0.54rem",color:C.green,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>◉ Première action — dans les 2 min</div><div style={{fontSize:"0.83rem",color:C.text,lineHeight:1.5}}>{s2.rituel?.premiere_action_du_jour}</div></div>
-            <div style={{marginTop:"0.5rem",padding:"0.68rem 0.82rem",background:C.bg3,borderLeft:`2px solid ${C.goldD}`}}><div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>Soir <Tag>{s2.rituel?.soir?.duree}</Tag></div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{s2.rituel?.soir?.action}</div></div>
+            <div style={{marginTop:"0.5rem",padding:"0.68rem 0.82rem",background:C.bg3,borderLeft:`2px solid ${C.goldD}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>Soir <Tag>{s2.rituel?.soir?.duree}</Tag></div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{s2.rituel?.soir?.action}</div></div>
           </Card>
           <Card><SH icon="🛡" label="Protocole de Rechute" sub={`"${s2.protocole_rechute?.contexte||""}"`}/>
-            {[["5 premières minutes",s2.protocole_rechute?.["5_minutes"],C.red],["24 heures",s2.protocole_rechute?.["24h"],C.gold],["48 heures",s2.protocole_rechute?.["48h"],C.green]].map(([l,v,c])=><div key={l} style={{marginBottom:"0.55rem",padding:"0.62rem 0.8rem",background:`${c}08`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:c,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
-            <div style={{padding:"0.7rem 0.85rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}35`}}><div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>Règle du Non-Zéro</div><div style={{fontSize:"0.81rem",color:C.text,lineHeight:1.5}}>{s2.protocole_rechute?.regle_non_zero}</div></div>
+            {[["5 premières minutes",s2.protocole_rechute?.["5_minutes"],C.red],["24 heures",s2.protocole_rechute?.["24h"],C.gold],["48 heures",s2.protocole_rechute?.["48h"],C.green]].map(([l,v,c])=><div key={l} style={{marginBottom:"0.55rem",padding:"0.62rem 0.8rem",background:`${c}08`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
+            <div style={{padding:"0.7rem 0.85rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}35`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>Règle du Non-Zéro</div><div style={{fontSize:"0.81rem",color:C.text,lineHeight:1.5}}>{s2.protocole_rechute?.regle_non_zero}</div></div>
           </Card>
         </div>}
 
         {tab==="plan"&&<div style={{animation:"fadeUp 0.4s ease"}}>
           {weeksLoading&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"2.5rem 0",gap:"0.9rem"}}><div style={{width:"36px",height:"36px",border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`,borderRadius:"50%",animation:"spin 1.1s linear infinite"}}/><div style={{color:C.textDim,fontSize:"0.76rem",...MN}}>Génération des 12 semaines…</div></div>}
-          {!weeksLoading&&weeks!==null&&weeks.length===0&&<Card><div style={{textAlign:"center",padding:"0.75rem",color:C.textDim,fontSize:"0.81rem"}}><div style={{marginBottom:"0.65rem"}}>Impossible de charger.</div><button onClick={()=>{setWeeks(null);generateWeeks(plan);}} style={{padding:"0.52rem 1rem",background:C.gold,border:"none",color:C.bg,fontSize:"0.7rem",letterSpacing:"0.1em",cursor:"pointer"}}>Réessayer</button></div></Card>}
+          {!weeksLoading&&weeks!==null&&weeks.length===0&&<Card><div style={{textAlign:"center",padding:"0.75rem",color:C.textDim,fontSize:"0.81rem"}}><div style={{marginBottom:"0.65rem"}}>Impossible de charger.</div><button onClick={()=>{setWeeks(null);generateWeeks(plan);}} style={{padding:"0.52rem 1rem",background:C.gold,border:"none",color:C.onGold,fontSize:"0.7rem",letterSpacing:"0.1em",cursor:"pointer"}}>Réessayer</button></div></Card>}
           {!weeksLoading&&weeks&&weeks.length>0&&(()=>{
             const nrm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase();
-            // Calcul déverrouillage par SCORE automatique
             const getWeekScore=(wn)=>computeWeekScore(wn, logs, startDate);
             const isWeekUnlocked=(weekNum)=>{
-              if(weekNum<=1)return true; // S1 toujours débloquée
+              if(weekNum<=1)return true;
               const prevScore=getWeekScore(weekNum-1);
-              if(prevScore===null)return false; // pas encore de logs = bloqué
+              if(prevScore===null)return false;
               return prevScore.total>=(weeks.find(w=>(w.semaine||w.s)===weekNum-1)?.seuil||6);
             };
             return ["ÉVEIL","CONSTRUCTION","RÉCOLTE"].map(phase=>{
@@ -3178,18 +3040,18 @@ export default function App(){
         </div>}
 
         {tab==="anti-abandon"&&<div style={{animation:"fadeUp 0.4s ease"}}>
-          <Card accent><SH icon="🔒" label="Système Anti-Abandon" sub="Le système tient quand la motivation lâche"/>
-            <div style={{marginBottom:"0.85rem"}}><div style={{fontSize:"0.54rem",color:C.gold,textTransform:"uppercase",letterSpacing:"0.15em",...MN,marginBottom:"0.4rem"}}>Règles de continuité</div>
-              {(s2.anti_abandon?.regles||[]).map((r,i)=><div key={i} style={{display:"flex",gap:"0.6rem",marginBottom:"0.38rem",alignItems:"flex-start"}}><span style={{...MN,fontSize:"0.63rem",color:C.gold,minWidth:"1.4rem",marginTop:"0.08rem"}}>{String(i+1).padStart(2,"0")}</span><span style={{fontSize:"0.81rem",color:C.text,lineHeight:1.55}}>{r}</span></div>)}
+          <Card><SH icon="🔒" label="Système Anti-Abandon" sub="Le système tient quand la motivation lâche"/>
+            <div style={{marginBottom:"0.85rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.15em",...MN,marginBottom:"0.4rem"}}>Règles de continuité</div>
+              {(s2.anti_abandon?.regles||[]).map((r,i)=><div key={i} style={{display:"flex",gap:"0.6rem",marginBottom:"0.38rem",alignItems:"flex-start"}}><span style={{...MN,fontSize:"0.63rem",color:C.text,minWidth:"1.4rem",marginTop:"0.08rem"}}>{String(i+1).padStart(2,"0")}</span><span style={{fontSize:"0.81rem",color:C.text,lineHeight:1.55}}>{r}</span></div>)}
             </div>
-            {[["Jour difficile",s2.protocole_rechute?.jour_difficile,C.gold],["Motivation basse",s2.protocole_rechute?.motivation_basse,C.red],["Rechute émotionnelle",s2.protocole_rechute?.rechute_emotionnelle,C.purple],["Fatigue mentale",s2.protocole_rechute?.fatigue_mentale,C.blue],["Version minimale",s2.anti_abandon?.version_minimale,C.green]].filter(([,v])=>v).map(([l,v,c])=><div key={l} style={{marginBottom:"0.6rem",padding:"0.75rem 0.85rem",background:`${c}08`,border:`1px solid ${c}25`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:c,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.25rem"}}>{l}</div><div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.6}}>{v}</div></div>)}
+            {[["Jour difficile",s2.protocole_rechute?.jour_difficile,C.gold],["Motivation basse",s2.protocole_rechute?.motivation_basse,C.red],["Rechute émotionnelle",s2.protocole_rechute?.rechute_emotionnelle,C.purple],["Fatigue mentale",s2.protocole_rechute?.fatigue_mentale,C.blue],["Version minimale",s2.anti_abandon?.version_minimale,C.green]].filter(([,v])=>v).map(([l,v,c])=><div key={l} style={{marginBottom:"0.6rem",padding:"0.75rem 0.85rem",background:`${c}08`,border:`1px solid ${c}25`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.25rem"}}>{l}</div><div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.6}}>{v}</div></div>)}
           </Card>
         </div>}
 
         {tab==="lectures"&&<div style={{animation:"fadeUp 0.4s ease"}}>
           <Card><SH icon="📚" label="Lectures" sub="Sélectionnées pour ce profil précis"/>
             {(s2.lectures||[]).map((l,i)=><div key={i} style={{marginBottom:"0.85rem",padding:"0.85rem",background:C.bg3,borderLeft:`2px solid ${C.goldD}`}}>
-              <div style={{display:"flex",gap:"0.52rem",alignItems:"flex-start",marginBottom:"0.28rem"}}><span style={{...MN,fontSize:"0.63rem",color:C.goldD,minWidth:"1.1rem",marginTop:"0.08rem"}}>0{i+1}</span><div><div style={{...SF,fontSize:"0.95rem",color:C.goldL,marginBottom:"0.06rem"}}>{l.titre}</div><div style={{fontSize:"0.68rem",color:C.textDim,...MN}}>{l.auteur}</div></div></div>
+              <div style={{display:"flex",gap:"0.52rem",alignItems:"flex-start",marginBottom:"0.28rem"}}><span style={{...MN,fontSize:"0.63rem",color:C.text,minWidth:"1.1rem",marginTop:"0.08rem"}}>0{i+1}</span><div><div style={{...SF,fontSize:"0.95rem",color:C.text,marginBottom:"0.06rem"}}>{l.titre}</div><div style={{fontSize:"0.68rem",color:C.textDim,...MN}}>{l.auteur}</div></div></div>
               <div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.6,paddingLeft:"1.6rem"}}>{l.pourquoi}</div>
             </div>)}
           </Card>
@@ -3198,16 +3060,16 @@ export default function App(){
         {tab==="coach"&&<div style={{animation:"fadeUp 0.4s ease"}}>
           <CoachChat plan={plan} plan2={plan2} weeks={weeks} dailyLogs={logs}/>
           <div style={{padding:"0.7rem",background:C.bg2,border:`1px solid ${C.border}`,fontSize:"0.7rem",color:C.textDim,lineHeight:1.6}}>
-            <strong style={{color:C.goldD}}>Exemples :</strong> "J'ai raté 2 jours" · "Mon saboteur s'est déclenché" · "Comment faire l'action S4 ?" · "J'ai envie d'abandonner"
+            <strong style={{color:C.text}}>Exemples :</strong> "J'ai raté 2 jours" · "Mon saboteur s'est déclenché" · "Comment faire l'action S4 ?" · "J'ai envie d'abandonner"
           </div>
         </div>}
 
         {tab==="engagement"&&<EngagementTab plan={plan} plan2={plan2} firstName={firstName}/>}
 
         <div style={{textAlign:"center",padding:"2rem 0 0",color:C.textDim,fontSize:"0.66rem",borderTop:`1px solid ${C.border}`,marginTop:"2rem"}}>
-          <div style={{color:C.gold,opacity:0.32,letterSpacing:"0.4rem",marginBottom:"0.65rem"}}>✦ ◈ ✦</div>
-          Créé par <span style={{color:C.gold}}>Lamine Diabaté</span> · Mon Plan de Vie 90 Jours<br/>
-          <span style={{color:C.goldD,fontSize:"0.61rem",...MN}}>Auteur · "90 Jours pour Renaître" · "Le Pouvoir d'un Esprit Aligné"</span>
+          <div style={{color:C.text,opacity:0.32,letterSpacing:"0.4rem",marginBottom:"0.65rem"}}>✦ ◈ ✦</div>
+          Créé par <span style={{color:C.text}}>Lamine Diabaté</span> · Mon Plan de Vie 90 Jours<br/>
+          <span style={{color:C.text,fontSize:"0.61rem",...MN}}>Auteur · "90 Jours pour Renaître" · "Le Pouvoir d'un Esprit Aligné"</span>
         </div>
       </div>
     );
@@ -3221,7 +3083,7 @@ export default function App(){
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",maxWidth:"660px",margin:"0 auto",padding:"1.1rem 0.9rem 4rem",animation:"fadeUp 0.4s ease"}}>
         <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"2rem",paddingBottom:"0.85rem",borderBottom:`1px solid ${C.border}`}}>
-          <div style={{...SF,fontSize:"1rem",color:C.gold}}>Mes Plans</div>
+          <div style={{...SF,fontSize:"1rem",color:C.text}}>Mes Plans</div>
           <button onClick={()=>setScreen(plan?"home":"landing")} style={{padding:"0.38rem 0.65rem",background:"transparent",border:`1px solid ${C.border}`,color:C.textDim,fontSize:"0.6rem",...MN,cursor:"pointer"}}>← Retour</button>
         </div>
 
@@ -3243,10 +3105,10 @@ export default function App(){
             return(
               <button key={d} onClick={()=>switchDomain(d)} style={{padding:"1rem 1.2rem",background:isActive?`${C.gold}12`:C.bg2,border:`1px solid ${isActive?C.gold:C.border}`,textAlign:"left",cursor:"pointer",transition:"all 0.2s"}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.4rem"}}>
-                  <div style={{fontSize:"0.56rem",color:isActive?C.gold:C.goldD,textTransform:"uppercase",letterSpacing:"0.15em",...MN}}>{d} {isActive&&"· ACTIF"}</div>
+                  <div style={{fontSize:"0.56rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.15em",...MN}}>{d} {isActive&&"· ACTIF"}</div>
                   <div style={{fontSize:"0.6rem",color:C.textDim,...MN}}>J{Math.min(dn,90)}/90</div>
                 </div>
-                <div style={{...SF,fontSize:"0.95rem",color:isActive?C.gold:C.text}}>{ng}</div>
+                <div style={{...SF,fontSize:"0.95rem",color:C.text}}>{ng}</div>
                 {data?.plan?.scorecard?.mission_centrale&&<div style={{fontSize:"0.72rem",color:C.textMid,marginTop:"0.3rem",lineHeight:1.5}}>{data.plan.scorecard.mission_centrale.slice(0,80)}…</div>}
               </button>
             );
@@ -3254,7 +3116,7 @@ export default function App(){
         </div>
 
         {domains.length<3&&(
-          <button onClick={startNewPlan} style={{width:"100%",padding:"0.9rem",background:"transparent",border:`1px dashed ${C.goldD}`,color:C.goldD,fontSize:"0.7rem",letterSpacing:"0.12em",textTransform:"uppercase",...MN,cursor:"pointer"}}>
+          <button onClick={startNewPlan} style={{width:"100%",padding:"0.9rem",background:"transparent",border:`1px dashed ${C.goldD}`,color:C.text,fontSize:"0.7rem",letterSpacing:"0.12em",textTransform:"uppercase",...MN,cursor:"pointer"}}>
             + Créer un nouveau plan ({domains.length}/3)
           </button>
         )}

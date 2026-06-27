@@ -2348,7 +2348,7 @@ export default function App(){
 <h2>IDENTITÉ FUTURE</h2>${s.identite_future?`<p><b>Je pense :</b> ${s.identite_future.comment_pense}</p><p><b>J'agis :</b> ${s.identite_future.comment_agit}</p><p><b>Je ne tolère plus :</b> ${s.identite_future.ne_tolere_plus}</p><p><b>Nouveaux standards :</b> ${s.identite_future.nouveaux_standards}</p>`:""}
 <h2>LECTURES</h2>${(s2.lectures||[]).map(l=>`<p><b>${l.titre}</b> — ${l.auteur} : ${l.pourquoi}</p>`).join("")}
 <h2>MESSAGE FINAL</h2><p>${s2.message_final||""}</p><div class="box">${s2.contrat||""}</div>
-<div class="footer">✦ Créé par Lamine Digital Lab · Mon Plan de Vie 90 Jours · "90 Jours pour Renaître" ✦</div></div><script>window.onload=()=>{window.print();setTimeout(()=>window.close(),2000);};<\/script></body></html>`;
+<div class="footer">✦ Créé par Lamine Digital Lab · Mon Plan de Vie 90 Jours ✦</div></div><script>window.onload=()=>{window.print();setTimeout(()=>window.close(),2000);};<\/script></body></html>`;
     const w=window.open("","_blank","width=900,height=700");if(!w){alert("Autorise les popups.");return;}w.document.write(html);w.document.close();
   };
 
@@ -3369,8 +3369,7 @@ export default function App(){
 
         <div style={{textAlign:"center",padding:"2rem 0 0",color:C.textDim,fontSize:"0.66rem",borderTop:`1px solid ${C.border}`,marginTop:"2rem"}}>
           <div style={{color:C.gold,opacity:0.6,letterSpacing:"0.4rem",marginBottom:"0.65rem"}}>✦ ◈ ✦</div>
-          Créé par <span style={{color:C.goldL,fontStyle:"italic"}}>Lamine Digital Lab</span> · Mon Plan de Vie 90 Jours<br/>
-          <span style={{color:C.goldL,fontStyle:"italic",fontSize:"0.61rem",...MN}}>Auteur · "90 Jours pour Renaître" · "Le Pouvoir d'un Esprit Aligné"</span>
+          Créé par <span style={{color:C.goldL,fontStyle:"italic"}}>Lamine Digital Lab</span> · Mon Plan de Vie 90 Jours
         </div>
       </div>
     );

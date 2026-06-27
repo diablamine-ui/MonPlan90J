@@ -106,8 +106,8 @@ const sbLoadAll = async(userKey) => {
 // PALETTE
 // ══════════════════════════════════════════════════════════════
 const C = {
-  bg:"#FAF8F3",bg1:"#F5F0E6",bg2:"#EFE8D8",bg3:"#E2DDD0",
-  border:"#B8AD93",gold:"#C9A84C",goldL:"#C9A84C",goldD:"#C9A84C",
+  bg:"#FAF8F3",bg1:"#F5F0E6",bg2:"#EFEFEC",bg3:"#E4E4E0",
+  border:"#C2C2BD",gold:"#C9A84C",goldL:"#C9A84C",goldD:"#C9A84C",
   text:"#000000",textDim:"#000000",textMid:"#000000",
   red:"#A8362A",green:"#1A6B3C",blue:"#1F5E8C",purple:"#6B3380",
   onGold:"#000000", // texte sur fond doré — fixe, indépendant de C.bg
@@ -2814,10 +2814,10 @@ export default function App(){
         }}>
           <span style={{fontSize:"1.2rem"}}>💬</span>
           <div style={{textAlign:"left",flex:1}}>
-            <div style={{fontSize:"0.78rem",color:"#25D366",fontWeight:400}}>Rejoindre la Communauté 90 Jours ✦</div>
+            <div style={{fontSize:"0.78rem",color:"#0D7A3D",fontWeight:600}}>Rejoindre la Communauté 90 Jours ✦</div>
             <div style={{fontSize:"0.62rem",color:C.textDim,...MN,marginTop:"0.1rem"}}>Des centaines de personnes vivent ce programme · Partage · Questions · Victoires</div>
           </div>
-          <span style={{fontSize:"0.7rem",color:"#25D366"}}>→</span>
+          <span style={{fontSize:"0.7rem",color:"#0D7A3D"}}>→</span>
         </button>
 
         {retourMsg&&<div style={{

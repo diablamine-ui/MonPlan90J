@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
+import { inject, track } from '@vercel/analytics';
+inject();
 
 // ══════════════════════════════════════════════════════════════
 // fetchWithRetry — réessaie automatiquement sur 429 (rate limit Groq)
@@ -1597,6 +1599,7 @@ function CoachChat({plan,plan2,weeks,dailyLogs,answers}){
   useEffect(()=>endRef.current?.scrollIntoView({behavior:"smooth"}),[msgs]);
   const send=async()=>{
     if(!input.trim()||loading)return;
+    track('coach_message_sent');
     const q=input.trim();setInput("");setMsgs(m=>[...m,{role:"user",content:q}]);setLoading(true);
     try{
       const res=await fetchWithRetry("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
@@ -2000,6 +2003,23 @@ export default function App(){
 
   useEffect(()=>{ if(plan&&!logs[todayKey()]) setTrackerOpen(true); },[plan,startDate]);
 
+  useEffect(()=>{
+    if(!plan) return;
+    if(typeof Notification==="undefined") return;
+    if(Notification.permission!=="granted") return;
+    if(logs[todayKey()]) return; // déjà loggué aujourd'hui
+    if(new Date().getHours()<18) return; // ne rappelle qu'en fin de journée
+    const notifKey=`plan90_last_notif_${todayKey()}`;
+    if(localStorage.getItem(notifKey)) return; // déjà notifié aujourd'hui
+    navigator.serviceWorker?.ready.then(reg=>{
+      reg.showNotification("Mon Plan de Vie 90 Jours",{
+        body: plan2?.rituel?.premiere_action_du_jour ? `Pas encore loggué aujourd'hui — ${plan2.rituel.premiere_action_du_jour}` : "Tu n'as pas encore enregistré ta journée d'aujourd'hui.",
+        icon:"/icon-192.png", badge:"/icon-192.png", tag:"daily-reminder",
+      });
+      localStorage.setItem(notifKey,"1");
+    }).catch(()=>{});
+  },[plan,logs,startDate,screen]);
+
   const LOAD_STEPS=["Analyse psychologique du profil…","Construction du diagnostic…","Calcul du scorecard comportemental…","Génération du rituel et protocoles…","Finalisation du plan…"];
   const setF=(k,v)=>setFoc(p=>({...p,[k]:v}));
   const iSt=k=>({width:"100%",padding:"1rem 1.1rem",borderRadius:"12px",background:C.bg2,border:`1px solid ${foc[k]?C.gold:C.border}`,boxShadow:foc[k]?`0 0 0 4px ${C.gold}1A`:"none",color:C.text,fontSize:"0.88rem",fontWeight:400,outline:"none",transition:"all 220ms ease-out"});
@@ -2010,6 +2030,7 @@ export default function App(){
     if(!nom.trim()||nom.trim().length<2){setAccessErr("Entre ton nom complet.");setAccessShake(true);setTimeout(()=>setAccessShake(false),500);return;}
     if(!email.trim()||!email.includes("@")){setAccessErr("Email invalide.");setAccessShake(true);setTimeout(()=>setAccessShake(false),500);return;}
     if(!CODES.includes(code.trim().toUpperCase())){setAccessErr("Code secret invalide.");setAccessShake(true);setTimeout(()=>setAccessShake(false),500);return;}
+    track('access_submitted');
     setAccessLoading(true);
     try{
       const userKey=nom.trim()||email.trim();
@@ -2020,6 +2041,7 @@ export default function App(){
         domains.forEach(d=>{ if((cloudAll[d]?.updated_at||"")>(cloudAll[best]?.updated_at||"")) best=d; });
         const data=cloudAll[best];
         if(data?.plan){
+          track('plan_found_cloud',{domain:best});
           setActiveDomain(best);
           setPlan(data.plan);setPlan2(data.plan2||null);setWeeks(data.weeks||null);setCloture(data.cloture||null);
           setAnswers(data.answers||{});setChecks(data.checks||{});setLogs(data.logs||{});
@@ -2032,6 +2054,7 @@ export default function App(){
         }
       }
     }catch(e){ console.warn("Recherche plan existant échouée:",e); }
+    track('questionnaire_started');
     setAccessLoading(false);
     setScreen("intro");
   };
@@ -2105,6 +2128,7 @@ export default function App(){
   };
   const generate=async()=>{
     const dom = answers.q_domaine_principal || "Finances";
+    track('questionnaire_completed',{domain:dom});
     setActiveDomain(dom);
     setScreen("loading");setLoadStep(0);
     const timers=LOAD_STEPS.map((_,i)=>setTimeout(()=>setLoadStep(i),i*4200));
@@ -2127,10 +2151,12 @@ export default function App(){
       setStartDate(new Date().toISOString().split('T')[0]);
       setShowEmailPopup(true);
       setScreen("home");
+      track('plan_generated_success',{domain:dom});
     }catch(e){
       timers.forEach(clearTimeout);
       setErrMsg(e.message);
       setScreen("error");
+      track('plan_generated_error',{domain:dom,error:e.message});
     }
   };
 
@@ -2188,16 +2214,18 @@ export default function App(){
     try{
       const result=await callAPI(buildPromptCloture(answers,plan,plan2,logs,evalData));
       setCloture(result);
+      track('j90_verdict_generated');
     }catch(e){
       console.error("Clôture échec:",e);
       setClotureErr(e.message||"Erreur de génération");
+      track('j90_verdict_error',{error:e.message});
     }finally{
       setClotureLoading(false);
     }
   };
 
   const toggleCheck=(k,v)=>setChecks(p=>({...p,[k]:v}));
-  const saveLog=(log)=>{const next={...logs,[todayKey()]:log};setLogs(next);if(activeDomain){saveByDomain(activeDomain,{logs:next,plan,plan2,weeks,answers,nom,email,checks,startDate});}else{const s=load()||{};save({...s,logs:next,plan,plan2,weeks,answers,nom,email,checks,startDate});}};
+  const saveLog=(log)=>{track('daily_log_saved',{done:!!log.action_done,rechute:!!log.rechute});const next={...logs,[todayKey()]:log};setLogs(next);if(activeDomain){saveByDomain(activeDomain,{logs:next,plan,plan2,weeks,answers,nom,email,checks,startDate});}else{const s=load()||{};save({...s,logs:next,plan,plan2,weeks,answers,nom,email,checks,startDate});}};
   const reset=()=>{clear();setPlan(null);setPlan2(null);setWeeks(null);setAnswers({});setChecks({});setLogs({});setStartDate(null);setSi(0);setQi(0);setNom("");setEmail("");setCode("");setAccessErr("");setErrMsg("");setTab("dashboard");setActiveDomain(null);setScreen("landing");};
   const switchDomain=(d)=>{
     const saved=loadByDomain(d);
@@ -2952,6 +2980,19 @@ export default function App(){
           </div>
         </div>
 
+        {typeof Notification!=="undefined"&&Notification.permission==="default"&&<button onClick={()=>{Notification.requestPermission().then(p=>track('notif_permission',{result:p}));}} style={{
+          width:"100%",display:"flex",alignItems:"center",gap:"0.7rem",
+          padding:"0.7rem 0.9rem",marginBottom:"1rem",
+          background:`${C.gold}10`,border:`1px solid ${C.goldD}`,
+          cursor:"pointer",textAlign:"left",
+        }}>
+          <span style={{fontSize:"1.1rem"}}>🔔</span>
+          <div style={{flex:1}}>
+            <div style={{fontSize:"0.78rem",color:C.text}}>Active un rappel quotidien</div>
+            <div style={{fontSize:"0.62rem",color:C.textDim,...MN,marginTop:"0.1rem"}}>Une notification si tu n'as pas encore loggué ta journée</div>
+          </div>
+        </button>}
+
         <button onClick={joinCommunity} style={{
           width:"100%",display:"flex",alignItems:"center",gap:"0.75rem",
           padding:"0.85rem 1rem",marginBottom:"1rem",
@@ -3042,7 +3083,7 @@ export default function App(){
           <div style={{...SF,fontSize:"1.05rem",color:C.text,lineHeight:1.6,marginBottom:"1rem"}}>
             Il y a 90 jours, tu portais une croyance précise sur toi-même. Les faits ont eu le temps de parler.
           </div>
-          <button onClick={()=>setScreen("cloture")}
+          <button onClick={()=>{track('j90_verdict_clicked');setScreen("cloture");}}
             style={{width:"100%",padding:"0.85rem",background:C.gold,border:"none",color:C.onGold,fontSize:"0.74rem",letterSpacing:"0.12em",...MN,cursor:"pointer",fontWeight:600}}>
             Découvrir le verdict →
           </button>

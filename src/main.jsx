@@ -848,7 +848,7 @@ const CSS=`
   textarea,input,select,button{font-family:'Jost',sans-serif;font-weight:300}
 `;
 const MN={fontFamily:"'DM Mono',monospace"};
-const SF={fontFamily:"'Cormorant Garamond',serif"};
+const SF={fontFamily:"'Jost',sans-serif"};
 
 function Divider(){return <div style={{width:"50px",height:"1px",background:`linear-gradient(90deg,transparent,${C.gold},transparent)`,margin:"0 auto"}}/>;}
 function Card({children,accent=false,style={}}){return <div style={{background:C.bg2,border:`1px solid ${accent?C.goldD:C.border}`,borderTop:`2px solid ${accent?C.gold:C.border}`,padding:"1.4rem",marginBottom:"1rem",...style}}>{children}</div>;}

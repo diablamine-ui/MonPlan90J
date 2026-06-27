@@ -297,6 +297,9 @@ const SEGMENTS_FINANCES = [
     {id:"q_visibilite",label:"Quand tu dois vendre ou te rendre visible — que se passe-t-il dans ta tête ?",type:"textarea",ph:"Je remets à plus tard. J'ai peur du refus. Je n'ose pas relancer mes clients ou augmenter mes prix.",minLen:15,
      reward:"Ce mécanisme est identifié. Le plan le désamorce concrètement.",
      aide:{ex:"Je préfère baisser mes prix plutôt que de négocier."}},
+    {id:"q_perception_externe",label:"Si quelqu'un observait tes finances sans rien te demander, juste à partir de tes actions du dernier mois — que conclurait-il sur tes vraies priorités ?",type:"textarea",ph:"Il verrait que je dépense plus pour paraître que pour construire. Que je dis vouloir investir mais que rien ne le montre dans mes comptes.",minLen:15,
+     reward:"L'écart entre ce que tu dis et ce que prouvent tes actions devient visible — et exploitable.",
+     aide:{ex:"Il conclurait que le confort immédiat passe avant mes objectifs déclarés."}},
   ]},
   { id:"objectif", label:"OBJECTIF", icon:"✦", subtitle:"Ce que tu veux changer concrètement", questions:[
     {id:"q_objectif",label:"Quel résultat financier concret doit changer en 90 jours ?",type:"text",ph:"Ex : Atteindre 300 000 FCFA/mois en revenus nets",minLen:10,
@@ -326,7 +329,7 @@ const SEGMENTS_FINANCES = [
     {id:"q_perte_succes",label:"Si tu réussissais vraiment ces 90 jours — que risques-tu de perdre ? Et quelle relation à l'argent refuses-tu de continuer après ça ?",type:"textarea",ph:"Je perdrais l'excuse de ne pas avoir réussi. Et je refuse de continuer à finir le mois à zéro.",minLen:15,
      reward:"Les résistances au succès sont identifiées. Ta ligne rouge est posée.",
      aide:{ex:"Je perdrais le confort de me plaindre. Je refuse de dépenser avant d'épargner."}},
-    {id:"q_echec_historique",label:"La dernière fois que tu as échoué financièrement — que s'est-il passé exactement et quelle conclusion as-tu tirée sur toi ?",type:"textarea",ph:"En 2021 j'ai lancé un business qui a échoué. J'ai conclu que je n'étais pas fait pour entreprendre. Depuis j'hésite à tout.",minLen:20,
+    {id:"q_echec_historique",label:"La dernière fois que tu as échoué financièrement — que s'est-il passé exactement, quelle conclusion as-tu tirée sur toi, et c'était ta combientième tentative de ce genre ?",type:"textarea",ph:"En 2021 j'ai lancé un business qui a échoué — ma 3e tentative d'entreprendre. J'ai conclu que je n'étais pas fait pour ça. Depuis j'hésite à tout.",minLen:20,
      reward:"Ce schéma est identifié. Le plan est construit pour le désamorcer.",
      aide:{ex:"Mon projet a échoué. J'ai pensé : 'Je suis nul en gestion.' C'est depuis que j'évite de recommencer."}},
   ]},
@@ -374,6 +377,9 @@ const SEGMENTS_COMPORTEMENT = [
      opts:["Je procrastine beaucoup","Je manque de constance","Je commence puis j'abandonne","Je me disperse facilement","Je manque de discipline","Je fuis l'inconfort","Je retombe toujours dans les mêmes habitudes"],
      reward:"Ce profil comportemental est au cœur de ton diagnostic.",
      aide:{ex:"Si tu lances des projets sans les finir → 'Je commence puis j'abandonne'."}},
+    {id:"q_perception_externe",label:"Si quelqu'un t'observait une semaine sans te parler, juste tes actions — qu'est-ce qu'il conclurait sur tes vraies priorités, pas celles que tu annonces ?",type:"textarea",ph:"Il verrait que je passe plus de temps à planifier qu'à agir. Que mon téléphone gagne contre mes objectifs presque chaque jour.",minLen:15,
+     reward:"L'écart entre ce que tu dis vouloir et ce que prouvent tes actions devient visible — et exploitable.",
+     aide:{ex:"Il conclurait que le confort immédiat passe systématiquement avant mes engagements."}},
   ]},
   { id:"objectif", label:"OBJECTIF", icon:"✦", subtitle:"La transformation que tu veux vraiment", questions:[
     {id:"q_objectif",label:"Quel comportement précis veux-tu transformer en 90 jours ?",type:"textarea",ph:"Arrêter de procrastiner mes tâches importantes. Tenir mes engagements envers moi-même. Installer une routine quotidienne.",minLen:20,
@@ -397,7 +403,7 @@ const SEGMENTS_COMPORTEMENT = [
      opts:["Je changerai quand ma situation s'améliorera","C'est plus fort que moi — c'est ma nature","J'ai essayé mais ça ne marche pas pour moi","Je n'ai pas le temps","Je manque de volonté","C'est à cause de mon entourage","Je le ferai demain","Autre"],
      reward:"Ce mensonge est nommé. Il perd son pouvoir.",
      aide:{ex:"'Je changerai quand j'aurai moins de stress.' / 'Je suis comme ça de nature.'"}},
-    {id:"q_resistance_abandon",label:"Si tu changeais vraiment — que perdrais-tu ? Et quelle est la vraie raison derrière tes abandons ?",type:"textarea",ph:"Je perdrais le confort de me plaindre. Et j'abandonne toujours quand c'est inconfortable ou quand je ne vois pas de résultats rapides.",minLen:15,
+    {id:"q_resistance_abandon",label:"Si tu changeais vraiment — que perdrais-tu ? Quelle est la vraie raison derrière tes abandons, et c'est la combientième fois que tu essaies de changer ce comportement précis ?",type:"textarea",ph:"Je perdrais le confort de me plaindre. J'abandonne quand c'est inconfortable. C'est ma 4e tentative sérieuse sur ce point précis.",minLen:15,
      reward:"Les résistances inconscientes et le mécanisme d'abandon sont identifiés.",
      aide:{ex:"Je perdrais la familiarité du chaos. J'abandonne quand une émotion forte arrive."}},
     {id:"q_emotion_declencheur",label:"Quelle émotion déclenche le plus souvent tes comportements destructeurs ?",type:"select",
@@ -416,6 +422,9 @@ const SEGMENTS_COMPORTEMENT = [
     {id:"q_environnement",label:"Quel environnement renforce le plus tes mauvaises habitudes ?",type:"textarea",ph:"À la maison sans structure je procrastine tout. Mon entourage a les mêmes habitudes que moi.",minLen:15,
      reward:"L'environnement est maintenant dans les stratégies du plan.",
      aide:{ex:"Le salon avec la télé. Mon téléphone sur le bureau. Mes amis qui ne font rien le week-end."}},
+    {id:"q_sommeil",label:"Comment dors-tu en ce moment — et vois-tu un lien avec ce comportement que tu veux changer ?",type:"textarea",ph:"Je dors mal, je me couche tard sur mon téléphone. Quand je dors mal, ma discipline s'effondre le lendemain.",minLen:15,
+     reward:"Le sommeil est un des meilleurs prédicteurs de rechute — il entre dans le rituel du soir.",
+     aide:{ex:"5-6h par nuit, irrégulier. Les jours où je dors mal, je craque plus facilement."}},
     {id:"q_soutien",label:"Qui, précisément (prénom et lien), sait exactement ce que tu construis ces 90 jours — et pourrait te le rappeler si tu lâches ? Si personne, dis-le aussi.",type:"textarea",ph:"Personne ne sait vraiment ce que je vise. Mon copain sait juste que 'je me bouge en ce moment'.",minLen:10,
      reward:"S'il existe, ce lien devient un point d'ancrage dans ton protocole anti-abandon. S'il n'existe pas, le plan en tient compte aussi.",
      aide:{ex:"Ma colocataire, Aïcha — elle me demande mon avancement chaque dimanche."}},
@@ -452,6 +461,9 @@ const SEGMENTS_MENTAL = [
     {id:"q_peur_dominante",label:"Quelle peur influence silencieusement la majorité de tes décisions aujourd'hui ?",type:"textarea",ph:"La peur d'échouer. La peur du jugement. La peur de décevoir ma famille. La peur de ne pas être à la hauteur.",minLen:15,
      reward:"Cette peur est identifiée. Le plan est construit pour la désarmer.",
      aide:{ex:"Peur du rejet. Peur d'être insuffisant. Peur de prendre la mauvaise décision."}},
+    {id:"q_perception_externe",label:"Si quelqu'un proche de toi décrivait ton état mental réel des dernières semaines — pas celui que tu montres — que dirait-il ?",type:"textarea",ph:"Il dirait que je tiens debout en façade mais que je suis épuisé. Que je souris mais que je réponds de moins en moins aux messages.",minLen:15,
+     reward:"L'écart entre ce que tu montres et ce qui se passe vraiment devient visible — et traitable.",
+     aide:{ex:"Il dirait que je parais fort mais que je m'isole de plus en plus."}},
   ]},
   { id:"objectif", label:"OBJECTIF", icon:"✦", subtitle:"La transformation intérieure que tu veux", questions:[
     {id:"q_objectif",label:"Quelle transformation mentale ou émotionnelle veux-tu vivre en 90 jours ?",type:"textarea",ph:"Retrouver la paix intérieure. Arrêter d'être gouverné par mes pensées négatives. Avoir plus de clarté.",minLen:20,
@@ -468,7 +480,7 @@ const SEGMENTS_MENTAL = [
     {id:"q_reussite_passee",label:"Quand as-tu déjà retrouvé du calme en pleine tempête, même brièvement — qu'est-ce que ça prouve sur ta capacité à le refaire ?",type:"textarea",ph:"Le jour de l'enterrement de mon père, j'ai trouvé un calme que je ne comprends pas encore. Ça prouve que cette stabilité existe déjà en moi, même si je n'y accède pas souvent.",minLen:20,
      reward:"Cette preuve devient ton point d'appui — pas un hasard, une capacité déjà démontrée.",
      aide:{ex:"Pendant une crise au travail, j'ai géré sans paniquer. Je sais que je peux rester stable sous pression réelle."}},
-    {id:"q_resistance_perte",label:"Si tu trouvais la paix intérieure — que risques-tu de perdre ? Et quel échec t'a le plus fragilisé mentalement ?",type:"textarea",ph:"Je perdrais l'identité de celui qui souffre. Et en 2020 quand tout s'est effondré, j'ai conclu que je n'étais pas fait pour réussir.",minLen:20,
+    {id:"q_resistance_perte",label:"Si tu trouvais la paix intérieure — que risques-tu de perdre ? Quel échec t'a le plus fragilisé mentalement, et combien de fois as-tu déjà essayé de t'en sortir avant cette fois ?",type:"textarea",ph:"Je perdrais l'identité de celui qui souffre. En 2020 tout s'est effondré — c'était ma 2e vraie tentative de m'en sortir, après la thérapie abandonnée en 2018.",minLen:20,
      reward:"Les résistances inconscientes et le schéma fragilisant sont identifiés.",
      aide:{ex:"Je perdrais la familiarité de mon anxiété. Échec : mon divorce, conclusion : je ne mérite pas mieux."}},
     {id:"q_reaction_pression",label:"Quand tu es sous pression — tu deviens plutôt ?",type:"select",
@@ -478,6 +490,9 @@ const SEGMENTS_MENTAL = [
     {id:"q_croyance_limitante",label:"Quelle croyance sur toi-même aimerais-tu enfin arrêter de porter ?",type:"textarea",ph:"'Je ne suis pas assez bien.' / 'Je suis en retard sur tout le monde.' / 'Je ne mérite pas mieux que ça.'",minLen:10,
      reward:"Cette croyance est dans le diagnostic. L'autosuggestion en est l'opposé exact.",
      aide:{ex:"'Je suis une déception.' / 'Je n'arriverai jamais à rien.'"}},
+    {id:"q_honte",label:"Y a-t-il une honte précise que tu n'as jamais dite à voix haute ? Tu peux rester vague si tu en as besoin — l'important, c'est de la nommer un minimum.",type:"textarea",ph:"J'ai honte de ne pas avoir réussi à l'âge où je pensais l'avoir fait. J'ai honte de ce que mes parents penseraient s'ils savaient où j'en suis vraiment.",minLen:10,
+     reward:"Nommer une honte, même partiellement, lui retire une partie de son pouvoir silencieux.",
+     aide:{ex:"Honte de dépendre encore financièrement de quelqu'un à mon âge."}},
   ]},
   { id:"energie", label:"ÉNERGIE", icon:"◉", subtitle:"Ta charge mentale et tes habitudes", questions:[
     {id:"q_fuite_charge",label:"Qu'est-ce qui surcharge le plus ton esprit — et vers quoi tu fuis automatiquement quand c'est trop lourd ?",type:"textarea",ph:"Des décisions en attente et des conflits non résolus. Je fuis vers mon téléphone ou je dors.",minLen:15,
@@ -599,6 +614,7 @@ function buildPrompt1(answers) {
 INTERDICTIONS : "crois en toi" | conseils génériques | jargon coaching | "tu peux le faire"
 TEST : chaque phrase doit être impossible à donner à quelqu'un d'autre.
 DIAGNOSTIC : MAUVAIS="Tu manques de discipline." BON="Tu relies ton exécution à ton état émotionnel."
+SI HONTE NON-DITE renseignée : ne jamais la répéter crûment ni la citer mot pour mot dans le diagnostic ou les citations. L'utiliser seulement pour comprendre le mécanisme en interne, jamais pour confronter directement — la confrontation porte sur le comportement observable, pas sur la honte elle-même.
 
 DOMAINE : ${domaine}
 PROFIL :
@@ -628,6 +644,9 @@ Pari: ${g('q_pari_complet')||g('q_pari')||''} | Temps: ${g('q_heures')} | Moment
 Montant libérateur: ${g('q_montant')||''} | Engagement/Identité future: ${g('q_engagement')||g('q_identite_future_fin')||g('q_identite_future_mental')||''}
 Réussite passée (preuve de capacité): ${g('q_reussite_passee')||''}
 Soutien/Redevabilité: ${g('q_soutien')||''}
+Perception externe (écart dire/faire): ${g('q_perception_externe')||''}
+Sommeil: ${g('q_sommeil')||''}
+Honte non-dite: ${g('q_honte')||''}
 
 Génère ce JSON valide EXACTEMENT — sans texte avant ni après, sans backticks :
 {"nom_guerre":"string — surnom puissant lié à son profil PRÉCIS, pas générique","pourquoi_ce_nom":"string — explication directe en 1-2 phrases qui fait mouche","identite_future":{"comment_pense":"string — pensée concrète liée au domaine","comment_agit":"string — comportement observable","ne_tolere_plus":"string — lié à ses réponses réelles","nouveaux_standards":"string — ancré dans son objectif"},"diagnostic":{"resume":"3 phrases MAX. Confrontantes. Basées sur VERSION DOMINANTE + COMPORTEMENT D'ÉVITEMENT. Impossible à donner à quelqu'un d'autre.","bloquant_central":"1 seule phrase. Doit faire légèrement mal parce qu'elle est vraie.","schema_sabotage":"Mécanisme précis. Commence par 'Quand tu...' ou 'Dès que...'","lecon_echec":"Ce que l'échec passé révèle sur le mécanisme de sabotage FUTUR.","qualites_cachees":"2 forces réelles cachées derrière les blocages déclarés — au moins 1 doit s'appuyer sur la RÉUSSITE PASSÉE donnée plus haut, pas être inventée."},"scorecard":{"discipline":{"score":55,"lecture":"string — 1 phrase confrontante liée au profil"},"focus":{"score":50,"lecture":"string"},"energie":{"score":60,"lecture":"string"},"clarte":{"score":45,"lecture":"string"},"constance":{"score":40,"lecture":"string"},"risque_abandon":"Modéré","facteur_risque":"string — circonstance précise d'abandon probable","levier_principal":"string — point fort exploitable immédiatement","mission_centrale":"string — 1 phrase personnelle qui donne envie d'agir"},"citations_personnelles":["phrase construite à partir de SES PROPRES MOTS des réponses — reconnaissable par lui","phrase — liée à son objectif précis","phrase — liée à sa peur profonde transformée en force"]}

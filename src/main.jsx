@@ -1778,7 +1778,7 @@ function EngagementTab({plan, plan2, firstName}){
 
     ctx.fillStyle = "#8B6914";
     ctx.font = "11px monospace";
-    ctx.fillText("✦ Créé par Lamine Diabaté · Mon Plan de Vie 90 Jours ✦", 450, 1160);
+    ctx.fillText("✦ Créé par Lamine Digital Lab · Mon Plan de Vie 90 Jours ✦", 450, 1160);
 
     const link = document.createElement("a");
     link.download = `engagement-${(plan?.nom_guerre||"plan").replace(/\s+/g,"-").toLowerCase()}.png`;
@@ -2244,9 +2244,9 @@ export default function App(){
     setScreen("intro");
   };
 
-  const copyText=()=>{if(!plan)return;navigator.clipboard.writeText(`MON PLAN DE VIE 90 JOURS — ${firstName}\nNom de Guerre : ${plan.nom_guerre}\n\n${plan2?.message_final||""}\n\nContrat : ${plan2?.contrat||""}\n\nCréé par Lamine Diabaté`).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);});};
+  const copyText=()=>{if(!plan)return;navigator.clipboard.writeText(`MON PLAN DE VIE 90 JOURS — ${firstName}\nNom de Guerre : ${plan.nom_guerre}\n\n${plan2?.message_final||""}\n\nContrat : ${plan2?.contrat||""}\n\nCréé par Lamine Digital Lab`).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);});};
   const shareURL=()=>{if(!plan)return;try{const p={n:plan.nom_guerre,m:plan2?.message_final||"",c:plan2?.contrat||"",f:firstName};const enc=btoa(encodeURIComponent(JSON.stringify(p)));navigator.clipboard.writeText(`${window.location.href.split("?")[0]}?share=${enc}`).then(()=>alert("Lien copié !"));}catch(e){alert("Impossible de générer le lien.");}};
-  const shareWA=()=>{if(!plan)return;window.open(`https://wa.me/?text=${encodeURIComponent("✦ MON PLAN 90 JOURS ✦\nPour "+firstName+" — "+plan.nom_guerre+"\n\n"+(plan2?.message_final||"").slice(0,400)+"\n\n"+(plan2?.contrat||"")+"\n\nCréé par Lamine Diabaté")}`,"_blank");};
+  const shareWA=()=>{if(!plan)return;window.open(`https://wa.me/?text=${encodeURIComponent("✦ MON PLAN 90 JOURS ✦\nPour "+firstName+" — "+plan.nom_guerre+"\n\n"+(plan2?.message_final||"").slice(0,400)+"\n\n"+(plan2?.contrat||"")+"\n\nCréé par Lamine Digital Lab")}`,"_blank");};
   const joinCommunity=()=>window.open("https://chat.whatsapp.com/JSDmRbun1hxK6Q8sXjT4vS","_blank");
 
   const exportEmail=()=>{
@@ -2338,7 +2338,7 @@ export default function App(){
   const printPDF=()=>{
     if(!plan)return;const s=plan;const s2=plan2||{};
     const rows=Object.entries({Discipline:s.scorecard?.discipline,Focus:s.scorecard?.focus,Énergie:s.scorecard?.energie,Clarté:s.scorecard?.clarte,Constance:s.scorecard?.constance}).map(([k,v])=>`<tr><td>${k}</td><td style="color:#C9A84C">${v?.score}/100</td><td>${v?.lecture||""}</td></tr>`).join("");
-    const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Plan 90J — ${firstName}</title><style>@import url('${FONT_PDF}');*{margin:0;padding:0;box-sizing:border-box}body{background:#080808;color:#F0EAD6;font-family:'Jost',sans-serif;font-weight:300;font-size:10.5pt;line-height:1.75;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{max-width:210mm;margin:0 auto;padding:16mm 20mm}.cover{text-align:center;padding:18mm 0;border-bottom:1px solid #8B6914;margin-bottom:10mm}.nom{font-family:'Cormorant Garamond',serif;font-size:36pt;color:#C9A84C;font-weight:500;margin:5mm 0}.mantra{font-family:'Cormorant Garamond',serif;font-size:13pt;color:#E8C97A;font-style:italic;margin:3mm 0}.mission{font-size:9.5pt;color:#A89880;margin:4mm auto;max-width:140mm}.aa{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin:5mm 0}.col{padding:4mm;border:1px solid #1E1E1E}.col-lbl{font-size:6.5pt;color:#8B6914;letter-spacing:.2em;text-transform:uppercase;margin-bottom:2mm}h2{font-family:'Cormorant Garamond',serif;font-size:11pt;color:#C9A84C;margin-top:7mm;margin-bottom:2mm;border-bottom:1px solid #1E1E1E;padding-bottom:1mm}p{margin:1.5mm 0;color:#D0C8B8;line-height:1.8}ul{padding-left:5mm;margin:2mm 0}li{margin:1.5mm 0;color:#D0C8B8}b{color:#E8C97A;font-weight:400}table{width:100%;border-collapse:collapse;margin:3mm 0;font-size:9pt}th{background:#C9A84C15;color:#E8C97A;font-weight:400;padding:2mm 3mm;border:1px solid #2A2A2A;text-align:left}td{padding:2mm 3mm;border:1px solid #1E1E1E;color:#D0C8B8}.box{background:#C9A84C0A;border:1px solid #8B6914;padding:4mm 5mm;margin:5mm 0;font-style:italic;color:#E8C97A;text-align:center}.footer{margin-top:12mm;padding-top:4mm;border-top:1px solid #8B6914;text-align:center;font-size:6.5pt;color:#8B6914;letter-spacing:.1em}@media print{@page{margin:0;size:A4}}</style></head><body><div class="page">
+    const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Plan 90J — ${firstName}</title><style>@import url('${FONT_PDF}');*{margin:0;padding:0;box-sizing:border-box}body{background:#080808;color:#F0EAD6;font-family:'Jost',sans-serif;font-weight:300;font-size:10.5pt;line-height:1.75;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{max-width:210mm;margin:0 auto;padding:16mm 20mm}.cover{text-align:center;padding:18mm 0;border-bottom:1px solid #8B6914;margin-bottom:10mm}.nom{font-family:'Cormorant Garamond',serif;font-size:36pt;color:#C9A84C;font-weight:500;margin:5mm 0}.mantra{font-family:'Cormorant Garamond',serif;font-size:13pt;color:#E8C97A;font-style:italic;margin:3mm 0}.mission{font-size:9.5pt;color:#A89880;margin:4mm auto;max-width:140mm}.aa{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin:5mm 0}.col{padding:4mm;border:1px solid #1E1E1E}.col-lbl{font-size:6.5pt;color:#8B6914;letter-spacing:.2em;text-transform:uppercase;margin-bottom:2mm}h2{font-family:'Cormorant Garamond',serif;font-size:11pt;color:#C9A84C;margin-top:7mm;margin-bottom:2mm;border-bottom:1px solid #1E1E1E;padding-bottom:1mm}p{margin:1.5mm 0;color:#D0C8B8;line-height:1.8}ul{padding-left:5mm;margin:2mm 0}li{margin:1.5mm 0;color:#D0C8B8}b{color:#E8C97A;font-weight:400}table{width:100%;border-collapse:collapse;margin:3mm 0;font-size:9pt}th{background:#C9A84C15;color:#E8C97A;font-weight:400;padding:2mm 3mm;border:1px solid #2A2A2A;text-align:left}td{padding:2mm 3mm;border:1px solid #1E1E1E;color:#D0C8B8}.box{background:#C9A84C0A;border:1px solid #8B6914;padding:4mm 5mm;margin:5mm 0;font-style:italic;color:#E8C97A;text-align:center}.footer{margin-top:12mm;padding-top:4mm;border-top:1px solid #8B6914;text-align:center;font-size:6.5pt;color:#E8C97A;font-style:italic;letter-spacing:.1em}@media print{@page{margin:0;size:A4}}</style></head><body><div class="page">
 <div class="cover"><div style="font-size:6.5pt;color:#8B6914;letter-spacing:.3em;text-transform:uppercase">Programme de Transformation Comportementale · 90 Jours</div><div class="nom">${s.nom_guerre}</div><div class="mantra">${(s.citations_personnelles||[])[0]||s2.rituel?.autosuggestion||""}</div><div class="mission">${s.scorecard?.mission_centrale||""}</div><div style="font-size:6.5pt;color:#8B6914;letter-spacing:.2em;text-transform:uppercase;margin-top:3mm">Pour ${firstName} · ${new Date().toLocaleDateString("fr-FR")}</div></div>
 <h2>AVANT / APRÈS</h2><div class="aa"><div class="col"><div class="col-lbl">Aujourd'hui</div><p>${answers.q_etat_now||""}</p></div><div class="col"><div class="col-lbl">Dans 90 jours</div><p style="color:#C9A84C">${answers.q_identite_cible||""}</p></div></div>
 <h2>DIAGNOSTIC LUCIDE</h2><p>${s.diagnostic?.resume||""}</p><p><b>Bloquant :</b> ${s.diagnostic?.bloquant_central||""}</p><p><b>Schéma :</b> ${s.diagnostic?.schema_sabotage||""}</p>
@@ -2348,7 +2348,7 @@ export default function App(){
 <h2>IDENTITÉ FUTURE</h2>${s.identite_future?`<p><b>Je pense :</b> ${s.identite_future.comment_pense}</p><p><b>J'agis :</b> ${s.identite_future.comment_agit}</p><p><b>Je ne tolère plus :</b> ${s.identite_future.ne_tolere_plus}</p><p><b>Nouveaux standards :</b> ${s.identite_future.nouveaux_standards}</p>`:""}
 <h2>LECTURES</h2>${(s2.lectures||[]).map(l=>`<p><b>${l.titre}</b> — ${l.auteur} : ${l.pourquoi}</p>`).join("")}
 <h2>MESSAGE FINAL</h2><p>${s2.message_final||""}</p><div class="box">${s2.contrat||""}</div>
-<div class="footer">✦ Créé par Lamine Diabaté · Mon Plan de Vie 90 Jours · "90 Jours pour Renaître" ✦</div></div><script>window.onload=()=>{window.print();setTimeout(()=>window.close(),2000);};<\/script></body></html>`;
+<div class="footer">✦ Créé par Lamine Digital Lab · Mon Plan de Vie 90 Jours · "90 Jours pour Renaître" ✦</div></div><script>window.onload=()=>{window.print();setTimeout(()=>window.close(),2000);};<\/script></body></html>`;
     const w=window.open("","_blank","width=900,height=700");if(!w){alert("Autorise les popups.");return;}w.document.write(html);w.document.close();
   };
 
@@ -2374,7 +2374,7 @@ export default function App(){
           <div style={{padding:"0.75rem",background:`${C.gold}0A`,border:`1px solid ${C.goldD}`,textAlign:"center",...SF,fontSize:"0.92rem",color:C.text,fontStyle:"italic"}}>{p.c}</div>
         </Card>
         <div style={{textAlign:"center",marginTop:"0.9rem"}}>
-          <div style={{fontSize:"0.75rem",color:C.textDim,marginBottom:"0.9rem"}}>Généré par <span style={{color:C.text}}>Lamine Diabaté</span></div>
+          <div style={{fontSize:"0.75rem",color:C.textDim,marginBottom:"0.9rem"}}>Généré par <span style={{color:C.goldL,fontStyle:"italic"}}>Lamine Digital Lab</span></div>
           <button onClick={()=>setScreen("landing")} style={{...BG}}>Créer mon propre plan ✦</button>
         </div>
       </div>
@@ -3369,8 +3369,8 @@ export default function App(){
 
         <div style={{textAlign:"center",padding:"2rem 0 0",color:C.textDim,fontSize:"0.66rem",borderTop:`1px solid ${C.border}`,marginTop:"2rem"}}>
           <div style={{color:C.gold,opacity:0.6,letterSpacing:"0.4rem",marginBottom:"0.65rem"}}>✦ ◈ ✦</div>
-          Créé par <span style={{color:C.gold}}>Lamine Diabaté</span> · Mon Plan de Vie 90 Jours<br/>
-          <span style={{color:C.gold,fontSize:"0.61rem",...MN}}>Auteur · "90 Jours pour Renaître" · "Le Pouvoir d'un Esprit Aligné"</span>
+          Créé par <span style={{color:C.goldL,fontStyle:"italic"}}>Lamine Digital Lab</span> · Mon Plan de Vie 90 Jours<br/>
+          <span style={{color:C.goldL,fontStyle:"italic",fontSize:"0.61rem",...MN}}>Auteur · "90 Jours pour Renaître" · "Le Pouvoir d'un Esprit Aligné"</span>
         </div>
       </div>
     );

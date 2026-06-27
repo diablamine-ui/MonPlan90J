@@ -106,11 +106,11 @@ const sbLoadAll = async(userKey) => {
 // PALETTE
 // ══════════════════════════════════════════════════════════════
 const C = {
-  bg:"#FAF8F3",bg1:"#F5F0E6",bg2:"#EFEFEC",bg3:"#E4E4E0",
-  border:"#C2C2BD",gold:"#C9A84C",goldL:"#C9A84C",goldD:"#C9A84C",
-  text:"#000000",textDim:"#000000",textMid:"#000000",
+  bg:"#FAF8F3",bg1:"#F5F0E6",bg2:"#F4F3EF",bg3:"#ECEBE7",
+  border:"#D4D3CC",gold:"#C9A84C",goldL:"#C9A84C",goldD:"#C9A84C",
+  text:"#141414",textDim:"#86847D",textMid:"#676661",
   red:"#A8362A",green:"#1A6B3C",blue:"#1F5E8C",purple:"#6B3380",
-  onGold:"#000000", // texte sur fond doré — fixe, indépendant de C.bg
+  onGold:"#141414", // texte sur fond doré — fixe, indépendant de C.bg
 };
 
 // ══════════════════════════════════════════════════════════════

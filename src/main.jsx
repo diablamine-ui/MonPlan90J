@@ -107,7 +107,7 @@ const sbLoadAll = async(userKey) => {
 const C = {
   bg:"#FAF8F3",bg1:"#F5F0E6",bg2:"#EFE8D8",bg3:"#E2DDD0",
   border:"#E2DDD0",gold:"#C9A84C",goldL:"#C9A84C",goldD:"#C9A84C",
-  text:"#1C1A16",textDim:"#5C574C",textMid:"#5C574C",
+  text:"#1C1A16",textDim:"#4A453B",textMid:"#332F27",
   red:"#A8362A",green:"#1A6B3C",blue:"#1F5E8C",purple:"#6B3380",
   onGold:"#1C1A16", // texte sur fond doré — fixe, indépendant de C.bg
 };

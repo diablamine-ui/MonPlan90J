@@ -109,6 +109,7 @@ const C = {
   border:"#E2DDD0",gold:"#C9A84C",goldL:"#C9A84C",goldD:"#C9A84C",
   text:"#1C1A16",textDim:"#5C574C",textMid:"#5C574C",
   red:"#A8362A",green:"#1A6B3C",blue:"#1F5E8C",purple:"#6B3380",
+  onGold:"#1C1A16", // texte sur fond doré — fixe, indépendant de C.bg
 };
 
 // ══════════════════════════════════════════════════════════════
@@ -1148,7 +1149,7 @@ function RituelTimer({steps, onComplete, nomGuerre}){
       </div>
       <button onClick={nextStep} style={{
         width:"100%",padding:"0.85rem",background:doneMsg.color,border:"none",
-        color:C.bg,fontSize:"0.72rem",letterSpacing:"0.12em",cursor:"pointer",fontWeight:500
+        color:doneMsg.color===C.gold?C.onGold:C.bg,fontSize:"0.72rem",letterSpacing:"0.12em",cursor:"pointer",fontWeight:500
       }}>Continuer →</button>
     </div>
   );
@@ -1183,7 +1184,7 @@ function RituelTimer({steps, onComplete, nomGuerre}){
       )}
       <button onClick={startCountdown} style={{
         width:"100%",padding:"0.9rem",background:C.gold,border:"none",
-        color:C.bg,fontSize:"0.72rem",letterSpacing:"0.18em",textTransform:"uppercase",
+        color:C.onGold,fontSize:"0.72rem",letterSpacing:"0.18em",textTransform:"uppercase",
         fontWeight:500,cursor:"pointer",animation:"glow 2s ease-in-out infinite"
       }}>▶ Démarrer</button>
       <button onClick={skipStep} style={{width:"100%",padding:"0.35rem",background:"transparent",border:"none",color:C.textDim,fontSize:"0.62rem",cursor:"pointer",marginTop:"0.3rem"}}>Passer →</button>
@@ -1255,7 +1256,7 @@ function DailyTracker({dayNum,todayLog,onSave,logs={}}){
     </div>
     {[["ÉNERGIE",energie,setEnergie],["FOCUS",focus,setFocus]].map(([lbl,val,set])=><div key={lbl} style={{marginBottom:"0.8rem"}}>
       <div style={{fontSize:"0.56rem",color:C.text,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>{lbl}</div>
-      <div style={{display:"flex",gap:"0.35rem"}}>{[1,2,3,4,5].map(n=><button key={n} onClick={()=>set(n)} style={{flex:1,padding:"0.42rem",background:val===n?`${C.gold}20`:val&&n<=val?`${C.gold}08`:"transparent",border:`1px solid ${val===n?C.gold:C.border}`,color:val===n?C.gold:C.textMid,...MN,fontSize:"0.83rem",cursor:"pointer",transition:"all 0.15s"}}>{n}</button>)}</div>
+      <div style={{display:"flex",gap:"0.35rem"}}>{[1,2,3,4,5].map(n=><button key={n} onClick={()=>set(n)} style={{flex:1,padding:"0.42rem",background:val===n?`${C.gold}20`:val&&n<=val?`${C.gold}08`:"transparent",border:`1px solid ${val===n?C.gold:C.border}`,color:val===n?C.text:C.textMid,...MN,fontSize:"0.83rem",cursor:"pointer",transition:"all 0.15s"}}>{n}</button>)}</div>
     </div>)}
     <div style={{marginBottom:"0.8rem"}}>
       <div style={{fontSize:"0.56rem",color:C.text,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>ACTION PRINCIPALE</div>
@@ -1270,7 +1271,7 @@ function DailyTracker({dayNum,todayLog,onSave,logs={}}){
     </div>
     <div style={{marginBottom:"0.8rem"}}>
       <div style={{fontSize:"0.56rem",color:C.text,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>TEMPS INVESTI</div>
-      <div style={{display:"flex",gap:"0.3rem"}}>{[0,15,30,45,60,90].map(n=><button key={n} onClick={()=>setTemps(n)} style={{flex:1,padding:"0.38rem 0.1rem",background:temps===n?`${C.gold}18`:"transparent",border:`1px solid ${temps===n?C.gold:C.border}`,color:temps===n?C.gold:C.textMid,...MN,fontSize:"0.7rem",cursor:"pointer"}}>{n===0?"0":n+"'"}</button>)}</div>
+      <div style={{display:"flex",gap:"0.3rem"}}>{[0,15,30,45,60,90].map(n=><button key={n} onClick={()=>setTemps(n)} style={{flex:1,padding:"0.38rem 0.1rem",background:temps===n?`${C.gold}18`:"transparent",border:`1px solid ${temps===n?C.gold:C.border}`,color:temps===n?C.text:C.textMid,...MN,fontSize:"0.7rem",cursor:"pointer"}}>{n===0?"0":n+"'"}</button>)}</div>
     </div>
     {showRelapseDiag&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.9)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"1.5rem"}}>
       <div style={{background:C.bg2,border:`1px solid ${C.red}`,borderTop:`3px solid ${C.red}`,padding:"1.5rem",maxWidth:"380px",width:"100%"}}>
@@ -1286,7 +1287,7 @@ function DailyTracker({dayNum,todayLog,onSave,logs={}}){
         <button onClick={()=>setShowRelapseDiag(false)} style={{width:"100%",padding:"0.7rem",background:C.red,border:"none",color:"#fff",fontSize:"0.72rem",letterSpacing:"0.1em",cursor:"pointer"}}>Enregistrer et continuer</button>
       </div>
     </div>}
-    <button onClick={()=>{if(!ready)return;onSave({day:dayNum,humeur,energie,focus,action_done:action,rituel_done:rituel,rechute,temps,score,date:todayKey(),rechute_cause:relapseCause,rechute_lecon:relapseLesson});setSaved(true);}} disabled={!ready} style={{width:"100%",padding:"0.82rem",background:ready?C.gold:C.bg3,border:"none",color:ready?C.bg:C.textDim,fontSize:"0.73rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,opacity:ready?1:0.5,transition:"all 0.25s",cursor:ready?"pointer":"not-allowed"}}>
+    <button onClick={()=>{if(!ready)return;onSave({day:dayNum,humeur,energie,focus,action_done:action,rituel_done:rituel,rechute,temps,score,date:todayKey(),rechute_cause:relapseCause,rechute_lecon:relapseLesson});setSaved(true);}} disabled={!ready} style={{width:"100%",padding:"0.82rem",background:ready?C.gold:C.bg3,border:"none",color:ready?C.onGold:C.textDim,fontSize:"0.73rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,opacity:ready?1:0.5,transition:"all 0.25s",cursor:ready?"pointer":"not-allowed"}}>
       Enregistrer{score>0?` · Score ${score}/100`:""}
     </button>
     {saved&&<div style={{textAlign:"center",padding:"0.75rem 0",animation:"fadeIn 0.4s ease"}}>
@@ -1376,7 +1377,7 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
         {weekNum<12&&<p style={{fontSize:"0.78rem",color:C.textDim,lineHeight:1.6,fontStyle:"italic"}}>✦ Continue le tracker chaque jour pour maximiser ton score.</p>}
         {weekNum===12&&<p style={{fontSize:"0.85rem",color:C.green,lineHeight:1.6}}>✦ Tu as tenu les 90 jours. Peu de gens peuvent dire ça.</p>}
       </div>
-      <button onClick={()=>setShowWeekDone(false)} style={{position:"relative",zIndex:1,width:"100%",padding:"0.9rem",background:pc,border:"none",color:C.bg,fontSize:"0.74rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,cursor:"pointer"}}>
+      <button onClick={()=>setShowWeekDone(false)} style={{position:"relative",zIndex:1,width:"100%",padding:"0.9rem",background:pc,border:"none",color:pc===C.gold?C.onGold:C.bg,fontSize:"0.74rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,cursor:"pointer"}}>
         Voir la semaine ✦
       </button>
     </div>
@@ -1520,7 +1521,7 @@ function CoachChat({plan,plan2,weeks,dailyLogs}){
     <SH icon="💬" label="Coach IA" sub="Mémoire comportementale · Contextuel"/>
     <div style={{maxHeight:"260px",overflowY:"auto",marginBottom:"0.65rem",display:"flex",flexDirection:"column",gap:"0.45rem"}}>
       {msgs.map((m,i)=><div key={i} style={{padding:"0.6rem 0.8rem",background:m.role==="user"?`${C.gold}0E`:C.bg3,border:`1px solid ${m.role==="user"?C.goldD:C.border}`,borderLeft:`3px solid ${m.role==="user"?C.gold:C.textDim}`,alignSelf:m.role==="user"?"flex-end":"flex-start",maxWidth:"92%"}}>
-        <div style={{fontSize:"0.53rem",color:m.role==="user"?C.goldD:C.textDim,letterSpacing:"0.12em",textTransform:"uppercase",...MN,marginBottom:"0.18rem"}}>{m.role==="user"?"Toi":"Coach"}</div>
+        <div style={{fontSize:"0.53rem",color:m.role==="user"?C.text:C.textDim,letterSpacing:"0.12em",textTransform:"uppercase",...MN,marginBottom:"0.18rem"}}>{m.role==="user"?"Toi":"Coach"}</div>
         <div style={{fontSize:"0.81rem",color:C.text,lineHeight:1.6}}>{m.content}</div>
       </div>)}
       {loading&&<div style={{padding:"0.7rem 0.9rem",background:C.bg3,border:`1px solid ${C.border}`,borderLeft:`3px solid ${C.gold}`,alignSelf:"flex-start",display:"flex",alignItems:"center",gap:"0.5rem"}}>
@@ -1533,7 +1534,7 @@ function CoachChat({plan,plan2,weeks,dailyLogs}){
     </div>
     <div style={{display:"flex",gap:"0.35rem"}}>
       <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&send()} placeholder="Ta question…" style={{flex:1,padding:"0.68rem",background:C.bg,border:`1px solid ${C.border}`,borderBottom:`2px solid ${C.goldD}`,color:C.text,fontSize:"0.81rem",outline:"none"}}/>
-      <button onClick={send} disabled={!input.trim()||loading} style={{padding:"0.68rem 0.85rem",background:input.trim()&&!loading?C.gold:C.bg3,border:"none",color:input.trim()&&!loading?C.bg:C.textDim,fontSize:"0.75rem",cursor:input.trim()&&!loading?"pointer":"default",transition:"all 0.2s"}}>→</button>
+      <button onClick={send} disabled={!input.trim()||loading} style={{padding:"0.68rem 0.85rem",background:input.trim()&&!loading?C.gold:C.bg3,border:"none",color:input.trim()&&!loading?C.onGold:C.textDim,fontSize:"0.75rem",cursor:input.trim()&&!loading?"pointer":"default",transition:"all 0.2s"}}>→</button>
     </div>
   </Card>;
 }
@@ -1766,7 +1767,7 @@ function EngagementTab({plan, plan2, firstName}){
           style={{
             width:"100%",padding:"1rem",
             background:signerNom.trim()&&hasStrokes?C.gold:C.bg3,
-            border:"none",color:signerNom.trim()&&hasStrokes?C.bg:C.textDim,
+            border:"none",color:signerNom.trim()&&hasStrokes?C.onGold:C.textDim,
             fontSize:"0.74rem",letterSpacing:"0.18em",textTransform:"uppercase",fontWeight:500,
             cursor:signerNom.trim()&&hasStrokes?"pointer":"not-allowed",
             opacity:signerNom.trim()&&hasStrokes?1:0.5,
@@ -1904,7 +1905,7 @@ export default function App(){
   const LOAD_STEPS=["Analyse psychologique du profil…","Construction du diagnostic…","Calcul du scorecard comportemental…","Génération du rituel et protocoles…","Finalisation du plan…"];
   const setF=(k,v)=>setFoc(p=>({...p,[k]:v}));
   const iSt=k=>({width:"100%",padding:"0.82rem 0.95rem",background:C.bg,border:`1px solid ${foc[k]?C.goldD:C.border}`,borderBottom:`2px solid ${foc[k]?C.gold:C.border}`,color:C.text,fontSize:"0.88rem",fontWeight:300,outline:"none",transition:"all 0.25s"});
-  const BG={padding:"1rem 2.5rem",background:C.gold,border:"none",color:C.bg,fontSize:"0.75rem",letterSpacing:"0.18em",textTransform:"uppercase",fontWeight:500,cursor:"pointer",boxShadow:`0 4px 22px ${C.gold}35`};
+  const BG={padding:"1rem 2.5rem",background:C.gold,border:"none",color:C.onGold,fontSize:"0.75rem",letterSpacing:"0.18em",textTransform:"uppercase",fontWeight:500,cursor:"pointer",boxShadow:`0 4px 22px ${C.gold}35`};
 
   const doAccess=()=>{
     if(!nom.trim()||nom.trim().length<2){setAccessErr("Entre ton nom complet.");setAccessShake(true);setTimeout(()=>setAccessShake(false),500);return;}
@@ -2249,7 +2250,7 @@ export default function App(){
               onKeyDown={e=>e.key==='Enter'&&handleEmailSubscribe()}
               style={{width:'100%',padding:'0.8rem',background:C.bg3,border:`1px solid ${C.goldD}`,color:C.text,fontSize:'0.85rem',marginBottom:'0.8rem',outline:'none',boxSizing:'border-box'}}
             />
-            <button onClick={handleEmailSubscribe} disabled={emailLoading} style={{width:'100%',padding:'0.85rem',background:C.gold,border:'none',color:C.bg,fontSize:'0.75rem',letterSpacing:'0.15em',fontWeight:500,cursor:'pointer',marginBottom:'0.6rem'}}>
+            <button onClick={handleEmailSubscribe} disabled={emailLoading} style={{width:'100%',padding:'0.85rem',background:C.gold,border:'none',color:C.onGold,fontSize:'0.75rem',letterSpacing:'0.15em',fontWeight:500,cursor:'pointer',marginBottom:'0.6rem'}}>
               {emailLoading ? 'Envoi...' : 'JE M\'INSCRIS →'}
             </button>
             <button onClick={()=>setShowEmailPopup(false)} style={{width:'100%',padding:'0.4rem',background:'transparent',border:'none',color:C.textDim,fontSize:'0.68rem',cursor:'pointer'}}>
@@ -2596,7 +2597,7 @@ export default function App(){
         <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
 
         <div style={{paddingTop:"0.6rem",marginBottom:"1.2rem"}}>
-          <div style={{display:"flex",gap:"0.28rem",marginBottom:"0.65rem"}}>{(getSegments(answers.q_domaine_principal)||SEGMENTS_FINANCES).map((sg,i)=><div key={sg.id} style={{flex:1,padding:"0.28rem",textAlign:"center",border:`1px solid ${i===si?C.goldD:C.border}`,background:i===si?`${C.gold}10`:"transparent",transition:"all 0.3s"}}><div style={{fontSize:"0.56rem",color:i===si?C.gold:C.textDim,...MN}}>{sg.icon} {sg.label}</div></div>)}</div>
+          <div style={{display:"flex",gap:"0.28rem",marginBottom:"0.65rem"}}>{(getSegments(answers.q_domaine_principal)||SEGMENTS_FINANCES).map((sg,i)=><div key={sg.id} style={{flex:1,padding:"0.28rem",textAlign:"center",border:`1px solid ${i===si?C.goldD:C.border}`,background:i===si?`${C.gold}10`:"transparent",transition:"all 0.3s"}}><div style={{fontSize:"0.56rem",color:i===si?C.text:C.textDim,...MN}}>{sg.icon} {sg.label}</div></div>)}</div>
           <div style={{display:"flex",justifyContent:"space-between",fontSize:"0.6rem",color:C.textDim,marginBottom:"0.22rem",...MN}}>
             <span>{doneQ+1}/{totalQ}</span>
             <span style={{color:C.text}}>≈ {timeLeft} min restantes</span>
@@ -2622,7 +2623,7 @@ export default function App(){
 
           {showAide&&q.aide&&<div style={{background:`${C.gold}07`,borderLeft:`3px solid ${C.gold}`,border:`1px solid ${C.goldD}`,padding:"0.75rem 0.85rem",marginBottom:"0.65rem",animation:"fadeIn 0.2s ease"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.3rem"}}><span style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>Guide</span><button onClick={()=>setShowAide(false)} style={{background:"none",border:"none",color:C.textDim,fontSize:"0.88rem",cursor:"pointer"}}>✕</button></div>
-            {[["Ce qu'on cherche",q.aide.quoi,C.textDim],["Exemple",aidEx||q.aide.ex,C.goldL],["À éviter",q.aide.evite,C.textDim]].map(([t,v,c])=><div key={t} style={{marginBottom:"0.32rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.1rem"}}>{t}</div><div style={{fontSize:"0.75rem",color:c,lineHeight:1.5,fontStyle:t==="Exemple"?"italic":"normal"}}>{v}</div></div>)}
+            {[["Ce qu'on cherche",q.aide.quoi,C.textDim],["Exemple",aidEx||q.aide.ex,C.text],["À éviter",q.aide.evite,C.textDim]].map(([t,v,c])=><div key={t} style={{marginBottom:"0.32rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.1rem"}}>{t}</div><div style={{fontSize:"0.75rem",color:c,lineHeight:1.5,fontStyle:t==="Exemple"?"italic":"normal"}}>{v}</div></div>)}
           </div>}
 
           <div style={{width:"24px",height:"1px",background:C.gold,opacity:0.4,marginBottom:"0.85rem"}}/>
@@ -2635,12 +2636,12 @@ export default function App(){
             style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${qError?C.red:C.border}`,borderBottom:`2px solid ${qError?C.red:C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:300,animation:qShake?"shake 0.45s ease":"none"}}
             onFocus={e=>{e.target.style.borderColor=`${C.gold}55`;e.target.style.borderBottomColor=`${C.gold}55`;}} onBlur={e=>{e.target.style.borderColor=qError?C.red:C.border;e.target.style.borderBottomColor=qError?C.red:C.border;}}/>}
 
-          {q.type==="select"&&<div style={{animation:qShake?"shake 0.45s ease":"none"}}>{q.opts.map(opt=><button key={opt} onClick={()=>setVal(opt)} style={{width:"100%",display:"flex",gap:"0.6rem",marginBottom:"0.38rem",alignItems:"center",background:val===opt?`${C.gold}14`:"transparent",border:`1px solid ${val===opt?C.gold:C.border}`,color:val===opt?C.gold:C.textMid,padding:"0.68rem 0.85rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.84rem",cursor:"pointer"}}><span style={{fontSize:"0.58rem"}}>{val===opt?"◉":"◎"}</span>{opt}</button>)}</div>}
+          {q.type==="select"&&<div style={{animation:qShake?"shake 0.45s ease":"none"}}>{q.opts.map(opt=><button key={opt} onClick={()=>setVal(opt)} style={{width:"100%",display:"flex",gap:"0.6rem",marginBottom:"0.38rem",alignItems:"center",background:val===opt?`${C.gold}14`:"transparent",border:`1px solid ${val===opt?C.gold:C.border}`,color:val===opt?C.text:C.textMid,padding:"0.68rem 0.85rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.84rem",cursor:"pointer"}}><span style={{fontSize:"0.58rem"}}>{val===opt?"◉":"◎"}</span>{opt}</button>)}</div>}
 
           {q.type==="dual_select"&&<div style={{animation:qShake?"shake 0.45s ease":"none",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.75rem"}}>
             {q.selects.map(sel=>{const sv=(val||{})[sel.id];return <div key={sel.id}>
               <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>{sel.label}</div>
-              {sel.opts.map(opt=><button key={opt} onClick={()=>setSubVal(q.id,sel.id,opt)} style={{width:"100%",display:"flex",gap:"0.45rem",marginBottom:"0.3rem",alignItems:"center",background:sv===opt?`${C.gold}14`:"transparent",border:`1px solid ${sv===opt?C.gold:C.border}`,color:sv===opt?C.gold:C.textMid,padding:"0.55rem 0.65rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.78rem",cursor:"pointer"}}><span style={{fontSize:"0.55rem"}}>{sv===opt?"◉":"◎"}</span>{opt.split("(")[0].trim()}</button>)}
+              {sel.opts.map(opt=><button key={opt} onClick={()=>setSubVal(q.id,sel.id,opt)} style={{width:"100%",display:"flex",gap:"0.45rem",marginBottom:"0.3rem",alignItems:"center",background:sv===opt?`${C.gold}14`:"transparent",border:`1px solid ${sv===opt?C.gold:C.border}`,color:sv===opt?C.text:C.textMid,padding:"0.55rem 0.65rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.78rem",cursor:"pointer"}}><span style={{fontSize:"0.55rem"}}>{sv===opt?"◉":"◎"}</span>{opt.split("(")[0].trim()}</button>)}
             </div>;})}
           </div>}
 
@@ -2648,7 +2649,7 @@ export default function App(){
             <div style={{marginBottom:"0.8rem"}}>
               <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>{q.multi.label} <span style={{color:C.textDim}}>max {q.multi.max}</span></div>
               {q.multi.opts.map(opt=>{const sel=((val||{}).domaines||[]).includes(opt);const atMax=((val||{}).domaines||[]).length>=q.multi.max&&!sel;
-                return <button key={opt} onClick={()=>{if(atMax)return;const cur=(val||{}).domaines||[];setSubVal(q.id,"domaines",sel?cur.filter(v=>v!==opt):[...cur,opt]);}} style={{width:"100%",display:"flex",gap:"0.55rem",marginBottom:"0.3rem",alignItems:"center",background:sel?`${C.gold}14`:"transparent",border:`1px solid ${sel?C.gold:atMax?C.bg3:C.border}`,color:sel?C.gold:atMax?C.bg3:C.textMid,padding:"0.58rem 0.75rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.82rem",opacity:atMax?0.3:1,cursor:atMax?"not-allowed":"pointer"}}><span style={{fontSize:"0.56rem"}}>{sel?"◉":"◎"}</span>{opt}</button>;
+                return <button key={opt} onClick={()=>{if(atMax)return;const cur=(val||{}).domaines||[];setSubVal(q.id,"domaines",sel?cur.filter(v=>v!==opt):[...cur,opt]);}} style={{width:"100%",display:"flex",gap:"0.55rem",marginBottom:"0.3rem",alignItems:"center",background:sel?`${C.gold}14`:"transparent",border:`1px solid ${sel?C.gold:atMax?C.bg3:C.border}`,color:sel?C.text:atMax?C.bg3:C.textMid,padding:"0.58rem 0.75rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.82rem",opacity:atMax?0.3:1,cursor:atMax?"not-allowed":"pointer"}}><span style={{fontSize:"0.56rem"}}>{sel?"◉":"◎"}</span>{opt}</button>;
               })}
             </div>
             <div>
@@ -2682,7 +2683,7 @@ export default function App(){
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingBottom:"1.8rem",gap:"0.65rem",marginTop:"1.2rem"}}>
           {doneQ>0?<button onClick={goBack} style={{padding:"0.68rem 1rem",background:"transparent",border:`1px solid ${C.border}`,color:C.textDim,fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>← Retour</button>:<div/>}
           <button onClick={tryNext} style={{
-            padding:"0.85rem 1.6rem",background:C.gold,border:"none",color:C.bg,
+            padding:"0.85rem 1.6rem",background:C.gold,border:"none",color:C.onGold,
             fontSize:"0.74rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,
             boxShadow:`0 4px 18px ${C.gold}35`,transition:"all 0.25s",cursor:"pointer",
             flex:doneQ===0?1:"auto"
@@ -2936,7 +2937,7 @@ export default function App(){
           {[{lbl:"↓ PDF",a:printPDF,bg:C.gold,c:C.bg},{lbl:"↓ Sheets",a:exportSheets,bg:"#3498DB",c:"#fff"},{lbl:"💬 Communauté",a:joinCommunity,bg:"#25D36618",c:"#25D366"}].map(({lbl,a,bg,c})=><button key={lbl} onClick={a} style={{padding:"0.72rem 0.1rem",background:bg,border:"none",color:c,fontSize:"0.68rem",letterSpacing:"0.05em",cursor:"pointer",transition:"all 0.2s"}}>{lbl}</button>)}
         </div>
         <div style={{display:"flex",gap:"0.22rem",marginBottom:"1rem",overflowX:"auto",paddingBottom:"0.22rem"}}>
-          {tabs.map(t=><button key={t} onClick={()=>{setTab(t);if(t==="plan"&&!weeks&&!weeksLoading)generateWeeks(plan);}} style={{padding:"0.48rem 0.68rem",background:tab===t?`${C.gold}18`:"transparent",border:`1px solid ${tab===t?C.gold:C.border}`,color:tab===t?C.gold:C.textDim,...MN,fontSize:"0.58rem",letterSpacing:"0.08em",cursor:"pointer",whiteSpace:"nowrap",textTransform:"uppercase",transition:"all 0.2s"}}>{tLabels[t]}</button>)}
+          {tabs.map(t=><button key={t} onClick={()=>{setTab(t);if(t==="plan"&&!weeks&&!weeksLoading)generateWeeks(plan);}} style={{padding:"0.48rem 0.68rem",background:tab===t?`${C.gold}18`:"transparent",border:`1px solid ${tab===t?C.gold:C.border}`,color:tab===t?C.text:C.textDim,...MN,fontSize:"0.58rem",letterSpacing:"0.08em",cursor:"pointer",whiteSpace:"nowrap",textTransform:"uppercase",transition:"all 0.2s"}}>{tLabels[t]}</button>)}
         </div>
 
         {tab==="dashboard"&&<div style={{animation:"fadeUp 0.4s ease"}}>
@@ -3009,7 +3010,7 @@ export default function App(){
 
         {tab==="plan"&&<div style={{animation:"fadeUp 0.4s ease"}}>
           {weeksLoading&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"2.5rem 0",gap:"0.9rem"}}><div style={{width:"36px",height:"36px",border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`,borderRadius:"50%",animation:"spin 1.1s linear infinite"}}/><div style={{color:C.textDim,fontSize:"0.76rem",...MN}}>Génération des 12 semaines…</div></div>}
-          {!weeksLoading&&weeks!==null&&weeks.length===0&&<Card><div style={{textAlign:"center",padding:"0.75rem",color:C.textDim,fontSize:"0.81rem"}}><div style={{marginBottom:"0.65rem"}}>Impossible de charger.</div><button onClick={()=>{setWeeks(null);generateWeeks(plan);}} style={{padding:"0.52rem 1rem",background:C.gold,border:"none",color:C.bg,fontSize:"0.7rem",letterSpacing:"0.1em",cursor:"pointer"}}>Réessayer</button></div></Card>}
+          {!weeksLoading&&weeks!==null&&weeks.length===0&&<Card><div style={{textAlign:"center",padding:"0.75rem",color:C.textDim,fontSize:"0.81rem"}}><div style={{marginBottom:"0.65rem"}}>Impossible de charger.</div><button onClick={()=>{setWeeks(null);generateWeeks(plan);}} style={{padding:"0.52rem 1rem",background:C.gold,border:"none",color:C.onGold,fontSize:"0.7rem",letterSpacing:"0.1em",cursor:"pointer"}}>Réessayer</button></div></Card>}
           {!weeksLoading&&weeks&&weeks.length>0&&(()=>{
             const nrm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase();
             const getWeekScore=(wn)=>computeWeekScore(wn, logs, startDate);

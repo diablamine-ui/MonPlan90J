@@ -106,12 +106,11 @@ const sbLoadAll = async(userKey) => {
 // PALETTE
 // ══════════════════════════════════════════════════════════════
 const C = {
-  bg:"#0D0C0A",bg1:"#141310",bg2:"#1C1A16",bg3:"#25221C",
-  border:"#24221E",gold:"#E5C158",goldL:"#E5C158",goldD:"#E5C158",
-  text:"#F4F3EF",textDim:"#706E66",textMid:"#A3A199",
-  red:"#FF9494",green:"#8CE0A7",blue:"#8DBBFF",purple:"#B89FD9",
-  redBg:"#4A1D1D",greenBg:"#1F402B",blueBg:"#1A2B3C",
-  onGold:"#111111", // texte sur fond doré — fixe, indépendant de C.bg
+  bg:"#080808",bg1:"#0F0F0F",bg2:"#161616",bg3:"#1E1E1E",
+  border:"#2A2A2A",gold:"#C9A84C",goldL:"#E8C97A",goldD:"#8B6914",
+  text:"#F0EAD6",textDim:"#7A7060",textMid:"#A89880",
+  red:"#E74C3C",green:"#27AE60",blue:"#3498DB",purple:"#8E44AD",
+  onGold:"#1A1408", // texte sombre lisible sur les boutons/fonds dorés
 };
 
 // ══════════════════════════════════════════════════════════════
@@ -2414,7 +2413,7 @@ export default function App(){
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",overflowX:"hidden"}}>
       <link rel="stylesheet" href={FONT}/>
       <script defer data-domain="monplan90.vercel.app" src="https://plausible.io/js/script.js"/>
-      <meta name="theme-color" content="#0D0C0A"/>
+      <meta name="theme-color" content="#080808"/>
       <meta name="apple-mobile-web-app-capable" content="yes"/>
       <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
       <meta name="apple-mobile-web-app-title" content="Plan 90"/>

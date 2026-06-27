@@ -931,8 +931,9 @@ const CSS=`
   @keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(60px) rotate(360deg);opacity:0}}
   @keyframes popIn{0%{transform:scale(0.3);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
   *{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:114%}
   body{background:${C.bg};color:${C.text};font-family:'Jost',sans-serif;font-weight:400;-webkit-font-smoothing:antialiased}
-  ::placeholder{color:#2A2520!important}
+  ::placeholder{color:#5C5850!important}
   ::-webkit-scrollbar{width:8px}
   ::-webkit-scrollbar-track{background:${C.bg2}}
   ::-webkit-scrollbar-thumb{background:${C.gold};border-radius:4px}
@@ -943,7 +944,7 @@ const MN={fontFamily:"'DM Mono',monospace"};
 const SF={fontFamily:"'Jost',sans-serif"};
 
 function Divider(){return <div style={{width:"50px",height:"1px",background:`linear-gradient(90deg,transparent,${C.gold},transparent)`,margin:"0 auto"}}/>;}
-function Card({children,accent=false,style={}}){return <div style={{background:C.bg2,borderRadius:"14px",border:`1px solid ${accent?C.gold:C.border}`,borderTop:accent?`2px solid ${C.gold}`:`1px solid ${C.border}`,padding:"1.75rem",marginBottom:"1.5rem",...style}}>{children}</div>;}
+function Card({children,accent=false,accentColor=C.gold,style={}}){return <div style={{background:C.bg2,borderRadius:"14px",border:`1px solid ${accent?accentColor:C.border}`,borderTop:accent?`2px solid ${accentColor}`:`1px solid ${C.border}`,padding:"1.75rem",marginBottom:"1.5rem",...style}}>{children}</div>;}
 function Tag({children,color=C.gold}){return <span style={{display:"inline-block",padding:"0.18rem 0.5rem",background:`${color}18`,border:`1px solid ${color}55`,color:C.text,fontSize:"0.67rem",letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>{children}</span>;}
 function SH({icon,label,sub}){return <div style={{marginBottom:"1.1rem"}}><div style={{display:"flex",alignItems:"center",gap:"0.55rem",marginBottom:"0.2rem"}}><span style={{color:C.textDim}}>{icon}</span><span style={{fontSize:"0.58rem",letterSpacing:"0.28em",color:C.textDim,textTransform:"uppercase",...MN}}>{label}</span></div>{sub&&<div style={{fontSize:"0.75rem",color:C.textDim,paddingLeft:"1.35rem"}}>{sub}</div>}</div>;}
 
@@ -2005,10 +2006,34 @@ export default function App(){
   const iSt=k=>({width:"100%",padding:"1rem 1.1rem",borderRadius:"12px",background:C.bg2,border:`1px solid ${foc[k]?C.gold:C.border}`,boxShadow:foc[k]?`0 0 0 4px ${C.gold}1A`:"none",color:C.text,fontSize:"0.88rem",fontWeight:400,outline:"none",transition:"all 220ms ease-out"});
   const BG={padding:"1.1rem 2.5rem",minHeight:"60px",background:C.gold,border:"none",borderRadius:"14px",color:C.onGold,fontSize:"0.75rem",letterSpacing:"0.18em",textTransform:"uppercase",fontWeight:500,cursor:"pointer",boxShadow:`0 10px 40px rgba(0,0,0,.18)`,transition:"all 220ms ease-out"};
 
-  const doAccess=()=>{
+  const [accessLoading,setAccessLoading]=useState(false);
+  const doAccess=async()=>{
     if(!nom.trim()||nom.trim().length<2){setAccessErr("Entre ton nom complet.");setAccessShake(true);setTimeout(()=>setAccessShake(false),500);return;}
     if(!email.trim()||!email.includes("@")){setAccessErr("Email invalide.");setAccessShake(true);setTimeout(()=>setAccessShake(false),500);return;}
     if(!CODES.includes(code.trim().toUpperCase())){setAccessErr("Code secret invalide.");setAccessShake(true);setTimeout(()=>setAccessShake(false),500);return;}
+    setAccessLoading(true);
+    try{
+      const userKey=nom.trim()||email.trim();
+      const cloudAll=await sbLoadAll(userKey);
+      const domains=Object.keys(cloudAll||{});
+      if(domains.length>0){
+        let best=domains[0];
+        domains.forEach(d=>{ if((cloudAll[d]?.updated_at||"")>(cloudAll[best]?.updated_at||"")) best=d; });
+        const data=cloudAll[best];
+        if(data?.plan){
+          setActiveDomain(best);
+          setPlan(data.plan);setPlan2(data.plan2||null);setWeeks(data.weeks||null);setCloture(data.cloture||null);
+          setAnswers(data.answers||{});setChecks(data.checks||{});setLogs(data.logs||{});
+          setStartDate(data.startDate||null);
+          localStorage.setItem(LAST_DOMAIN_KEY,best);
+          saveByDomain(best,data);
+          setTab("dashboard");setScreen("home");
+          setAccessLoading(false);
+          return;
+        }
+      }
+    }catch(e){ console.warn("Recherche plan existant échouée:",e); }
+    setAccessLoading(false);
     setScreen("intro");
   };
 
@@ -2458,7 +2483,7 @@ export default function App(){
             <input type="text" value={code} placeholder="LD-XXXXX" onChange={e=>{setAccessErr("");setCode(e.target.value.toUpperCase());}} onKeyDown={e=>e.key==="Enter"&&doAccess()} onFocus={()=>setF("cod",true)} onBlur={()=>setF("cod",false)} style={{...iSt("cod"),textAlign:"center",letterSpacing:"0.25em",...MN,color:C.text,fontSize:"1.05rem"}}/>
           </div>
           {accessErr&&<div style={{fontSize:"0.7rem",color:C.red,textAlign:"center",marginBottom:"0.8rem"}}>{accessErr}</div>}
-          <button onClick={doAccess} style={{...BG,width:"100%",padding:"0.92rem"}}>Accéder ✦</button>
+          <button onClick={doAccess} disabled={accessLoading} style={{...BG,width:"100%",padding:"0.92rem",opacity:accessLoading?0.6:1,cursor:accessLoading?"wait":"pointer"}}>{accessLoading?"Recherche de ton plan…":"Accéder ✦"}</button>
         </Card>
         <div style={{textAlign:"center",marginTop:"0.5rem"}}><button onClick={()=>setScreen("landing")} style={{background:"none",border:"none",color:C.textDim,fontSize:"0.68rem",cursor:"pointer"}}>← Présentation</button></div>
         <div style={{textAlign:"center",marginTop:"1.5rem",padding:"1.2rem",background:C.bg2,border:`1px solid ${C.border}`}}>
@@ -3184,7 +3209,7 @@ export default function App(){
             </div>
           </div>
 
-          <Card><SH icon="📊" label="Scorecard"/>
+          <Card accent><SH icon="📊" label="Scorecard"/>
             {scores.map(({k,d})=>d?<ScoreBar key={k} label={k} score={d.score} lecture={d.lecture}/>:null)}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.5rem",marginTop:"0.75rem"}}>
               <div style={{padding:"0.68rem",background:`${riskColor}0E`,border:`1px solid ${riskColor}35`,borderRadius:"10px"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Risque abandon</div><div style={{...SF,fontSize:"0.92rem",color:C.text}}>{sc.risque_abandon}</div><div style={{fontSize:"0.68rem",color:C.textDim,marginTop:"0.15rem",lineHeight:1.4}}>{sc.facteur_risque}</div></div>
@@ -3208,7 +3233,7 @@ export default function App(){
               </div>;
             })()}
           </Card>
-          {stats.total>0&&<Card><SH icon="🏆" label="Ce que tu as déjà prouvé"/>
+          {stats.total>0&&<Card accent accentColor={C.green}><SH icon="🏆" label="Ce que tu as déjà prouvé"/>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.45rem"}}>
               {[[`${stats.streak}j consécutifs`,"de continuité",stats.streak>=3?C.green:C.gold],[`${stats.done} actions`,"exécutées",C.gold],[`${stats.relapses} rechute${stats.relapses!==1?"s":""}`, "récupérée${stats.relapses!==1?'s':''}",C.green],[`${Math.round(stats.totalMins/60*10)/10}h`,"investies",C.blue]].map(([v,l,c])=><div key={l} style={{padding:"0.65rem",background:`${c}0A`,border:`1px solid ${c}22`,borderRadius:"10px"}}><div style={{...SF,fontSize:"1.05rem",color:C.text,marginBottom:"0.1rem"}}>{v}</div><div style={{fontSize:"0.62rem",color:C.textDim,lineHeight:1.3}}>{l}</div></div>)}
             </div>
@@ -3228,7 +3253,7 @@ export default function App(){
         </div>}
 
         {tab==="rituel"&&<div style={{animation:"fadeUp 0.4s ease"}}>
-          <Card><SH icon="🌬" label="Rituel d'Activation" sub="< 10 min · Timer intégré · Chaque jour"/>
+          <Card accent><SH icon="🌬" label="Rituel d'Activation" sub="< 10 min · Timer intégré · Chaque jour"/>
             <div style={{padding:"0.85rem 1rem",borderLeft:`2px solid ${C.gold}`,marginBottom:"1.1rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.3rem"}}>Autosuggestion — 3× à voix haute</div><div style={{...SF,fontSize:"1.02rem",color:C.text,fontStyle:"italic",lineHeight:1.6}}>{s2.rituel?.autosuggestion}</div></div>
             {s2.rituel?.matin&&<RituelTimer steps={s2.rituel.matin}/>}
             <div style={{marginTop:"0.9rem",padding:"0.7rem 0.85rem",borderLeft:`2px solid ${C.green}`}}><div style={{fontSize:"0.54rem",color:C.green,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.2rem"}}>◉ Première action — dans les 2 min</div><div style={{fontSize:"0.83rem",color:C.text,lineHeight:1.5}}>{s2.rituel?.premiere_action_du_jour}</div></div>

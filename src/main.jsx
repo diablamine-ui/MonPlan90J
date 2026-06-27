@@ -105,9 +105,9 @@ const sbLoadAll = async(userKey) => {
 // PALETTE
 // ══════════════════════════════════════════════════════════════
 const C = {
-  bg:"#FAF7F0",bg1:"#F5F0E6",bg2:"#EFE8D8",bg3:"#E5DCC5",
-  border:"#D4C8A8",gold:"#6E5824",goldL:"#6E5420",goldD:"#6E5212",
-  text:"#2A2118",textDim:"#564D3C",textMid:"#6B5D45",
+  bg:"#FAF8F3",bg1:"#F5F0E6",bg2:"#EFE8D8",bg3:"#E2DDD0",
+  border:"#E2DDD0",gold:"#C9A84C",goldL:"#C9A84C",goldD:"#C9A84C",
+  text:"#1C1A16",textDim:"#5C574C",textMid:"#5C574C",
   red:"#A8362A",green:"#1A6B3C",blue:"#1F5E8C",purple:"#6B3380",
 };
 
@@ -134,7 +134,7 @@ const WEEK_ROLES = {
 const LEVELS = [
   {min:0, max:14, label:"Éveil",           color:C.blue,   desc:"Tu poses les fondations."},
   {min:15,max:29, label:"Stabilisation",   color:C.gold,   desc:"Les habitudes s'installent."},
-  {min:30,max:44, label:"Construction",    color:C.goldL,  desc:"Tu construis du concret."},
+  {min:30,max:44, label:"Construction",    color:C.gold,  desc:"Tu construis du concret."},
   {min:45,max:59, label:"Momentum",        color:C.purple, desc:"L'élan est là."},
   {min:60,max:74, label:"Consolidation",   color:C.green,  desc:"Tu ancres les changements."},
   {min:75,max:90, label:"Nouvelle identité",color:"#F39C12",desc:"Tu es devenu quelqu'un d'autre."},
@@ -851,15 +851,15 @@ const SF={fontFamily:"'Cormorant Garamond',serif"};
 
 function Divider(){return <div style={{width:"50px",height:"1px",background:`linear-gradient(90deg,transparent,${C.gold},transparent)`,margin:"0 auto"}}/>;}
 function Card({children,accent=false,style={}}){return <div style={{background:C.bg2,border:`1px solid ${accent?C.goldD:C.border}`,borderTop:`2px solid ${accent?C.gold:C.border}`,padding:"1.4rem",marginBottom:"1rem",...style}}>{children}</div>;}
-function Tag({children,color=C.gold}){return <span style={{display:"inline-block",padding:"0.18rem 0.5rem",background:`${color}18`,border:`1px solid ${color}55`,color,fontSize:"0.67rem",letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>{children}</span>;}
-function SH({icon,label,sub}){return <div style={{marginBottom:"1.1rem"}}><div style={{display:"flex",alignItems:"center",gap:"0.55rem",marginBottom:"0.2rem"}}><span style={{color:C.gold}}>{icon}</span><span style={{fontSize:"0.58rem",letterSpacing:"0.28em",color:C.gold,textTransform:"uppercase",...MN}}>{label}</span></div>{sub&&<div style={{fontSize:"0.75rem",color:C.textDim,paddingLeft:"1.35rem"}}>{sub}</div>}</div>;}
+function Tag({children,color=C.gold}){return <span style={{display:"inline-block",padding:"0.18rem 0.5rem",background:`${color}18`,border:`1px solid ${color}55`,color:C.text,fontSize:"0.67rem",letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>{children}</span>;}
+function SH({icon,label,sub}){return <div style={{marginBottom:"1.1rem"}}><div style={{display:"flex",alignItems:"center",gap:"0.55rem",marginBottom:"0.2rem"}}><span style={{color:C.textDim}}>{icon}</span><span style={{fontSize:"0.58rem",letterSpacing:"0.28em",color:C.textDim,textTransform:"uppercase",...MN}}>{label}</span></div>{sub&&<div style={{fontSize:"0.75rem",color:C.textDim,paddingLeft:"1.35rem"}}>{sub}</div>}</div>;}
 
 function ScoreBar({label,score,lecture}){
   const color=score>=70?C.green:score>=45?C.gold:C.red;
   return <div style={{marginBottom:"1rem"}}>
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:"0.3rem"}}>
       <span style={{fontSize:"0.7rem",letterSpacing:"0.1em",color:C.textMid,textTransform:"uppercase"}}>{label}</span>
-      <span style={{fontSize:"0.82rem",...MN,color}}>{score}/100</span>
+      <span style={{fontSize:"0.82rem",...MN,color:C.text}}>{score}/100</span>
     </div>
     <div style={{height:"3px",background:C.bg3,overflow:"hidden"}}>
       <div style={{height:"100%",width:`${score}%`,background:`linear-gradient(90deg,${color}70,${color})`,transition:"width 1.2s ease"}}/>
@@ -876,7 +876,7 @@ function ProgressCircle({day,total=90,size=110}){
       <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={lv.color} strokeWidth="6" strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" style={{transition:"stroke-dasharray 1s ease"}}/>
     </svg>
     <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
-      <div style={{fontSize:"1.5rem",...SF,color:lv.color,lineHeight:1}}>{day}</div>
+      <div style={{fontSize:"1.5rem",...SF,color:C.text,lineHeight:1}}>{day}</div>
       <div style={{fontSize:"0.52rem",color:C.textDim,...MN}}>/ {total}</div>
     </div>
   </div>;
@@ -969,15 +969,15 @@ function BreathingVortex({onDone}){
           zIndex:2,
         }}>
           <div style={{
-            fontSize:"0.6rem",color:ph.color,letterSpacing:"0.18em",
+            fontSize:"0.6rem",color:C.text,letterSpacing:"0.18em",
             textTransform:"uppercase",...MN,marginBottom:"0.2rem",
             opacity:0.9
           }}>{ph.label}</div>
           <div style={{
-            ...SF,fontSize:"2.2rem",color:ph.color,lineHeight:1,
+            ...SF,fontSize:"2.2rem",color:C.text,lineHeight:1,
             textShadow:`0 0 15px ${ph.color}80`
           }}>{secsLeft}</div>
-          <div style={{fontSize:"0.5rem",color:ph.color,opacity:0.6,...MN,marginTop:"0.15rem"}}>sec</div>
+          <div style={{fontSize:"0.5rem",color:C.textDim,opacity:0.6,...MN,marginTop:"0.15rem"}}>sec</div>
         </div>
       </div>
 
@@ -1142,7 +1142,7 @@ function RituelTimer({steps, onComplete, nomGuerre}){
   if(state.phase==="step_done") return(
     <div style={{animation:"fadeUp 0.4s ease",textAlign:"center"}}>
       <div style={{background:`${doneMsg.color}10`,border:`1px solid ${doneMsg.color}30`,borderTop:`4px solid ${doneMsg.color}`,padding:"1.2rem",marginBottom:"0.8rem"}}>
-        <div style={{...SF,fontSize:"1.2rem",color:doneMsg.color,marginBottom:"0.5rem"}}>{doneMsg.titre}</div>
+        <div style={{...SF,fontSize:"1.2rem",color:C.text,marginBottom:"0.5rem"}}>{doneMsg.titre}</div>
         <p style={{fontSize:"0.82rem",color:C.text,lineHeight:1.75,marginBottom:"0.35rem"}}>{doneMsg.msg}</p>
         {doneMsg.sous&&<p style={{fontSize:"0.75rem",color:C.textDim,fontStyle:"italic"}}>{doneMsg.sous}</p>}
       </div>
@@ -1165,17 +1165,17 @@ function RituelTimer({steps, onComplete, nomGuerre}){
     <div>
       <StepBar/>
       <div style={{padding:"0.85rem 1rem",background:`${C.gold}08`,borderLeft:`3px solid ${C.goldD}`,marginBottom:"0.8rem"}}>
-        <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>
+        <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>
           Étape {state.idx+1}/{steps.length} · {step?.duree}
         </div>
-        <div style={{...SF,fontSize:"1rem",color:C.gold,marginBottom:"0.35rem"}}>{step?.etape}</div>
+        <div style={{...SF,fontSize:"1rem",color:C.text,marginBottom:"0.35rem"}}>{step?.etape}</div>
         <div style={{fontSize:"0.82rem",color:C.textMid,lineHeight:1.6}}>{step?.action}</div>
       </div>
       {state.idx===0&&(
         <div style={{marginBottom:"0.8rem"}}>
           {steps.map((s,i)=>i>0&&(
             <div key={i} style={{display:"flex",gap:"0.6rem",alignItems:"flex-start",marginBottom:"0.4rem",opacity:0.6}}>
-              <span style={{color:C.goldD,...MN,fontSize:"0.6rem",minWidth:"1rem"}}>{i+1}.</span>
+              <span style={{color:C.text,...MN,fontSize:"0.6rem",minWidth:"1rem"}}>{i+1}.</span>
               <span style={{fontSize:"0.75rem",color:C.textDim}}>{s.etape} ({s.duree})</span>
             </div>
           ))}
@@ -1193,8 +1193,8 @@ function RituelTimer({steps, onComplete, nomGuerre}){
   if(state.phase==="countdown") return(
     <div style={{textAlign:"center",padding:"1.5rem 1rem",animation:"fadeIn 0.3s ease"}}>
       <StepBar/>
-      <div style={{fontSize:"0.58rem",color:C.goldD,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.6rem"}}>{step?.etape} · Début dans…</div>
-      <div style={{...SF,fontSize:"5rem",color:C.gold,lineHeight:1,animation:"pulse 0.8s ease-in-out infinite",textShadow:`0 0 30px ${C.gold}60`}}>{state.countdown}</div>
+      <div style={{fontSize:"0.58rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.6rem"}}>{step?.etape} · Début dans…</div>
+      <div style={{...SF,fontSize:"5rem",color:C.text,lineHeight:1,animation:"pulse 0.8s ease-in-out infinite",textShadow:`0 0 30px ${C.gold}60`}}>{state.countdown}</div>
     </div>
   );
 
@@ -1210,15 +1210,15 @@ function RituelTimer({steps, onComplete, nomGuerre}){
       <StepBar/>
       <div style={{background:C.bg3,border:`1px solid ${C.goldD}`,padding:"1rem",animation:"fadeIn 0.3s ease"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.45rem"}}>
-          <span style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.18em",textTransform:"uppercase",...MN}}>{step?.etape}</span>
-          <span style={{...MN,fontSize:"1.4rem",color:state.t<=10?C.red:C.gold,fontWeight:400,animation:state.t<=10?"pulse 0.8s ease infinite":"none"}}>{fmt(state.t)}</span>
+          <span style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.18em",textTransform:"uppercase",...MN}}>{step?.etape}</span>
+          <span style={{...MN,fontSize:"1.4rem",color:state.t<=10?C.red:C.text,fontWeight:400,animation:state.t<=10?"pulse 0.8s ease infinite":"none"}}>{fmt(state.t)}</span>
         </div>
         <div style={{fontSize:"0.81rem",color:C.textMid,lineHeight:1.5,marginBottom:"0.65rem"}}>{step?.action}</div>
         <div style={{height:"4px",background:C.bg,borderRadius:"2px",marginBottom:"0.5rem"}}>
           <div style={{height:"100%",width:`${prog}%`,background:`linear-gradient(90deg,${C.goldD},${C.gold})`,borderRadius:"2px",transition:"width 1s linear"}}/>
         </div>
         <button onClick={()=>{clearInterval(timerRef.current);playGong();setState(s=>({...s,phase:"step_done"}));}}
-          style={{width:"100%",padding:"0.4rem",background:`${C.gold}15`,border:`1px solid ${C.goldD}`,color:C.gold,fontSize:"0.68rem",cursor:"pointer"}}>
+          style={{width:"100%",padding:"0.4rem",background:`${C.gold}15`,border:`1px solid ${C.goldD}`,color:C.text,fontSize:"0.68rem",cursor:"pointer"}}>
           Terminer cette étape →
         </button>
       </div>
@@ -1244,21 +1244,21 @@ function DailyTracker({dayNum,todayLog,onSave,logs={}}){
   if(saved)return <div style={{padding:"0.9rem",background:`${C.green}0A`,border:`1px solid ${C.green}30`,borderLeft:`3px solid ${C.green}`}}>
     <div style={{fontSize:"0.56rem",color:C.green,letterSpacing:"0.15em",...MN,marginBottom:"0.2rem"}}>Journée enregistrée · Jour {dayNum}</div>
     <div style={{display:"flex",gap:"1rem",alignItems:"center"}}>
-      <span style={{fontSize:"0.8rem",color:C.text}}>H{todayLog?.humeur||humeur}/5 · É{todayLog?.energie||energie}/5 · Score <span style={{color:C.gold,fontWeight:500}}>{todayLog?.score||score}</span>/100</span>
+      <span style={{fontSize:"0.8rem",color:C.text}}>H{todayLog?.humeur||humeur}/5 · É{todayLog?.energie||energie}/5 · Score <span style={{color:C.text,fontWeight:500}}>{todayLog?.score||score}</span>/100</span>
       <button onClick={()=>setSaved(false)} style={{background:"none",border:"none",color:C.textDim,fontSize:"0.68rem",cursor:"pointer"}}>Modifier</button>
     </div>
   </div>;
   return <div>
     <div style={{marginBottom:"0.8rem"}}>
-      <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>HUMEUR</div>
+      <div style={{fontSize:"0.56rem",color:C.text,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>HUMEUR</div>
       <div style={{display:"flex",gap:"0.4rem"}}>{HUMEURS.map(h=><button key={h.v} onClick={()=>setHumeur(h.v)} style={{flex:1,padding:"0.45rem",fontSize:"1.2rem",background:humeur===h.v?`${C.gold}20`:"transparent",border:`1px solid ${humeur===h.v?C.gold:C.border}`,cursor:"pointer",transition:"all 0.15s"}}>{h.e}</button>)}</div>
     </div>
     {[["ÉNERGIE",energie,setEnergie],["FOCUS",focus,setFocus]].map(([lbl,val,set])=><div key={lbl} style={{marginBottom:"0.8rem"}}>
-      <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>{lbl}</div>
+      <div style={{fontSize:"0.56rem",color:C.text,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>{lbl}</div>
       <div style={{display:"flex",gap:"0.35rem"}}>{[1,2,3,4,5].map(n=><button key={n} onClick={()=>set(n)} style={{flex:1,padding:"0.42rem",background:val===n?`${C.gold}20`:val&&n<=val?`${C.gold}08`:"transparent",border:`1px solid ${val===n?C.gold:C.border}`,color:val===n?C.gold:C.textMid,...MN,fontSize:"0.83rem",cursor:"pointer",transition:"all 0.15s"}}>{n}</button>)}</div>
     </div>)}
     <div style={{marginBottom:"0.8rem"}}>
-      <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>ACTION PRINCIPALE</div>
+      <div style={{fontSize:"0.56rem",color:C.text,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>ACTION PRINCIPALE</div>
       <div style={{display:"flex",gap:"0.4rem"}}>
         {[["✓ Faite",true,C.green],["✗ Non faite",false,C.red]].map(([lbl,val,color])=><button key={lbl} onClick={()=>setAction(val)} style={{flex:1,padding:"0.52rem",background:action===val?`${color}15`:"transparent",border:`1px solid ${action===val?color:C.border}`,color:action===val?color:C.textMid,fontSize:"0.78rem",cursor:"pointer",transition:"all 0.2s"}}>{lbl}</button>)}
       </div>
@@ -1269,13 +1269,13 @@ function DailyTracker({dayNum,todayLog,onSave,logs={}}){
       </label>)}
     </div>
     <div style={{marginBottom:"0.8rem"}}>
-      <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>TEMPS INVESTI</div>
+      <div style={{fontSize:"0.56rem",color:C.text,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>TEMPS INVESTI</div>
       <div style={{display:"flex",gap:"0.3rem"}}>{[0,15,30,45,60,90].map(n=><button key={n} onClick={()=>setTemps(n)} style={{flex:1,padding:"0.38rem 0.1rem",background:temps===n?`${C.gold}18`:"transparent",border:`1px solid ${temps===n?C.gold:C.border}`,color:temps===n?C.gold:C.textMid,...MN,fontSize:"0.7rem",cursor:"pointer"}}>{n===0?"0":n+"'"}</button>)}</div>
     </div>
     {showRelapseDiag&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.9)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"1.5rem"}}>
       <div style={{background:C.bg2,border:`1px solid ${C.red}`,borderTop:`3px solid ${C.red}`,padding:"1.5rem",maxWidth:"380px",width:"100%"}}>
         <div style={{fontSize:"0.55rem",color:C.red,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.8rem"}}>Diagnostic Rechute</div>
-        <div style={{fontSize:"0.9rem",color:C.gold,marginBottom:"1rem",fontFamily:"Georgia,serif"}}>Qu'est-ce qui s'est passé ?</div>
+        <div style={{fontSize:"0.9rem",color:C.text,marginBottom:"1rem",fontFamily:"Georgia,serif"}}>Qu'est-ce qui s'est passé ?</div>
         <div style={{display:"flex",flexWrap:"wrap",gap:"0.4rem",marginBottom:"1rem"}}>
           {["Fatigue","Stress","Distraction","Émotion difficile","Environnement","Manque de temps","Ennui","Autre"].map(c=>(
             <button key={c} onClick={()=>setRelapseCause(c)} style={{padding:"0.35rem 0.75rem",background:relapseCause===c?`${C.red}20`:"transparent",border:`1px solid ${relapseCause===c?C.red:C.border}`,color:relapseCause===c?C.red:C.textMid,fontSize:"0.72rem",cursor:"pointer"}}>{c}</button>
@@ -1299,7 +1299,7 @@ function DailyTracker({dayNum,todayLog,onSave,logs={}}){
           streak>=7?"✦ 7 jours. Le mouvement est lancé.":
           streak>=3?`◈ ${streak} jours consécutifs. Continue.`:
           "Chaque jour compte. Même celui-ci.";
-        return <div style={{fontSize:"0.74rem",color:C.goldD,fontStyle:"italic",...SF}}>{msg}</div>;
+        return <div style={{fontSize:"0.74rem",color:C.text,fontStyle:"italic",...SF}}>{msg}</div>;
       })()}
     </div>}
   </div>;
@@ -1366,14 +1366,14 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
       </div>
       <div style={{position:"relative",zIndex:12,background:`${pc}12`,border:`2px solid ${pc}50`,borderTop:`5px solid ${pc}`,padding:"1.8rem 1.2rem",textAlign:"center",marginBottom:"1rem",animation:"popIn 0.6s ease 0.2s both",boxShadow:`0 0 40px ${pc}30`}}>
         <div style={{fontSize:"3rem",marginBottom:"0.6rem"}}>🏆</div>
-        <div style={{...SF,fontSize:"1.2rem",color:pc,marginBottom:"0.7rem"}}>Semaine {weekNum} — jours complétés</div>
+        <div style={{...SF,fontSize:"1.2rem",color:C.text,marginBottom:"0.7rem"}}>Semaine {weekNum} — jours complétés</div>
         <p style={{fontSize:"0.82rem",color:C.text,lineHeight:1.85,marginBottom:"0.6rem"}}>Ton score sera calculé automatiquement dimanche à partir de ton tracker journalier.</p>
         {score&&<div style={{background:`${scoreColor}15`,border:`1px solid ${scoreColor}40`,padding:"0.7rem",marginBottom:"0.7rem"}}>
-          <div style={{fontSize:"0.58rem",color:scoreColor,...MN,letterSpacing:"0.12em",marginBottom:"0.3rem"}}>SCORE SEMAINE {weekNum}</div>
-          <div style={{...SF,fontSize:"1.8rem",color:scoreColor}}>{scoreTotal}<span style={{fontSize:"0.9rem",color:C.textMid}}>/10</span></div>
+          <div style={{fontSize:"0.58rem",color:C.textDim,...MN,letterSpacing:"0.12em",marginBottom:"0.3rem"}}>SCORE SEMAINE {weekNum}</div>
+          <div style={{...SF,fontSize:"1.8rem",color:C.text}}>{scoreTotal}<span style={{fontSize:"0.9rem",color:C.textMid}}>/10</span></div>
           <div style={{fontSize:"0.7rem",color:scoreTotal>=seuil?C.green:C.red,marginTop:"0.3rem"}}>{scoreTotal>=seuil?`✓ Semaine ${weekNum+1} débloquée`:`✗ Score insuffisant (seuil : ${seuil}/10)`}</div>
         </div>}
-        {weekNum<12&&<p style={{fontSize:"0.78rem",color:pc,lineHeight:1.6,fontStyle:"italic"}}>✦ Continue le tracker chaque jour pour maximiser ton score.</p>}
+        {weekNum<12&&<p style={{fontSize:"0.78rem",color:C.textDim,lineHeight:1.6,fontStyle:"italic"}}>✦ Continue le tracker chaque jour pour maximiser ton score.</p>}
         {weekNum===12&&<p style={{fontSize:"0.85rem",color:C.green,lineHeight:1.6}}>✦ Tu as tenu les 90 jours. Peu de gens peuvent dire ça.</p>}
       </div>
       <button onClick={()=>setShowWeekDone(false)} style={{position:"relative",zIndex:1,width:"100%",padding:"0.9rem",background:pc,border:"none",color:C.bg,fontSize:"0.74rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,cursor:"pointer"}}>
@@ -1408,8 +1408,8 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
       <span style={{...MN,fontSize:"0.63rem",color:C.textDim,minWidth:"2rem"}}>S{weekNum}</span>
       <Tag color={pc}>{ph}</Tag>
       <span style={{flex:1,color:C.text,fontSize:"0.83rem"}}>{w.titre||w.t}</span>
-      {scoreTotal!==null&&<span style={{...MN,fontSize:"0.65rem",color:scoreColor,fontWeight:500}}>{scoreTotal}/10</span>}
-      {daysDone>0&&scoreTotal===null&&<span style={{...MN,fontSize:"0.58rem",color:C.gold}}>{daysDone}/4j</span>}
+      {scoreTotal!==null&&<span style={{...MN,fontSize:"0.65rem",color:C.text,fontWeight:500}}>{scoreTotal}/10</span>}
+      {daysDone>0&&scoreTotal===null&&<span style={{...MN,fontSize:"0.58rem",color:C.text}}>{daysDone}/4j</span>}
       <span style={{color:C.textDim,fontSize:"0.78rem",flexShrink:0}}>{open?"−":"+"}</span>
     </button>
 
@@ -1417,13 +1417,13 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.55rem",margin:"0.65rem 0"}}>
         {[["Objectif",w.objectif||w.o],["Métrique",w.metrique||w.m]].map(([l,v])=>(
           <div key={l}>
-            <div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>{l}</div>
+            <div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>{l}</div>
             <div style={{fontSize:"0.76rem",color:C.textMid,lineHeight:1.5}}>{v}</div>
           </div>
         ))}
       </div>
 
-      <div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.5rem"}}>Planning semaine</div>
+      <div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.5rem"}}>Planning semaine</div>
       {days.map(({key,label,emoji})=>{
         const ck=`${weekNum}-${key}`;
         const done=!!checked[ck];
@@ -1438,7 +1438,7 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
             <span style={{color:done?C.green:C.textDim,fontSize:"0.72rem",marginTop:"0.05rem",flexShrink:0}}>{done?"✓":"○"}</span>
             <div style={{flex:1}}>
               <div style={{display:"flex",gap:"0.5rem",alignItems:"center",marginBottom:"0.2rem"}}>
-                <span style={{fontSize:"0.58rem",color:isDimanche?C.gold:pc,...MN,letterSpacing:"0.08em"}}>{emoji} {label}</span>
+                <span style={{fontSize:"0.58rem",color:isDimanche?C.text:C.textMid,...MN,letterSpacing:"0.08em"}}>{emoji} {label}</span>
                 {dayData.h&&<span style={{fontSize:"0.56rem",color:C.textDim,...MN}}>{dayData.h}</span>}
                 {dayData.dur&&<span style={{fontSize:"0.54rem",color:C.textDim,...MN}}>· {dayData.dur}</span>}
               </div>
@@ -1452,9 +1452,9 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
 
       {score&&(
         <div style={{marginTop:"0.75rem",background:`${scoreColor}0A`,border:`1px solid ${scoreColor}25`,padding:"0.65rem 0.8rem"}}>
-          <div style={{fontSize:"0.54rem",color:scoreColor,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.4rem"}}>Score automatique — Semaine {weekNum}</div>
+          <div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.4rem"}}>Score automatique — Semaine {weekNum}</div>
           <div style={{display:"flex",gap:"0.5rem",alignItems:"baseline",marginBottom:"0.4rem"}}>
-            <span style={{...SF,fontSize:"1.6rem",color:scoreColor}}>{scoreTotal}</span>
+            <span style={{...SF,fontSize:"1.6rem",color:C.text}}>{scoreTotal}</span>
             <span style={{fontSize:"0.7rem",color:C.textMid}}>/10 · seuil {seuil}/10</span>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.3rem",fontSize:"0.66rem",color:C.textMid}}>
@@ -1463,7 +1463,7 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
             <span>Énergie : {score.ePts}/2</span>
             <span>Rechutes : {score.rechutePts}/1</span>
           </div>
-          <div style={{marginTop:"0.4rem",fontSize:"0.7rem",color:scoreColor,fontWeight:500}}>
+          <div style={{marginTop:"0.4rem",fontSize:"0.7rem",color:C.text,fontWeight:500}}>
             {debloque?`✓ Semaine ${weekNum+1} débloquée`:`✗ Score insuffisant — continue le tracker`}
           </div>
           {score.logsCount<7&&<div style={{fontSize:"0.62rem",color:C.textDim,marginTop:"0.3rem",fontStyle:"italic"}}>({score.logsCount}/7 jours loggués — score provisoire)</div>}
@@ -1524,7 +1524,7 @@ function CoachChat({plan,plan2,weeks,dailyLogs}){
         <div style={{fontSize:"0.81rem",color:C.text,lineHeight:1.6}}>{m.content}</div>
       </div>)}
       {loading&&<div style={{padding:"0.7rem 0.9rem",background:C.bg3,border:`1px solid ${C.border}`,borderLeft:`3px solid ${C.gold}`,alignSelf:"flex-start",display:"flex",alignItems:"center",gap:"0.5rem"}}>
-        <div style={{fontSize:"0.58rem",color:C.goldD,letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>Coach</div>
+        <div style={{fontSize:"0.58rem",color:C.textDim,letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>Coach</div>
         <div style={{display:"flex",gap:"0.25rem",alignItems:"center"}}>
           {[0,1,2].map(i=><span key={i} style={{width:"5px",height:"5px",background:C.gold,borderRadius:"50%",display:"inline-block",animation:`dotBounce 1.2s ease ${i*0.15}s infinite`}}/>)}
         </div>
@@ -1704,16 +1704,16 @@ function EngagementTab({plan, plan2, firstName}){
           border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`,
           marginBottom:"1.2rem",position:"relative"
         }}>
-          <div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.25em",textTransform:"uppercase",...MN,textAlign:"center",marginBottom:"0.8rem"}}>Engagement Personnel</div>
+          <div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.25em",textTransform:"uppercase",...MN,textAlign:"center",marginBottom:"0.8rem"}}>Engagement Personnel</div>
 
-          <div style={{...SF,fontSize:"1.3rem",color:C.gold,textAlign:"center",marginBottom:"1rem",fontWeight:500}}>{plan?.nom_guerre||"…"}</div>
+          <div style={{...SF,fontSize:"1.3rem",color:C.textDim,textAlign:"center",marginBottom:"1rem",fontWeight:500}}>{plan?.nom_guerre||"…"}</div>
 
-          <div style={{fontSize:"0.52rem",color:C.goldD,letterSpacing:"0.12em",textTransform:"uppercase",...MN,marginBottom:"0.25rem"}}>Je soussigné(e)</div>
+          <div style={{fontSize:"0.52rem",color:C.textDim,letterSpacing:"0.12em",textTransform:"uppercase",...MN,marginBottom:"0.25rem"}}>Je soussigné(e)</div>
           <input
             value={signerNom}
             onChange={e=>setSignerNom(e.target.value)}
             placeholder="Entre ton prénom et nom"
-            style={{width:"100%",padding:"0.6rem 0.75rem",background:C.bg,border:`1px solid ${C.goldD}`,color:C.gold,fontSize:"0.9rem",outline:"none",marginBottom:"1rem",...SF}}
+            style={{width:"100%",padding:"0.6rem 0.75rem",background:C.bg,border:`1px solid ${C.goldD}`,color:C.text,fontSize:"0.9rem",outline:"none",marginBottom:"1rem",...SF}}
           />
 
           <div style={{fontSize:"0.82rem",color:C.textMid,lineHeight:1.85,marginBottom:"1rem"}}>
@@ -1721,12 +1721,12 @@ function EngagementTab({plan, plan2, firstName}){
           </div>
 
           <div style={{padding:"0.7rem 0.9rem",background:C.bg3,borderLeft:`3px solid ${C.gold}`,marginBottom:"0.6rem"}}>
-            <div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.2rem"}}>Objectif</div>
+            <div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.2rem"}}>Objectif</div>
             <div style={{fontSize:"0.82rem",color:C.text,lineHeight:1.5}}>{contrat}</div>
           </div>
 
           <div style={{padding:"0.7rem 0.9rem",background:C.bg3,borderLeft:`3px solid ${C.goldD}`,marginBottom:"0.6rem"}}>
-            <div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.2rem"}}>Mission centrale</div>
+            <div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.2rem"}}>Mission centrale</div>
             <div style={{fontSize:"0.82rem",color:C.text,lineHeight:1.5}}>{mission}</div>
           </div>
 
@@ -1736,12 +1736,12 @@ function EngagementTab({plan, plan2, firstName}){
             À revenir même après une rechute.
           </div>
 
-          {citation&&<div style={{...SF,fontSize:"0.88rem",color:C.goldL,fontStyle:"italic",textAlign:"center",padding:"0.6rem",borderTop:`1px solid ${C.goldD}40`}}>"{citation}"</div>}
+          {citation&&<div style={{...SF,fontSize:"0.88rem",color:C.text,fontStyle:"italic",textAlign:"center",padding:"0.6rem",borderTop:`1px solid ${C.goldD}40`}}>"{citation}"</div>}
         </div>
 
         <div style={{marginBottom:"1rem"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.4rem"}}>
-            <div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.15em",textTransform:"uppercase",...MN}}>Signature au doigt</div>
+            <div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN}}>Signature au doigt</div>
             <button onClick={clearCanvas} style={{background:"none",border:"none",color:C.textDim,fontSize:"0.68rem",cursor:"pointer",...MN}}>Effacer</button>
           </div>
           <div style={{position:"relative",border:`1px solid ${C.goldD}`,background:C.bg,borderRadius:"2px"}}>
@@ -2186,19 +2186,19 @@ export default function App(){
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",fontFamily:"'Jost',sans-serif"}}>
       <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
       <Divider/><div style={{textAlign:"center",margin:"1.5rem 0",maxWidth:"460px",width:"100%"}}>
-        <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.3em",textTransform:"uppercase",...MN,marginBottom:"0.7rem"}}>Plan partagé</div>
+        <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.3em",textTransform:"uppercase",...MN,marginBottom:"0.7rem"}}>Plan partagé</div>
         <div style={{...SF,fontSize:"clamp(1.4rem,5vw,2rem)",color:C.text}}>Mon Plan de Vie 90 Jours</div>
-        <div style={{...SF,fontSize:"0.9rem",fontStyle:"italic",color:C.gold,marginTop:"0.25rem"}}>Pour {p.f}</div>
+        <div style={{...SF,fontSize:"0.9rem",fontStyle:"italic",color:C.text,marginTop:"0.25rem"}}>Pour {p.f}</div>
       </div>
       <div style={{maxWidth:"440px",width:"100%"}}>
         <Card accent>
-          <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>Nom de Guerre</div>
-          <div style={{...SF,fontSize:"1.5rem",color:C.gold,marginBottom:"0.9rem"}}>{p.n}</div>
+          <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>Nom de Guerre</div>
+          <div style={{...SF,fontSize:"1.5rem",color:C.text,marginBottom:"0.9rem"}}>{p.n}</div>
           <div style={{fontSize:"0.85rem",color:C.textMid,lineHeight:1.8,marginBottom:"0.9rem",fontStyle:"italic"}}>{p.m}</div>
-          <div style={{padding:"0.75rem",background:`${C.gold}0A`,border:`1px solid ${C.goldD}`,textAlign:"center",...SF,fontSize:"0.92rem",color:C.gold,fontStyle:"italic"}}>{p.c}</div>
+          <div style={{padding:"0.75rem",background:`${C.gold}0A`,border:`1px solid ${C.goldD}`,textAlign:"center",...SF,fontSize:"0.92rem",color:C.text,fontStyle:"italic"}}>{p.c}</div>
         </Card>
         <div style={{textAlign:"center",marginTop:"0.9rem"}}>
-          <div style={{fontSize:"0.75rem",color:C.textDim,marginBottom:"0.9rem"}}>Généré par <span style={{color:C.gold}}>Lamine Diabaté</span></div>
+          <div style={{fontSize:"0.75rem",color:C.textDim,marginBottom:"0.9rem"}}>Généré par <span style={{color:C.text}}>Lamine Diabaté</span></div>
           <button onClick={()=>setScreen("landing")} style={{...BG}}>Créer mon propre plan ✦</button>
         </div>
       </div>
@@ -2238,8 +2238,8 @@ export default function App(){
           </div>
         ) : (
           <>
-            <div style={{fontSize:'0.55rem',color:C.goldD,letterSpacing:'0.2em',textTransform:'uppercase',...MN,marginBottom:'0.6rem'}}>Rester dans le mouvement</div>
-            <div style={{...SF,fontSize:'1.2rem',color:C.gold,marginBottom:'0.8rem'}}>Reçois ton plan + tes rappels quotidiens</div>
+            <div style={{fontSize:'0.55rem',color:C.textDim,letterSpacing:'0.2em',textTransform:'uppercase',...MN,marginBottom:'0.6rem'}}>Rester dans le mouvement</div>
+            <div style={{...SF,fontSize:'1.2rem',color:C.text,marginBottom:'0.8rem'}}>Reçois ton plan + tes rappels quotidiens</div>
             <p style={{fontSize:'0.82rem',color:C.textMid,lineHeight:1.7,marginBottom:'1.2rem'}}>J1, J3, J7, J14, J30, J60, J90 — des messages personnalisés pour tenir jusqu'au bout.</p>
             <input
               type="email"
@@ -2276,11 +2276,11 @@ export default function App(){
 
         <div style={{marginBottom:"0.5rem"}}>
           <Divider/>
-          <div style={{margin:"1.5rem 0 0.4rem",fontSize:"0.52rem",letterSpacing:"0.4em",color:C.goldD,textTransform:"uppercase",...MN}}>Système de Transformation Comportementale</div>
+          <div style={{margin:"1.5rem 0 0.4rem",fontSize:"0.52rem",letterSpacing:"0.4em",color:C.textDim,textTransform:"uppercase",...MN}}>Système de Transformation Comportementale</div>
         </div>
         <h1 style={{...SF,fontSize:"clamp(3.2rem,11vw,6rem)",fontWeight:400,color:C.text,lineHeight:0.88,marginBottom:"0.1rem"}}>Mon Plan</h1>
-        <h1 style={{...SF,fontSize:"clamp(3.2rem,11vw,6rem)",fontWeight:300,fontStyle:"italic",color:C.gold,lineHeight:0.88,marginBottom:"1.5rem"}}>de Vie</h1>
-        <div style={{display:"inline-block",padding:"0.45rem 1.6rem",border:`1px solid ${C.goldD}`,background:`${C.gold}08`,...SF,fontSize:"clamp(1.1rem,3.5vw,1.8rem)",color:C.gold,letterSpacing:"0.2em",marginBottom:"2rem"}}>90 Jours</div>
+        <h1 style={{...SF,fontSize:"clamp(3.2rem,11vw,6rem)",fontWeight:300,fontStyle:"italic",color:C.text,lineHeight:0.88,marginBottom:"1.5rem"}}>de Vie</h1>
+        <div style={{display:"inline-block",padding:"0.45rem 1.6rem",border:`1px solid ${C.goldD}`,background:`${C.gold}08`,...SF,fontSize:"clamp(1.1rem,3.5vw,1.8rem)",color:C.text,letterSpacing:"0.2em",marginBottom:"2rem"}}>90 Jours</div>
 
         <p style={{maxWidth:"360px",color:C.textMid,lineHeight:1.9,fontSize:"clamp(0.85rem,2.5vw,0.95rem)",marginBottom:"2rem"}}>
           Pas un texte inspirant.<br/>
@@ -2292,7 +2292,7 @@ export default function App(){
             <div key={name} style={{padding:"0.5rem 0.9rem",background:`${cfg.color}10`,border:`1px solid ${cfg.color}30`,display:"flex",alignItems:"center",gap:"0.4rem"}}>
               <span style={{fontSize:"0.9rem"}}>{cfg.icon}</span>
               <div style={{textAlign:"left"}}>
-                <div style={{fontSize:"0.75rem",color:cfg.color,fontWeight:400}}>{name}</div>
+                <div style={{fontSize:"0.75rem",color:C.text,fontWeight:400}}>{name}</div>
                 <div style={{fontSize:"0.58rem",color:C.textDim,...MN}}>{cfg.desc}</div>
               </div>
             </div>
@@ -2304,7 +2304,7 @@ export default function App(){
         <div style={{display:"flex",gap:"1.8rem",flexWrap:"wrap",justifyContent:"center"}}>
           {[["22","Questions ciblées"],["~12'","Pour remplir"],["12","Semaines structurées"],["90","Jours transformants"]].map(([n,l])=>(
             <div key={n} style={{textAlign:"center"}}>
-              <div style={{...SF,fontSize:"1.8rem",color:C.gold}}>{n}</div>
+              <div style={{...SF,fontSize:"1.8rem",color:C.textDim}}>{n}</div>
               <div style={{fontSize:"0.6rem",color:C.textDim,letterSpacing:"0.1em",textTransform:"uppercase",...MN}}>{l}</div>
             </div>
           ))}
@@ -2317,28 +2317,28 @@ export default function App(){
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",fontFamily:"'Jost',sans-serif"}}>
       <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
       <Divider/><div style={{textAlign:"center",margin:"1.5rem 0"}}>
-        <div style={{fontSize:"0.54rem",letterSpacing:"0.35em",color:C.goldD,textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>Accès Personnel</div>
-        <h1 style={{...SF,fontSize:"clamp(1.6rem,5vw,2.3rem)",fontWeight:400,color:C.text}}>Mon Plan de Vie <span style={{fontStyle:"italic",color:C.gold}}>90 Jours</span></h1>
+        <div style={{fontSize:"0.54rem",letterSpacing:"0.35em",color:C.textDim,textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>Accès Personnel</div>
+        <h1 style={{...SF,fontSize:"clamp(1.6rem,5vw,2.3rem)",fontWeight:400,color:C.text}}>Mon Plan de Vie <span style={{fontStyle:"italic",color:C.text}}>90 Jours</span></h1>
       </div>
       <div style={{width:"100%",maxWidth:"360px",animation:accessShake?"shake 0.45s ease":"none"}}>
         <Card accent>
-          <div style={{fontSize:"0.68rem",color:C.textDim,marginBottom:"1.6rem",lineHeight:1.7,textAlign:"center"}}>Identifie-toi pour accéder.<br/><span style={{color:C.goldD,fontSize:"0.63rem"}}>Informations confidentielles.</span></div>
+          <div style={{fontSize:"0.68rem",color:C.textDim,marginBottom:"1.6rem",lineHeight:1.7,textAlign:"center"}}>Identifie-toi pour accéder.<br/><span style={{color:C.text,fontSize:"0.63rem"}}>Informations confidentielles.</span></div>
           {[{lbl:"Nom complet",val:nom,set:setNom,ph:"Prénom Nom",type:"text",k:"nom"},{lbl:"Email",val:email,set:setEmail,ph:"ton@email.com",type:"email",k:"eml"}].map(({lbl,val,set,ph,type,k})=>(
             <div key={k} style={{marginBottom:"1rem"}}>
-              <div style={{fontSize:"0.6rem",color:C.goldD,letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:"0.32rem",...MN}}>{lbl}</div>
+              <div style={{fontSize:"0.6rem",color:C.textDim,letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:"0.32rem",...MN}}>{lbl}</div>
               <input type={type} value={val} placeholder={ph} onChange={e=>{setAccessErr("");set(e.target.value);}} onKeyDown={e=>e.key==="Enter"&&doAccess()} onFocus={()=>setF(k,true)} onBlur={()=>setF(k,false)} style={iSt(k)}/>
             </div>
           ))}
           <div style={{marginBottom:"1.2rem"}}>
-            <div style={{fontSize:"0.6rem",color:C.goldD,letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:"0.32rem",...MN}}>Code secret</div>
-            <input type="text" value={code} placeholder="LD-XXXXX" onChange={e=>{setAccessErr("");setCode(e.target.value.toUpperCase());}} onKeyDown={e=>e.key==="Enter"&&doAccess()} onFocus={()=>setF("cod",true)} onBlur={()=>setF("cod",false)} style={{...iSt("cod"),textAlign:"center",letterSpacing:"0.25em",...MN,color:C.gold,fontSize:"1.05rem"}}/>
+            <div style={{fontSize:"0.6rem",color:C.textDim,letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:"0.32rem",...MN}}>Code secret</div>
+            <input type="text" value={code} placeholder="LD-XXXXX" onChange={e=>{setAccessErr("");setCode(e.target.value.toUpperCase());}} onKeyDown={e=>e.key==="Enter"&&doAccess()} onFocus={()=>setF("cod",true)} onBlur={()=>setF("cod",false)} style={{...iSt("cod"),textAlign:"center",letterSpacing:"0.25em",...MN,color:C.text,fontSize:"1.05rem"}}/>
           </div>
           {accessErr&&<div style={{fontSize:"0.7rem",color:C.red,textAlign:"center",marginBottom:"0.8rem"}}>{accessErr}</div>}
           <button onClick={doAccess} style={{...BG,width:"100%",padding:"0.92rem"}}>Accéder ✦</button>
         </Card>
         <div style={{textAlign:"center",marginTop:"0.5rem"}}><button onClick={()=>setScreen("landing")} style={{background:"none",border:"none",color:C.textDim,fontSize:"0.68rem",cursor:"pointer"}}>← Présentation</button></div>
         <div style={{textAlign:"center",marginTop:"1.5rem",padding:"1.2rem",background:C.bg2,border:`1px solid ${C.border}`}}>
-          <div style={{fontSize:"0.58rem",color:C.goldD,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.5rem"}}>Pas encore de code ?</div>
+          <div style={{fontSize:"0.58rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.5rem"}}>Pas encore de code ?</div>
           <p style={{fontSize:"0.78rem",color:C.textMid,lineHeight:1.7,marginBottom:"0.85rem"}}>Rejoins la communauté et demande ton accès. Les premières places sont limitées.</p>
           <button onClick={joinCommunity} style={{width:"100%",padding:"0.75rem",background:"#25D36618",border:"1px solid #25D36640",color:"#25D366",fontSize:"0.72rem",letterSpacing:"0.08em",...MN,cursor:"pointer"}}>
             💬 Rejoindre la Communauté → Demander un code
@@ -2354,12 +2354,12 @@ export default function App(){
 
       <div style={{textAlign:"center",marginBottom:"2rem"}}>
         <Divider/>
-        <div style={{margin:"1.5rem 0 0.4rem",fontSize:"0.54rem",letterSpacing:"0.28em",color:C.goldD,textTransform:"uppercase",...MN}}>Programme de Transformation · 90 Jours</div>
+        <div style={{margin:"1.5rem 0 0.4rem",fontSize:"0.54rem",letterSpacing:"0.28em",color:C.textDim,textTransform:"uppercase",...MN}}>Programme de Transformation · 90 Jours</div>
         <h1 style={{...SF,fontSize:"clamp(1.7rem,5vw,2.6rem)",fontWeight:400,color:C.text}}>Bienvenue, {nom.split(" ")[0]}.</h1>
       </div>
 
       <Card accent>
-        <p style={{...SF,fontSize:"1.3rem",color:C.gold,marginBottom:"1.2rem"}}>Félicitations.</p>
+        <p style={{...SF,fontSize:"1.3rem",color:C.text,marginBottom:"1.2rem"}}>Félicitations.</p>
 
         <p style={{color:C.text,fontSize:"0.9rem",lineHeight:1.9,marginBottom:"1.2rem"}}>
           Si tu es ici, c'est qu'une partie de toi a compris que continuer comme avant a un prix.
@@ -2381,7 +2381,7 @@ export default function App(){
         </p>
 
         <div style={{borderTop:`1px solid ${C.border}`,paddingTop:"1.2rem",marginBottom:"1.2rem"}}>
-          <p style={{fontSize:"0.72rem",color:C.gold,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.9rem"}}>Pourquoi 90 jours ?</p>
+          <p style={{fontSize:"0.72rem",color:C.text,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.9rem"}}>Pourquoi 90 jours ?</p>
 
           <p style={{color:C.textMid,fontSize:"0.87rem",lineHeight:1.9,marginBottom:"0.9rem"}}>
             Parce qu'arrêter une vieille habitude est une chose.<br/>
@@ -2398,7 +2398,7 @@ export default function App(){
           </p>
 
           <div style={{display:"flex",gap:"1.2rem",justifyContent:"center",margin:"1.2rem 0"}}>
-            {[["Pas 30 jours.",C.textDim],["Pas 45.",C.textDim],["90.",C.gold]].map(([t,c])=>(
+            {[["Pas 30 jours.",C.textDim],["Pas 45.",C.textDim],["90.",C.text]].map(([t,c])=>(
               <span key={t} style={{...SF,fontSize:"1.1rem",color:c,fontStyle:"italic"}}>{t}</span>
             ))}
           </div>
@@ -2419,7 +2419,7 @@ export default function App(){
             Aucun masque à porter.
           </p>
 
-          <p style={{...SF,color:C.goldL,fontSize:"0.95rem",lineHeight:1.8,fontStyle:"italic"}}>
+          <p style={{...SF,color:C.text,fontSize:"0.95rem",lineHeight:1.8,fontStyle:"italic"}}>
             Seulement la vérité.
           </p>
         </div>
@@ -2427,7 +2427,7 @@ export default function App(){
 
       <div style={{display:"flex",gap:"0.5rem",marginBottom:"1rem"}}>
         {(getSegments(answers.q_domaine_principal)||SEGMENTS_FINANCES).map(sg=><div key={sg.id} style={{flex:1,textAlign:"center",padding:"0.65rem 0.35rem",border:`1px solid ${C.border}`,background:C.bg2}}>
-          <div style={{fontSize:"0.9rem",color:C.gold,marginBottom:"0.2rem"}}>{sg.icon}</div>
+          <div style={{fontSize:"0.9rem",color:C.textDim,marginBottom:"0.2rem"}}>{sg.icon}</div>
           <div style={{fontSize:"0.56rem",letterSpacing:"0.1em",color:C.textDim,textTransform:"uppercase",...MN}}>{sg.label}</div>
           <div style={{fontSize:"0.6rem",color:C.textDim}}>{sg.questions.length}Q</div>
         </div>)}
@@ -2477,27 +2477,27 @@ export default function App(){
 
         <div style={{animation:"fadeUp 0.4s ease",marginBottom:"1.5rem",textAlign:"center"}}>
           <div style={{display:"inline-flex",alignItems:"center",gap:"0.5rem",padding:"0.4rem 1rem",background:`${prevColor}15`,border:`1px solid ${prevColor}40`,marginBottom:"0.8rem"}}>
-            <span style={{color:prevColor,fontSize:"0.9rem"}}>{prevSeg?.icon}</span>
-            <span style={{fontSize:"0.58rem",color:prevColor,letterSpacing:"0.2em",textTransform:"uppercase",...MN}}>{prevSeg?.label} · Complété ✓</span>
+            <span style={{color:C.textMid,fontSize:"0.9rem"}}>{prevSeg?.icon}</span>
+            <span style={{fontSize:"0.58rem",color:C.textMid,letterSpacing:"0.2em",textTransform:"uppercase",...MN}}>{prevSeg?.label} · Complété ✓</span>
           </div>
         </div>
 
         <div style={{textAlign:"center",animation:"fadeUp 0.5s ease 0.1s both",marginBottom:"1.5rem"}}>
-          <div style={{...SF,fontSize:"clamp(1.8rem,6vw,2.8rem)",color:C.gold,fontWeight:400,lineHeight:1.1,marginBottom:"0.8rem"}}>{transitionData.title}</div>
+          <div style={{...SF,fontSize:"clamp(1.8rem,6vw,2.8rem)",color:C.text,fontWeight:400,lineHeight:1.1,marginBottom:"0.8rem"}}>{transitionData.title}</div>
           <p style={{color:C.textMid,fontSize:"0.88rem",lineHeight:1.85}}>{transitionData.sub}</p>
         </div>
 
         <div style={{width:"100%",maxWidth:"320px",marginBottom:"1.5rem",animation:"fadeIn 0.6s ease 0.2s both"}}>
           <div style={{height:"1px",background:`linear-gradient(90deg,transparent,${C.gold},transparent)`}}/>
           <div style={{display:"flex",justifyContent:"center",marginTop:"-0.5rem"}}>
-            <div style={{padding:"0.2rem 0.6rem",background:C.bg,border:`1px solid ${C.goldD}`,fontSize:"0.6rem",color:C.goldD,...MN,letterSpacing:"0.15em"}}>{pctDone}% du questionnaire</div>
+            <div style={{padding:"0.2rem 0.6rem",background:C.bg,border:`1px solid ${C.goldD}`,fontSize:"0.6rem",color:C.text,...MN,letterSpacing:"0.15em"}}>{pctDone}% du questionnaire</div>
           </div>
         </div>
 
         <div style={{animation:"fadeUp 0.5s ease 0.3s both",marginBottom:"1.5rem",textAlign:"center",maxWidth:"380px"}}>
           <p style={{color:C.text,fontSize:"0.9rem",lineHeight:1.85,marginBottom:transitionData.warn?"1rem":"0"}}>{transitionData.next}</p>
           {transitionData.warn&&<div style={{padding:"0.75rem 1rem",background:`${C.gold}08`,borderLeft:`3px solid ${C.gold}`,marginTop:"0.8rem",textAlign:"left"}}>
-            <p style={{color:C.goldL,fontSize:"0.82rem",lineHeight:1.7,fontStyle:"italic"}}>✦ {transitionData.warn}</p>
+            <p style={{color:C.text,fontSize:"0.82rem",lineHeight:1.7,fontStyle:"italic"}}>✦ {transitionData.warn}</p>
           </div>}
         </div>
 
@@ -2512,7 +2512,7 @@ export default function App(){
         }}>
           <span style={{fontSize:"1.5rem"}}>{nextSeg?.icon}</span>
           <div>
-            <div style={{fontSize:"0.58rem",color:nextColor,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.2rem"}}>Prochain bloc</div>
+            <div style={{fontSize:"0.58rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.2rem"}}>Prochain bloc</div>
             <div style={{fontSize:"0.9rem",color:C.text,fontWeight:400}}>{nextSeg?.label}</div>
             <div style={{fontSize:"0.68rem",color:C.textDim,marginTop:"0.15rem"}}>{nextSeg?.subtitle} · {nextSeg?.questions.length} questions</div>
           </div>
@@ -2599,8 +2599,8 @@ export default function App(){
           <div style={{display:"flex",gap:"0.28rem",marginBottom:"0.65rem"}}>{(getSegments(answers.q_domaine_principal)||SEGMENTS_FINANCES).map((sg,i)=><div key={sg.id} style={{flex:1,padding:"0.28rem",textAlign:"center",border:`1px solid ${i===si?C.goldD:C.border}`,background:i===si?`${C.gold}10`:"transparent",transition:"all 0.3s"}}><div style={{fontSize:"0.56rem",color:i===si?C.gold:C.textDim,...MN}}>{sg.icon} {sg.label}</div></div>)}</div>
           <div style={{display:"flex",justifyContent:"space-between",fontSize:"0.6rem",color:C.textDim,marginBottom:"0.22rem",...MN}}>
             <span>{doneQ+1}/{totalQ}</span>
-            <span style={{color:C.goldD}}>≈ {timeLeft} min restantes</span>
-            <span style={{color:C.gold}}>{pct}%</span>
+            <span style={{color:C.text}}>≈ {timeLeft} min restantes</span>
+            <span style={{color:C.text}}>{pct}%</span>
           </div>
           <div style={{height:"2px",background:C.bg3}}><div style={{height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${C.goldD},${C.goldL})`,transition:"width 0.5s ease",boxShadow:`0 0 7px ${C.gold}50`}}/></div>
         </div>
@@ -2610,19 +2610,19 @@ export default function App(){
         {qError&&<div style={{padding:"0.5rem 0.85rem",background:`${C.red}10`,border:`1px solid ${C.red}40`,borderLeft:`3px solid ${C.red}`,marginBottom:"0.7rem",animation:"fadeIn 0.25s ease",fontSize:"0.75rem",color:C.red}}>⚠ {qError}</div>}
 
         <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",animation:qShake?"shake 0.45s ease":"slideIn 0.3s ease"}}>
-          <div style={{fontSize:"1.3rem",color:C.gold,opacity:0.5,marginBottom:"0.5rem"}}>{seg.icon}</div>
+          <div style={{fontSize:"1.3rem",color:C.text,opacity:0.5,marginBottom:"0.5rem"}}>{seg.icon}</div>
           <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:"0.65rem",marginBottom:"0.28rem"}}>
             <h2 style={{...SF,fontSize:"clamp(1rem,3.5vw,1.45rem)",color:C.text,fontWeight:500,lineHeight:1.3,flex:1}}>{adaptedLabel||q.label}</h2>
-            {q.aide&&<button onClick={()=>setShowAide(a=>!a)} style={{padding:"0.2rem 0.48rem",background:showAide?`${C.gold}18`:"transparent",border:`1px solid ${showAide?C.gold:C.goldD}`,color:C.gold,...MN,fontSize:"0.6rem",flexShrink:0,marginTop:"0.18rem",cursor:"pointer",transition:"all 0.2s"}}>? aide</button>}
+            {q.aide&&<button onClick={()=>setShowAide(a=>!a)} style={{padding:"0.2rem 0.48rem",background:showAide?`${C.gold}18`:"transparent",border:`1px solid ${showAide?C.gold:C.goldD}`,color:C.text,...MN,fontSize:"0.6rem",flexShrink:0,marginTop:"0.18rem",cursor:"pointer",transition:"all 0.2s"}}>? aide</button>}
           </div>
           {isAdapted&&domainLabel&&<div style={{display:"inline-flex",alignItems:"center",gap:"0.3rem",padding:"0.18rem 0.55rem",background:`${C.gold}12`,border:`1px solid ${C.goldD}40`,marginBottom:"0.5rem"}}>
-            <span style={{fontSize:"0.52rem",color:C.goldD}}>✦</span>
-            <span style={{fontSize:"0.58rem",color:C.goldD,letterSpacing:"0.1em",...MN}}>Adapté · {domainLabel}</span>
+            <span style={{fontSize:"0.52rem",color:C.text}}>✦</span>
+            <span style={{fontSize:"0.58rem",color:C.text,letterSpacing:"0.1em",...MN}}>Adapté · {domainLabel}</span>
           </div>}
 
           {showAide&&q.aide&&<div style={{background:`${C.gold}07`,borderLeft:`3px solid ${C.gold}`,border:`1px solid ${C.goldD}`,padding:"0.75rem 0.85rem",marginBottom:"0.65rem",animation:"fadeIn 0.2s ease"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.3rem"}}><span style={{fontSize:"0.56rem",color:C.gold,letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>Guide</span><button onClick={()=>setShowAide(false)} style={{background:"none",border:"none",color:C.textDim,fontSize:"0.88rem",cursor:"pointer"}}>✕</button></div>
-            {[["Ce qu'on cherche",q.aide.quoi,C.textDim],["Exemple",aidEx||q.aide.ex,C.goldL],["À éviter",q.aide.evite,C.textDim]].map(([t,v,c])=><div key={t} style={{marginBottom:"0.32rem"}}><div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.1rem"}}>{t}</div><div style={{fontSize:"0.75rem",color:c,lineHeight:1.5,fontStyle:t==="Exemple"?"italic":"normal"}}>{v}</div></div>)}
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.3rem"}}><span style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>Guide</span><button onClick={()=>setShowAide(false)} style={{background:"none",border:"none",color:C.textDim,fontSize:"0.88rem",cursor:"pointer"}}>✕</button></div>
+            {[["Ce qu'on cherche",q.aide.quoi,C.textDim],["Exemple",aidEx||q.aide.ex,C.goldL],["À éviter",q.aide.evite,C.textDim]].map(([t,v,c])=><div key={t} style={{marginBottom:"0.32rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.1rem"}}>{t}</div><div style={{fontSize:"0.75rem",color:c,lineHeight:1.5,fontStyle:t==="Exemple"?"italic":"normal"}}>{v}</div></div>)}
           </div>}
 
           <div style={{width:"24px",height:"1px",background:C.gold,opacity:0.4,marginBottom:"0.85rem"}}/>
@@ -2639,20 +2639,20 @@ export default function App(){
 
           {q.type==="dual_select"&&<div style={{animation:qShake?"shake 0.45s ease":"none",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.75rem"}}>
             {q.selects.map(sel=>{const sv=(val||{})[sel.id];return <div key={sel.id}>
-              <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>{sel.label}</div>
+              <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>{sel.label}</div>
               {sel.opts.map(opt=><button key={opt} onClick={()=>setSubVal(q.id,sel.id,opt)} style={{width:"100%",display:"flex",gap:"0.45rem",marginBottom:"0.3rem",alignItems:"center",background:sv===opt?`${C.gold}14`:"transparent",border:`1px solid ${sv===opt?C.gold:C.border}`,color:sv===opt?C.gold:C.textMid,padding:"0.55rem 0.65rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.78rem",cursor:"pointer"}}><span style={{fontSize:"0.55rem"}}>{sv===opt?"◉":"◎"}</span>{opt.split("(")[0].trim()}</button>)}
             </div>;})}
           </div>}
 
           {q.type==="combo"&&<div style={{animation:qShake?"shake 0.45s ease":"none"}}>
             <div style={{marginBottom:"0.8rem"}}>
-              <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>{q.multi.label} <span style={{color:C.textDim}}>max {q.multi.max}</span></div>
+              <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>{q.multi.label} <span style={{color:C.textDim}}>max {q.multi.max}</span></div>
               {q.multi.opts.map(opt=>{const sel=((val||{}).domaines||[]).includes(opt);const atMax=((val||{}).domaines||[]).length>=q.multi.max&&!sel;
                 return <button key={opt} onClick={()=>{if(atMax)return;const cur=(val||{}).domaines||[];setSubVal(q.id,"domaines",sel?cur.filter(v=>v!==opt):[...cur,opt]);}} style={{width:"100%",display:"flex",gap:"0.55rem",marginBottom:"0.3rem",alignItems:"center",background:sel?`${C.gold}14`:"transparent",border:`1px solid ${sel?C.gold:atMax?C.bg3:C.border}`,color:sel?C.gold:atMax?C.bg3:C.textMid,padding:"0.58rem 0.75rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.82rem",opacity:atMax?0.3:1,cursor:atMax?"not-allowed":"pointer"}}><span style={{fontSize:"0.56rem"}}>{sel?"◉":"◎"}</span>{opt}</button>;
               })}
             </div>
             <div>
-              <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>{q.text.label}</div>
+              <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>{q.text.label}</div>
               <input type="text" value={(val||{}).montant||""} placeholder={q.text.ph} onChange={e=>setSubVal(q.id,"montant",e.target.value)} style={{...iSt("montant"),borderColor:qError&&!((val||{}).montant)?C.red:foc["montant"]?C.goldD:C.border,borderBottomColor:qError&&!((val||{}).montant)?C.red:foc["montant"]?C.gold:C.border}} onFocus={()=>setF("montant",true)} onBlur={()=>setF("montant",false)}/>
             </div>
           </div>}
@@ -2663,7 +2663,7 @@ export default function App(){
             </div>
             {(val||{}).choice&&<div style={{marginBottom:"0.8rem",animation:"fadeIn 0.3s ease"}}>
               <div style={{padding:"0.6rem 0.85rem",background:`${C.gold}08`,borderLeft:`3px solid ${C.goldD}`,marginBottom:"0.5rem"}}>
-                <div style={{fontSize:"0.72rem",color:C.goldL,lineHeight:1.5}}>{q.follow?.[(val||{}).choice]?.ph||""}</div>
+                <div style={{fontSize:"0.72rem",color:C.text,lineHeight:1.5}}>{q.follow?.[(val||{}).choice]?.ph||""}</div>
               </div>
               <textarea value={(val||{}).follow_answer||""} onChange={e=>setSubVal(q.id,"follow_answer",e.target.value)} placeholder={(val||{}).choice==="Oui, je les ai définis"?"Décris tes objectifs à 10 ans...":(val||{}).choice==="Pas encore"?"Qu'est-ce qui t'a empêché...":"Décris concrètement ce qui se passerait..."} rows={3}
                 style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:300}}
@@ -2700,7 +2700,7 @@ export default function App(){
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",padding:"2rem 1.4rem",maxWidth:"560px",margin:"0 auto",animation:"fadeUp 0.5s ease"}}>
         <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
         <div style={{textAlign:"center",marginBottom:"1.4rem"}}>
-          <div style={{fontSize:"0.54rem",letterSpacing:"0.28em",color:C.goldD,textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>Récapitulatif</div>
+          <div style={{fontSize:"0.54rem",letterSpacing:"0.28em",color:C.textDim,textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>Récapitulatif</div>
           <h2 style={{...SF,fontSize:"1.6rem",color:C.text,fontWeight:400}}>Vérifie tes réponses</h2>
           <p style={{fontSize:"0.78rem",color:C.textDim,marginTop:"0.28rem"}}>Tout est bon ? Lance la génération. Sinon — ✎ pour modifier.</p>
         </div>
@@ -2722,10 +2722,10 @@ export default function App(){
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",fontFamily:"'Jost',sans-serif"}}>
       <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
       <div style={{width:"48px",height:"48px",border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`,borderRadius:"50%",animation:"spin 1.1s linear infinite",marginBottom:"1.8rem"}}/>
-      <div style={{...SF,fontSize:"1.4rem",color:C.gold,marginBottom:"0.35rem",textAlign:"center"}}>Ton système se construit</div>
+      <div style={{...SF,fontSize:"1.4rem",color:C.text,marginBottom:"0.35rem",textAlign:"center"}}>Ton système se construit</div>
       <div style={{color:C.textDim,fontSize:"0.76rem",marginBottom:"2.2rem",...MN}}>~20 secondes · 2 appels parallèles</div>
       <div style={{width:"100%",maxWidth:"290px"}}>{LOAD_STEPS.map((s,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:"0.6rem",padding:"0.42rem 0",borderBottom:`1px solid ${C.bg3}`,opacity:i<=loadStep?1:0.18,transition:"opacity 0.5s"}}>
-        <span style={{color:i<=loadStep?C.gold:C.textDim,animation:i===loadStep?"pulse 1.1s ease-in-out infinite":"none",minWidth:"11px",fontSize:"0.76rem"}}>✦</span>
+        <span style={{color:i<=loadStep?C.text:C.textDim,animation:i===loadStep?"pulse 1.1s ease-in-out infinite":"none",minWidth:"11px",fontSize:"0.76rem"}}>✦</span>
         <span style={{fontSize:"0.76rem",color:i===loadStep?C.text:C.textDim,...(i!==loadStep?MN:{})}}>{s}</span>
         {i<loadStep&&<span style={{marginLeft:"auto",color:C.green,fontSize:"0.68rem"}}>✓</span>}
       </div>)}</div>
@@ -2735,11 +2735,11 @@ export default function App(){
   if(screen==="error")return(
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",fontFamily:"'Jost',sans-serif",textAlign:"center"}}>
       <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
-      <div style={{...SF,fontSize:"1.4rem",color:C.gold,marginBottom:"0.9rem"}}>Une erreur est survenue</div>
+      <div style={{...SF,fontSize:"1.4rem",color:C.text,marginBottom:"0.9rem"}}>Une erreur est survenue</div>
       <p style={{color:C.textDim,marginBottom:"0.5rem",maxWidth:"300px",lineHeight:1.6,fontSize:"0.81rem"}}>{errMsg}</p>
       <p style={{color:C.textDim,marginBottom:"1.8rem",maxWidth:"300px",lineHeight:1.6,fontSize:"0.72rem",fontStyle:"italic"}}>Souvent causé par un problème réseau temporaire. Réessaie d'abord.</p>
       <div style={{display:"flex",gap:"0.65rem",flexWrap:"wrap",justifyContent:"center"}}>
-        <button onClick={()=>generate()} style={{padding:"0.78rem 1.3rem",background:`${C.gold}15`,border:`1px solid ${C.goldD}`,color:C.gold,fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>↺ Réessayer</button>
+        <button onClick={()=>generate()} style={{padding:"0.78rem 1.3rem",background:`${C.gold}15`,border:`1px solid ${C.goldD}`,color:C.text,fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>↺ Réessayer</button>
         <button onClick={()=>setScreen("recap")} style={{padding:"0.78rem 1.3rem",background:"transparent",border:`1px solid ${C.border}`,color:C.textDim,fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>Modifier les réponses</button>
         <button onClick={reset} style={{...BG,padding:"0.78rem 1.3rem"}}>Recommencer</button>
       </div>
@@ -2790,16 +2790,16 @@ export default function App(){
         <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.2rem",paddingBottom:"0.85rem",borderBottom:`1px solid ${C.border}`}}>
           <div>
-            <div style={{fontSize:"0.56rem",color:C.goldD,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.1rem"}}>{today}</div>
-            <div style={{...SF,fontSize:"1rem",color:C.gold}}>{plan.nom_guerre}</div>
+            <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.1rem"}}>{today}</div>
+            <div style={{...SF,fontSize:"1rem",color:C.text}}>{plan.nom_guerre}</div>
           </div>
           <div style={{display:"flex",gap:"0.5rem",alignItems:"center"}}>
             {curStreak>0&&<div style={{display:"flex",alignItems:"center",gap:"0.25rem",padding:"0.3rem 0.6rem",background:curStreak>=7?`${C.green}18`:curStreak>=3?`${C.gold}18`:`${C.bg3}`,border:`1px solid ${curStreak>=7?C.green:curStreak>=3?C.goldD:C.border}`}}>
               <span style={{fontSize:"0.8rem"}}>🔥</span>
-              <span style={{fontSize:"0.7rem",color:curStreak>=7?C.green:curStreak>=3?C.gold:C.textDim,...MN,fontWeight:400}}>{curStreak}j</span>
+              <span style={{fontSize:"0.7rem",color:curStreak>=7?C.green:curStreak>=3?C.text:C.textDim,...MN,fontWeight:400}}>{curStreak}j</span>
             </div>}
-            <button onClick={()=>setScreen("result")} style={{padding:"0.38rem 0.65rem",background:`${C.gold}12`,border:`1px solid ${C.goldD}`,color:C.gold,fontSize:"0.6rem",letterSpacing:"0.08em",...MN,cursor:"pointer"}}>Plan complet</button>
-            <button onClick={()=>setScreen("plan-select")} style={{padding:"0.38rem 0.65rem",background:"transparent",border:`1px solid ${C.goldD}`,color:C.goldD,fontSize:"0.6rem",...MN,cursor:"pointer"}} title="Mes plans">⊞</button>
+            <button onClick={()=>setScreen("result")} style={{padding:"0.38rem 0.65rem",background:`${C.gold}12`,border:`1px solid ${C.goldD}`,color:C.text,fontSize:"0.6rem",letterSpacing:"0.08em",...MN,cursor:"pointer"}}>Plan complet</button>
+            <button onClick={()=>setScreen("plan-select")} style={{padding:"0.38rem 0.65rem",background:"transparent",border:`1px solid ${C.goldD}`,color:C.text,fontSize:"0.6rem",...MN,cursor:"pointer"}} title="Mes plans">⊞</button>
             <button onClick={reset} style={{padding:"0.38rem 0.5rem",background:"transparent",border:`1px solid ${C.border}`,color:C.textDim,fontSize:"0.6rem",...MN,cursor:"pointer"}}>↩</button>
           </div>
         </div>
@@ -2825,10 +2825,10 @@ export default function App(){
           borderLeft:`4px solid ${retourMsg.color}`,
           animation:"fadeUp 0.4s ease"
         }}>
-          <div style={{fontSize:"0.56rem",color:retourMsg.color,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.5rem"}}>
+          <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.5rem"}}>
             Bienvenue de retour
           </div>
-          <div style={{...SF,fontSize:"1.1rem",color:retourMsg.color,marginBottom:"0.5rem"}}>{retourMsg.titre}</div>
+          <div style={{...SF,fontSize:"1.1rem",color:C.text,marginBottom:"0.5rem"}}>{retourMsg.titre}</div>
           <p style={{fontSize:"0.85rem",color:C.textMid,lineHeight:1.75,marginBottom:"0.65rem"}}>{retourMsg.corps}</p>
           <div style={{padding:"0.6rem 0.85rem",background:`${retourMsg.color}10`,borderLeft:`2px solid ${retourMsg.color}`,fontSize:"0.82rem",color:C.text,lineHeight:1.6}}>
             ✦ {retourMsg.action}
@@ -2841,27 +2841,27 @@ export default function App(){
           border:`1px solid ${C.goldD}`,borderTop:`3px solid ${C.gold}`,
           position:"relative",overflow:"hidden"
         }}>
-          <div style={{position:"absolute",top:"0.6rem",right:"0.8rem",fontSize:"0.52rem",color:C.goldD,letterSpacing:"0.2em",textTransform:"uppercase",...MN}}>Autosuggestion · 3× à voix haute</div>
-          <div style={{...SF,fontSize:"clamp(1rem,3.5vw,1.25rem)",color:C.gold,fontStyle:"italic",lineHeight:1.65,marginTop:"0.8rem"}}>{autosuggestion}</div>
+          <div style={{position:"absolute",top:"0.6rem",right:"0.8rem",fontSize:"0.52rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN}}>Autosuggestion · 3× à voix haute</div>
+          <div style={{...SF,fontSize:"clamp(1rem,3.5vw,1.25rem)",color:C.text,fontStyle:"italic",lineHeight:1.65,marginTop:"0.8rem"}}>{autosuggestion}</div>
         </div>}
 
         {!retourMsg&&contMsg&&<div style={{padding:"0.75rem 0.9rem",background:`${C.gold}07`,borderLeft:`3px solid ${C.gold}`,marginBottom:"0.9rem"}}>
-          <div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.18em",...MN,marginBottom:"0.2rem"}}>MESSAGE JOUR {dn}</div>
-          <div style={{fontSize:"0.8rem",color:C.goldL,lineHeight:1.65,fontStyle:"italic"}}>{contMsg.msg}</div>
+          <div style={{fontSize:"0.54rem",color:C.text,letterSpacing:"0.18em",...MN,marginBottom:"0.2rem"}}>MESSAGE JOUR {dn}</div>
+          <div style={{fontSize:"0.8rem",color:C.text,lineHeight:1.65,fontStyle:"italic"}}>{contMsg.msg}</div>
         </div>}
         <Card accent>
           <div style={{display:"flex",gap:"0.9rem",alignItems:"center",marginBottom:"0.9rem"}}>
             <ProgressCircle day={Math.min(dn,90)} size={105}/>
             <div style={{flex:1}}>
-              <div style={{fontSize:"0.54rem",color:lv.color,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.25rem"}}>Niveau — {lv.label}</div>
-              <div style={{...SF,fontSize:"0.95rem",color:C.goldL,lineHeight:1.4,marginBottom:"0.5rem"}}>{sc.mission_centrale}</div>
+              <div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.25rem"}}>Niveau — {lv.label}</div>
+              <div style={{...SF,fontSize:"0.95rem",color:C.textDim,lineHeight:1.4,marginBottom:"0.5rem"}}>{sc.mission_centrale}</div>
               <div style={{fontSize:"0.56rem",color:C.textDim,...MN,marginBottom:"0.2rem"}}>Exécution — {stats.execRate}%</div>
               <div style={{height:"4px",background:C.bg3,marginBottom:"0.25rem"}}><div style={{height:"100%",width:`${stats.execRate}%`,background:`linear-gradient(90deg,${C.goldD},${C.gold})`,transition:"width 1s ease"}}/></div>
               <div style={{fontSize:"0.65rem",color:C.textDim}}>{lv.desc}</div>
             </div>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"0.35rem",paddingTop:"0.7rem",borderTop:`1px solid ${C.border}`}}>
-            {[{val:`${stats.streak}j`,lbl:"Streak",color:stats.streak>=3?C.green:C.textDim},{val:`${stats.done}`,lbl:"Actions ✓",color:stats.done>0?C.gold:C.textDim},{val:`${stats.relapses}`,lbl:"Rechutes",color:C.textDim},{val:`${Math.round(stats.totalMins/60*10)/10}h`,lbl:"Investies",color:C.blue}].map(({val,lbl,color})=><div key={lbl} style={{textAlign:"center",padding:"0.4rem 0.1rem",background:C.bg3}}>
+            {[{val:`${stats.streak}j`,lbl:"Streak",color:stats.streak>=3?C.green:C.textDim},{val:`${stats.done}`,lbl:"Actions ✓",color:stats.done>0?C.text:C.textDim},{val:`${stats.relapses}`,lbl:"Rechutes",color:C.textDim},{val:`${Math.round(stats.totalMins/60*10)/10}h`,lbl:"Investies",color:C.blue}].map(({val,lbl,color})=><div key={lbl} style={{textAlign:"center",padding:"0.4rem 0.1rem",background:C.bg3}}>
               <div style={{...SF,fontSize:"1rem",color}}>{val}</div>
               <div style={{fontSize:"0.52rem",color:C.textDim,letterSpacing:"0.08em",textTransform:"uppercase",...MN,marginTop:"0.08rem"}}>{lbl}</div>
             </div>)}
@@ -2923,12 +2923,12 @@ export default function App(){
           <button onClick={reset} style={{padding:"0.35rem 0.75rem",background:`${C.red}15`,border:`1px solid ${C.red}50`,color:C.red,fontSize:"0.65rem",letterSpacing:"0.1em",...MN,cursor:"pointer"}}>↩ Nouveau plan</button>
         </div>
         <div style={{textAlign:"center",paddingBottom:"0.9rem",animation:"fadeUp 0.6s ease"}}>
-          <div style={{fontSize:"0.54rem",letterSpacing:"0.28em",color:C.goldD,textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>Plan complet</div>
+          <div style={{fontSize:"0.54rem",letterSpacing:"0.28em",color:C.textDim,textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>Plan complet</div>
           <h1 style={{...SF,fontSize:"clamp(1.4rem,5vw,2rem)",fontWeight:400,color:C.text}}>Mon Plan de Vie 90 Jours</h1>
-          <div style={{...SF,fontSize:"0.9rem",fontStyle:"italic",color:C.gold,marginTop:"0.18rem"}}>Pour {firstName}</div>
+          <div style={{...SF,fontSize:"0.9rem",fontStyle:"italic",color:C.text,marginTop:"0.18rem"}}>Pour {firstName}</div>
           <div style={{margin:"1.1rem auto 0",maxWidth:"420px",padding:"0.9rem",background:`${C.gold}0E`,border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`}}>
-            <div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>Nom de Guerre</div>
-            <div style={{...SF,fontSize:"1.4rem",color:C.gold,fontWeight:500}}>{s.nom_guerre}</div>
+            <div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>Nom de Guerre</div>
+            <div style={{...SF,fontSize:"1.4rem",color:C.text,fontWeight:500}}>{s.nom_guerre}</div>
             <div style={{fontSize:"0.75rem",color:C.textMid,marginTop:"0.45rem",lineHeight:1.5}}>{s.pourquoi_ce_nom}</div>
           </div>
         </div>
@@ -2942,35 +2942,35 @@ export default function App(){
         {tab==="dashboard"&&<div style={{animation:"fadeUp 0.4s ease"}}>
           {s.identite_future&&<Card><SH icon="◈" label="Identité Future — Jour 90"/>
             <div style={{display:"grid",gridTemplateColumns:"1fr",gap:"0.5rem"}}>
-              {[["Comment je pense",s.identite_future.comment_pense,C.gold],["Comment j'agis",s.identite_future.comment_agit,C.goldL],["Ce que je ne tolère plus",s.identite_future.ne_tolere_plus,C.red],["Mes nouveaux standards",s.identite_future.nouveaux_standards,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.55rem 0.75rem",background:`${c}0A`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:c,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
+              {[["Comment je pense",s.identite_future.comment_pense,C.gold],["Comment j'agis",s.identite_future.comment_agit,C.goldL],["Ce que je ne tolère plus",s.identite_future.ne_tolere_plus,C.red],["Mes nouveaux standards",s.identite_future.nouveaux_standards,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.55rem 0.75rem",background:`${c}0A`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
             </div>
           </Card>}
           <Card accent><SH icon="◈" label="Diagnostic Lucide"/>
             <p style={{color:C.textMid,lineHeight:1.78,fontSize:"0.87rem",marginBottom:"0.85rem"}}>{s.diagnostic?.resume}</p>
-            {[["Bloquant central",s.diagnostic?.bloquant_central,C.red],["Schéma de sabotage",s.diagnostic?.schema_sabotage,C.gold],["Leçon",s.diagnostic?.lecon_echec,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.58rem 0.78rem",background:`${c}0A`,border:`1px solid ${c}25`,borderLeft:`3px solid ${c}`,marginBottom:"0.5rem"}}><div style={{fontSize:"0.54rem",color:c,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
+            {[["Bloquant central",s.diagnostic?.bloquant_central,C.red],["Schéma de sabotage",s.diagnostic?.schema_sabotage,C.gold],["Leçon",s.diagnostic?.lecon_echec,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.58rem 0.78rem",background:`${c}0A`,border:`1px solid ${c}25`,borderLeft:`3px solid ${c}`,marginBottom:"0.5rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
           </Card>
           <Card><SH icon="📊" label="Scorecard"/>
             {scores.map(({k,d})=>d?<ScoreBar key={k} label={k} score={d.score} lecture={d.lecture}/>:null)}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.5rem",marginTop:"0.75rem"}}>
-              <div style={{padding:"0.68rem",background:`${riskColor}0E`,border:`1px solid ${riskColor}35`}}><div style={{fontSize:"0.54rem",color:riskColor,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Risque abandon</div><div style={{...SF,fontSize:"0.92rem",color:riskColor}}>{sc.risque_abandon}</div><div style={{fontSize:"0.68rem",color:C.textDim,marginTop:"0.15rem",lineHeight:1.4}}>{sc.facteur_risque}</div></div>
+              <div style={{padding:"0.68rem",background:`${riskColor}0E`,border:`1px solid ${riskColor}35`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Risque abandon</div><div style={{...SF,fontSize:"0.92rem",color:C.text}}>{sc.risque_abandon}</div><div style={{fontSize:"0.68rem",color:C.textDim,marginTop:"0.15rem",lineHeight:1.4}}>{sc.facteur_risque}</div></div>
               <div style={{padding:"0.68rem",background:`${C.green}0A`,border:`1px solid ${C.green}35`}}><div style={{fontSize:"0.54rem",color:C.green,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Levier principal</div><div style={{fontSize:"0.77rem",color:C.textMid,lineHeight:1.4}}>{sc.levier_principal}</div></div>
             </div>
-            <div style={{marginTop:"0.5rem",padding:"0.75rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}35`,borderLeft:`3px solid ${C.gold}`}}><div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Mission centrale</div><div style={{...SF,fontSize:"0.92rem",color:C.goldL,lineHeight:1.5}}>{sc.mission_centrale}</div></div>
+            <div style={{marginTop:"0.5rem",padding:"0.75rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}35`,borderLeft:`3px solid ${C.gold}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Mission centrale</div><div style={{...SF,fontSize:"0.92rem",color:C.text,lineHeight:1.5}}>{sc.mission_centrale}</div></div>
 
             {stats.total>0&&(()=>{
               const s4=computeScore4(logs,plan);
               return <div style={{marginTop:"0.75rem",padding:"0.75rem",background:C.bg3,border:`1px solid ${C.border}`}}>
-                <div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.6rem"}}>Progression réelle — Jour {stats.total}</div>
+                <div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.6rem"}}>Progression réelle — Jour {stats.total}</div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.4rem"}}>
-                  {[["⚡ Exécution",s4.execution,C.gold,"Actions réalisées"],[" Identité",s4.identite,C.green,"Rituels accomplis"],["◈ Cohérence",s4.coherence,C.blue,"Jours sans rechute"],["▶ Progression",s4.progression,C.goldL,"Distance parcourue"]].map(([lbl,val,col,sub])=>(
+                  {[["⚡ Exécution",s4.execution,C.gold,"Actions réalisées"],[" Identité",s4.identite,C.green,"Rituels accomplis"],["◈ Cohérence",s4.coherence,C.blue,"Jours sans rechute"],["▶ Progression",s4.progression,C.purple,"Distance parcourue"]].map(([lbl,val,col,sub])=>(
                     <div key={lbl} style={{padding:"0.55rem",background:`${col}08`,border:`1px solid ${col}22`}}>
-                      <div style={{fontSize:"0.6rem",color:col,letterSpacing:"0.08em",...MN}}>{lbl}</div>
-                      <div style={{...SF,fontSize:"1.3rem",color:col,margin:"0.15rem 0"}}>{val}<span style={{fontSize:"0.6rem"}}>%</span></div>
+                      <div style={{fontSize:"0.6rem",color:C.textDim,letterSpacing:"0.08em",...MN}}>{lbl}</div>
+                      <div style={{...SF,fontSize:"1.3rem",color:C.text,margin:"0.15rem 0"}}>{val}<span style={{fontSize:"0.6rem"}}>%</span></div>
                       <div style={{fontSize:"0.58rem",color:C.textDim}}>{sub}</div>
                     </div>
                   ))}
                 </div>
-                <div style={{marginTop:"0.5rem",padding:"0.45rem",background:`${C.gold}08`,borderLeft:`2px solid ${C.gold}`,fontSize:"0.72rem",color:C.goldL}}>
+                <div style={{marginTop:"0.5rem",padding:"0.45rem",background:`${C.gold}08`,borderLeft:`2px solid ${C.gold}`,fontSize:"0.72rem",color:C.text}}>
                   Score global : <strong>{s4.global}%</strong>
                 </div>
               </div>;
@@ -2978,7 +2978,7 @@ export default function App(){
           </Card>
           {stats.total>0&&<Card><SH icon="🏆" label="Ce que tu as déjà prouvé"/>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.45rem"}}>
-              {[[`${stats.streak}j consécutifs`,"de continuité",stats.streak>=3?C.green:C.gold],[`${stats.done} actions`,"exécutées",C.gold],[`${stats.relapses} rechute${stats.relapses!==1?"s":""}`, "récupérée${stats.relapses!==1?'s':''}",C.green],[`${Math.round(stats.totalMins/60*10)/10}h`,"investies",C.blue]].map(([v,l,c])=><div key={l} style={{padding:"0.65rem",background:`${c}0A`,border:`1px solid ${c}22`}}><div style={{...SF,fontSize:"1.05rem",color:c,marginBottom:"0.1rem"}}>{v}</div><div style={{fontSize:"0.62rem",color:C.textDim,lineHeight:1.3}}>{l}</div></div>)}
+              {[[`${stats.streak}j consécutifs`,"de continuité",stats.streak>=3?C.green:C.gold],[`${stats.done} actions`,"exécutées",C.gold],[`${stats.relapses} rechute${stats.relapses!==1?"s":""}`, "récupérée${stats.relapses!==1?'s':''}",C.green],[`${Math.round(stats.totalMins/60*10)/10}h`,"investies",C.blue]].map(([v,l,c])=><div key={l} style={{padding:"0.65rem",background:`${c}0A`,border:`1px solid ${c}22`}}><div style={{...SF,fontSize:"1.05rem",color:C.text,marginBottom:"0.1rem"}}>{v}</div><div style={{fontSize:"0.62rem",color:C.textDim,lineHeight:1.3}}>{l}</div></div>)}
             </div>
           </Card>}
           <Card><SH icon="🏆" label="Ma victoire de la semaine" sub="Le cerveau oublie ses progrès — écris le tien"/>
@@ -2986,24 +2986,24 @@ export default function App(){
           </Card>
 
           {s.citations_personnelles?.length>0&&<Card><SH icon="✦" label="Phrases personnelles" sub="Générées à partir de ton profil"/>
-            {s.citations_personnelles.map((c,i)=><div key={i} style={{padding:"0.65rem 0.85rem",borderLeft:`2px solid ${C.goldD}`,marginBottom:"0.45rem",background:C.bg3}}><div style={{...SF,fontSize:"0.92rem",color:C.goldL,fontStyle:"italic",lineHeight:1.55}}>{c}</div></div>)}
+            {s.citations_personnelles.map((c,i)=><div key={i} style={{padding:"0.65rem 0.85rem",borderLeft:`2px solid ${C.goldD}`,marginBottom:"0.45rem",background:C.bg3}}><div style={{...SF,fontSize:"0.92rem",color:C.text,fontStyle:"italic",lineHeight:1.55}}>{c}</div></div>)}
           </Card>}
           <Card accent><SH icon="✦" label="Message Final"/>
             <p style={{color:C.textMid,lineHeight:1.85,fontSize:"0.87rem",fontStyle:"italic"}}>{s2.message_final}</p>
           </Card>
-          <div style={{padding:"0.95rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`,textAlign:"center",marginBottom:"1rem"}}><div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>Contrat</div><div style={{...SF,fontSize:"0.97rem",color:C.gold,fontStyle:"italic",lineHeight:1.6}}>{s2.contrat}</div></div>
+          <div style={{padding:"0.95rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`,textAlign:"center",marginBottom:"1rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>Contrat</div><div style={{...SF,fontSize:"0.97rem",color:C.text,fontStyle:"italic",lineHeight:1.6}}>{s2.contrat}</div></div>
         </div>}
 
         {tab==="rituel"&&<div style={{animation:"fadeUp 0.4s ease"}}>
           <Card accent><SH icon="🌬" label="Rituel d'Activation" sub="< 10 min · Timer intégré · Chaque jour"/>
-            <div style={{padding:"0.82rem 0.95rem",background:`${C.gold}0E`,border:`1px solid ${C.goldD}`,borderLeft:`3px solid ${C.gold}`,marginBottom:"1rem"}}><div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.28rem"}}>Autosuggestion — 3× à voix haute</div><div style={{...SF,fontSize:"1.02rem",color:C.goldL,fontStyle:"italic",lineHeight:1.6}}>{s2.rituel?.autosuggestion}</div></div>
+            <div style={{padding:"0.82rem 0.95rem",background:`${C.gold}0E`,border:`1px solid ${C.goldD}`,borderLeft:`3px solid ${C.gold}`,marginBottom:"1rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.28rem"}}>Autosuggestion — 3× à voix haute</div><div style={{...SF,fontSize:"1.02rem",color:C.text,fontStyle:"italic",lineHeight:1.6}}>{s2.rituel?.autosuggestion}</div></div>
             {s2.rituel?.matin&&<RituelTimer steps={s2.rituel.matin}/>}
             <div style={{marginTop:"0.85rem",padding:"0.68rem 0.82rem",background:`${C.green}0A`,border:`1px solid ${C.green}25`}}><div style={{fontSize:"0.54rem",color:C.green,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>◉ Première action — dans les 2 min</div><div style={{fontSize:"0.83rem",color:C.text,lineHeight:1.5}}>{s2.rituel?.premiere_action_du_jour}</div></div>
-            <div style={{marginTop:"0.5rem",padding:"0.68rem 0.82rem",background:C.bg3,borderLeft:`2px solid ${C.goldD}`}}><div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>Soir <Tag>{s2.rituel?.soir?.duree}</Tag></div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{s2.rituel?.soir?.action}</div></div>
+            <div style={{marginTop:"0.5rem",padding:"0.68rem 0.82rem",background:C.bg3,borderLeft:`2px solid ${C.goldD}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>Soir <Tag>{s2.rituel?.soir?.duree}</Tag></div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{s2.rituel?.soir?.action}</div></div>
           </Card>
           <Card><SH icon="🛡" label="Protocole de Rechute" sub={`"${s2.protocole_rechute?.contexte||""}"`}/>
-            {[["5 premières minutes",s2.protocole_rechute?.["5_minutes"],C.red],["24 heures",s2.protocole_rechute?.["24h"],C.gold],["48 heures",s2.protocole_rechute?.["48h"],C.green]].map(([l,v,c])=><div key={l} style={{marginBottom:"0.55rem",padding:"0.62rem 0.8rem",background:`${c}08`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:c,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
-            <div style={{padding:"0.7rem 0.85rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}35`}}><div style={{fontSize:"0.54rem",color:C.goldD,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>Règle du Non-Zéro</div><div style={{fontSize:"0.81rem",color:C.text,lineHeight:1.5}}>{s2.protocole_rechute?.regle_non_zero}</div></div>
+            {[["5 premières minutes",s2.protocole_rechute?.["5_minutes"],C.red],["24 heures",s2.protocole_rechute?.["24h"],C.gold],["48 heures",s2.protocole_rechute?.["48h"],C.green]].map(([l,v,c])=><div key={l} style={{marginBottom:"0.55rem",padding:"0.62rem 0.8rem",background:`${c}08`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
+            <div style={{padding:"0.7rem 0.85rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}35`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>Règle du Non-Zéro</div><div style={{fontSize:"0.81rem",color:C.text,lineHeight:1.5}}>{s2.protocole_rechute?.regle_non_zero}</div></div>
           </Card>
         </div>}
 
@@ -3038,17 +3038,17 @@ export default function App(){
 
         {tab==="anti-abandon"&&<div style={{animation:"fadeUp 0.4s ease"}}>
           <Card accent><SH icon="🔒" label="Système Anti-Abandon" sub="Le système tient quand la motivation lâche"/>
-            <div style={{marginBottom:"0.85rem"}}><div style={{fontSize:"0.54rem",color:C.gold,textTransform:"uppercase",letterSpacing:"0.15em",...MN,marginBottom:"0.4rem"}}>Règles de continuité</div>
-              {(s2.anti_abandon?.regles||[]).map((r,i)=><div key={i} style={{display:"flex",gap:"0.6rem",marginBottom:"0.38rem",alignItems:"flex-start"}}><span style={{...MN,fontSize:"0.63rem",color:C.gold,minWidth:"1.4rem",marginTop:"0.08rem"}}>{String(i+1).padStart(2,"0")}</span><span style={{fontSize:"0.81rem",color:C.text,lineHeight:1.55}}>{r}</span></div>)}
+            <div style={{marginBottom:"0.85rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.15em",...MN,marginBottom:"0.4rem"}}>Règles de continuité</div>
+              {(s2.anti_abandon?.regles||[]).map((r,i)=><div key={i} style={{display:"flex",gap:"0.6rem",marginBottom:"0.38rem",alignItems:"flex-start"}}><span style={{...MN,fontSize:"0.63rem",color:C.text,minWidth:"1.4rem",marginTop:"0.08rem"}}>{String(i+1).padStart(2,"0")}</span><span style={{fontSize:"0.81rem",color:C.text,lineHeight:1.55}}>{r}</span></div>)}
             </div>
-            {[["Jour difficile",s2.protocole_rechute?.jour_difficile,C.gold],["Motivation basse",s2.protocole_rechute?.motivation_basse,C.red],["Rechute émotionnelle",s2.protocole_rechute?.rechute_emotionnelle,C.purple],["Fatigue mentale",s2.protocole_rechute?.fatigue_mentale,C.blue],["Version minimale",s2.anti_abandon?.version_minimale,C.green]].filter(([,v])=>v).map(([l,v,c])=><div key={l} style={{marginBottom:"0.6rem",padding:"0.75rem 0.85rem",background:`${c}08`,border:`1px solid ${c}25`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:c,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.25rem"}}>{l}</div><div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.6}}>{v}</div></div>)}
+            {[["Jour difficile",s2.protocole_rechute?.jour_difficile,C.gold],["Motivation basse",s2.protocole_rechute?.motivation_basse,C.red],["Rechute émotionnelle",s2.protocole_rechute?.rechute_emotionnelle,C.purple],["Fatigue mentale",s2.protocole_rechute?.fatigue_mentale,C.blue],["Version minimale",s2.anti_abandon?.version_minimale,C.green]].filter(([,v])=>v).map(([l,v,c])=><div key={l} style={{marginBottom:"0.6rem",padding:"0.75rem 0.85rem",background:`${c}08`,border:`1px solid ${c}25`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.25rem"}}>{l}</div><div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.6}}>{v}</div></div>)}
           </Card>
         </div>}
 
         {tab==="lectures"&&<div style={{animation:"fadeUp 0.4s ease"}}>
           <Card><SH icon="📚" label="Lectures" sub="Sélectionnées pour ce profil précis"/>
             {(s2.lectures||[]).map((l,i)=><div key={i} style={{marginBottom:"0.85rem",padding:"0.85rem",background:C.bg3,borderLeft:`2px solid ${C.goldD}`}}>
-              <div style={{display:"flex",gap:"0.52rem",alignItems:"flex-start",marginBottom:"0.28rem"}}><span style={{...MN,fontSize:"0.63rem",color:C.goldD,minWidth:"1.1rem",marginTop:"0.08rem"}}>0{i+1}</span><div><div style={{...SF,fontSize:"0.95rem",color:C.goldL,marginBottom:"0.06rem"}}>{l.titre}</div><div style={{fontSize:"0.68rem",color:C.textDim,...MN}}>{l.auteur}</div></div></div>
+              <div style={{display:"flex",gap:"0.52rem",alignItems:"flex-start",marginBottom:"0.28rem"}}><span style={{...MN,fontSize:"0.63rem",color:C.text,minWidth:"1.1rem",marginTop:"0.08rem"}}>0{i+1}</span><div><div style={{...SF,fontSize:"0.95rem",color:C.text,marginBottom:"0.06rem"}}>{l.titre}</div><div style={{fontSize:"0.68rem",color:C.textDim,...MN}}>{l.auteur}</div></div></div>
               <div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.6,paddingLeft:"1.6rem"}}>{l.pourquoi}</div>
             </div>)}
           </Card>
@@ -3057,16 +3057,16 @@ export default function App(){
         {tab==="coach"&&<div style={{animation:"fadeUp 0.4s ease"}}>
           <CoachChat plan={plan} plan2={plan2} weeks={weeks} dailyLogs={logs}/>
           <div style={{padding:"0.7rem",background:C.bg2,border:`1px solid ${C.border}`,fontSize:"0.7rem",color:C.textDim,lineHeight:1.6}}>
-            <strong style={{color:C.goldD}}>Exemples :</strong> "J'ai raté 2 jours" · "Mon saboteur s'est déclenché" · "Comment faire l'action S4 ?" · "J'ai envie d'abandonner"
+            <strong style={{color:C.text}}>Exemples :</strong> "J'ai raté 2 jours" · "Mon saboteur s'est déclenché" · "Comment faire l'action S4 ?" · "J'ai envie d'abandonner"
           </div>
         </div>}
 
         {tab==="engagement"&&<EngagementTab plan={plan} plan2={plan2} firstName={firstName}/>}
 
         <div style={{textAlign:"center",padding:"2rem 0 0",color:C.textDim,fontSize:"0.66rem",borderTop:`1px solid ${C.border}`,marginTop:"2rem"}}>
-          <div style={{color:C.gold,opacity:0.32,letterSpacing:"0.4rem",marginBottom:"0.65rem"}}>✦ ◈ ✦</div>
-          Créé par <span style={{color:C.gold}}>Lamine Diabaté</span> · Mon Plan de Vie 90 Jours<br/>
-          <span style={{color:C.goldD,fontSize:"0.61rem",...MN}}>Auteur · "90 Jours pour Renaître" · "Le Pouvoir d'un Esprit Aligné"</span>
+          <div style={{color:C.text,opacity:0.32,letterSpacing:"0.4rem",marginBottom:"0.65rem"}}>✦ ◈ ✦</div>
+          Créé par <span style={{color:C.text}}>Lamine Diabaté</span> · Mon Plan de Vie 90 Jours<br/>
+          <span style={{color:C.text,fontSize:"0.61rem",...MN}}>Auteur · "90 Jours pour Renaître" · "Le Pouvoir d'un Esprit Aligné"</span>
         </div>
       </div>
     );
@@ -3080,7 +3080,7 @@ export default function App(){
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",maxWidth:"660px",margin:"0 auto",padding:"1.1rem 0.9rem 4rem",animation:"fadeUp 0.4s ease"}}>
         <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"2rem",paddingBottom:"0.85rem",borderBottom:`1px solid ${C.border}`}}>
-          <div style={{...SF,fontSize:"1rem",color:C.gold}}>Mes Plans</div>
+          <div style={{...SF,fontSize:"1rem",color:C.text}}>Mes Plans</div>
           <button onClick={()=>setScreen(plan?"home":"landing")} style={{padding:"0.38rem 0.65rem",background:"transparent",border:`1px solid ${C.border}`,color:C.textDim,fontSize:"0.6rem",...MN,cursor:"pointer"}}>← Retour</button>
         </div>
 
@@ -3102,10 +3102,10 @@ export default function App(){
             return(
               <button key={d} onClick={()=>switchDomain(d)} style={{padding:"1rem 1.2rem",background:isActive?`${C.gold}12`:C.bg2,border:`1px solid ${isActive?C.gold:C.border}`,textAlign:"left",cursor:"pointer",transition:"all 0.2s"}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.4rem"}}>
-                  <div style={{fontSize:"0.56rem",color:isActive?C.gold:C.goldD,textTransform:"uppercase",letterSpacing:"0.15em",...MN}}>{d} {isActive&&"· ACTIF"}</div>
+                  <div style={{fontSize:"0.56rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.15em",...MN}}>{d} {isActive&&"· ACTIF"}</div>
                   <div style={{fontSize:"0.6rem",color:C.textDim,...MN}}>J{Math.min(dn,90)}/90</div>
                 </div>
-                <div style={{...SF,fontSize:"0.95rem",color:isActive?C.gold:C.text}}>{ng}</div>
+                <div style={{...SF,fontSize:"0.95rem",color:C.text}}>{ng}</div>
                 {data?.plan?.scorecard?.mission_centrale&&<div style={{fontSize:"0.72rem",color:C.textMid,marginTop:"0.3rem",lineHeight:1.5}}>{data.plan.scorecard.mission_centrale.slice(0,80)}…</div>}
               </button>
             );
@@ -3113,7 +3113,7 @@ export default function App(){
         </div>
 
         {domains.length<3&&(
-          <button onClick={startNewPlan} style={{width:"100%",padding:"0.9rem",background:"transparent",border:`1px dashed ${C.goldD}`,color:C.goldD,fontSize:"0.7rem",letterSpacing:"0.12em",textTransform:"uppercase",...MN,cursor:"pointer"}}>
+          <button onClick={startNewPlan} style={{width:"100%",padding:"0.9rem",background:"transparent",border:`1px dashed ${C.goldD}`,color:C.text,fontSize:"0.7rem",letterSpacing:"0.12em",textTransform:"uppercase",...MN,cursor:"pointer"}}>
             + Créer un nouveau plan ({domains.length}/3)
           </button>
         )}

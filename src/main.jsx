@@ -3004,15 +3004,19 @@ export default function App(){
 
         {tab==="rituel"&&<div style={{animation:"fadeUp 0.4s ease"}}>
           <Card><SH icon="🌬" label="Rituel d'Activation" sub="< 10 min · Timer intégré · Chaque jour"/>
-            <div style={{padding:"0.82rem 0.95rem",background:`${C.gold}0E`,border:`1px solid ${C.goldD}`,borderLeft:`3px solid ${C.gold}`,marginBottom:"1rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.28rem"}}>Autosuggestion — 3× à voix haute</div><div style={{...SF,fontSize:"1.02rem",color:C.text,fontStyle:"italic",lineHeight:1.6}}>{s2.rituel?.autosuggestion}</div></div>
+            <div style={{padding:"0.85rem 1rem",borderLeft:`2px solid ${C.gold}`,marginBottom:"1.1rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.3rem"}}>Autosuggestion — 3× à voix haute</div><div style={{...SF,fontSize:"1.02rem",color:C.text,fontStyle:"italic",lineHeight:1.6}}>{s2.rituel?.autosuggestion}</div></div>
             {s2.rituel?.matin&&<RituelTimer steps={s2.rituel.matin}/>}
-            <div style={{marginTop:"0.85rem",padding:"0.68rem 0.82rem",background:`${C.green}0A`,border:`1px solid ${C.green}25`}}><div style={{fontSize:"0.54rem",color:C.green,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>◉ Première action — dans les 2 min</div><div style={{fontSize:"0.83rem",color:C.text,lineHeight:1.5}}>{s2.rituel?.premiere_action_du_jour}</div></div>
-            <div style={{marginTop:"0.5rem",padding:"0.68rem 0.82rem",background:C.bg3,borderLeft:`2px solid ${C.goldD}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>Soir <Tag>{s2.rituel?.soir?.duree}</Tag></div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{s2.rituel?.soir?.action}</div></div>
+            <div style={{marginTop:"0.9rem",padding:"0.7rem 0.85rem",borderLeft:`2px solid ${C.green}`}}><div style={{fontSize:"0.54rem",color:C.green,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.2rem"}}>◉ Première action — dans les 2 min</div><div style={{fontSize:"0.83rem",color:C.text,lineHeight:1.5}}>{s2.rituel?.premiere_action_du_jour}</div></div>
+            <div style={{marginTop:"0.6rem",paddingLeft:"1rem",borderLeft:`2px solid ${C.border}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Soir <Tag>{s2.rituel?.soir?.duree}</Tag></div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{s2.rituel?.soir?.action}</div></div>
           </Card>
-          <Card><SH icon="🛡" label="Protocole de Rechute" sub={`"${s2.protocole_rechute?.contexte||""}"`}/>
-            {[["5 premières minutes",s2.protocole_rechute?.["5_minutes"],C.red],["24 heures",s2.protocole_rechute?.["24h"],C.gold],["48 heures",s2.protocole_rechute?.["48h"],C.green]].map(([l,v,c])=><div key={l} style={{marginBottom:"0.55rem",padding:"0.62rem 0.8rem",background:`${c}08`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
-            <div style={{padding:"0.7rem 0.85rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}35`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>Règle du Non-Zéro</div><div style={{fontSize:"0.81rem",color:C.text,lineHeight:1.5}}>{s2.protocole_rechute?.regle_non_zero}</div></div>
-          </Card>
+
+          <div style={{marginTop:"2.5rem"}}>
+            <SH icon="🛡" label="Protocole de Rechute" sub={`"${s2.protocole_rechute?.contexte||""}"`}/>
+            <div style={{display:"flex",flexDirection:"column",gap:"1.1rem",marginTop:"0.6rem"}}>
+              {[["5 premières minutes",s2.protocole_rechute?.["5_minutes"],C.red],["24 heures",s2.protocole_rechute?.["24h"],C.gold],["48 heures",s2.protocole_rechute?.["48h"],C.green]].map(([l,v,c])=><div key={l} style={{paddingLeft:"1rem",borderLeft:`2px solid ${c}`}}><div style={{fontSize:"0.64rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.3rem"}}>{l}</div><div style={{fontSize:"0.95rem",color:C.text,lineHeight:1.6}}>{v}</div></div>)}
+            </div>
+            <div style={{marginTop:"1.3rem",padding:"0.9rem 1rem",background:`${C.gold}0A`,border:`1px solid ${C.border}`,borderRadius:"12px"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.2rem"}}>Règle du Non-Zéro</div><div style={{fontSize:"0.85rem",color:C.text,lineHeight:1.55}}>{s2.protocole_rechute?.regle_non_zero}</div></div>
+          </div>
         </div>}
 
         {tab==="plan"&&<div style={{animation:"fadeUp 0.4s ease"}}>
@@ -3045,21 +3049,23 @@ export default function App(){
         </div>}
 
         {tab==="anti-abandon"&&<div style={{animation:"fadeUp 0.4s ease"}}>
-          <Card><SH icon="🔒" label="Système Anti-Abandon" sub="Le système tient quand la motivation lâche"/>
-            <div style={{marginBottom:"0.85rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.15em",...MN,marginBottom:"0.4rem"}}>Règles de continuité</div>
-              {(s2.anti_abandon?.regles||[]).map((r,i)=><div key={i} style={{display:"flex",gap:"0.6rem",marginBottom:"0.38rem",alignItems:"flex-start"}}><span style={{...MN,fontSize:"0.63rem",color:C.text,minWidth:"1.4rem",marginTop:"0.08rem"}}>{String(i+1).padStart(2,"0")}</span><span style={{fontSize:"0.81rem",color:C.text,lineHeight:1.55}}>{r}</span></div>)}
-            </div>
-            {[["Jour difficile",s2.protocole_rechute?.jour_difficile,C.gold],["Motivation basse",s2.protocole_rechute?.motivation_basse,C.red],["Rechute émotionnelle",s2.protocole_rechute?.rechute_emotionnelle,C.purple],["Fatigue mentale",s2.protocole_rechute?.fatigue_mentale,C.blue],["Version minimale",s2.anti_abandon?.version_minimale,C.green]].filter(([,v])=>v).map(([l,v,c])=><div key={l} style={{marginBottom:"0.6rem",padding:"0.75rem 0.85rem",background:`${c}08`,border:`1px solid ${c}25`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.25rem"}}>{l}</div><div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.6}}>{v}</div></div>)}
-          </Card>
+          <SH icon="🔒" label="Système Anti-Abandon" sub="Le système tient quand la motivation lâche"/>
+          <div style={{marginTop:"0.8rem",marginBottom:"1.8rem"}}><div style={{fontSize:"0.6rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.15em",...MN,marginBottom:"0.6rem"}}>Règles de continuité</div>
+            {(s2.anti_abandon?.regles||[]).map((r,i)=><div key={i} style={{display:"flex",gap:"0.7rem",marginBottom:"0.55rem",alignItems:"flex-start"}}><span style={{...MN,fontSize:"0.63rem",color:C.gold,minWidth:"1.4rem",marginTop:"0.1rem"}}>{String(i+1).padStart(2,"0")}</span><span style={{fontSize:"0.92rem",color:C.text,lineHeight:1.6}}>{r}</span></div>)}
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:"1.1rem"}}>
+            {[["Jour difficile",s2.protocole_rechute?.jour_difficile,C.gold],["Motivation basse",s2.protocole_rechute?.motivation_basse,C.red],["Rechute émotionnelle",s2.protocole_rechute?.rechute_emotionnelle,C.purple],["Fatigue mentale",s2.protocole_rechute?.fatigue_mentale,C.blue],["Version minimale",s2.anti_abandon?.version_minimale,C.green]].filter(([,v])=>v).map(([l,v,c])=><div key={l} style={{paddingLeft:"1rem",borderLeft:`2px solid ${c}`}}><div style={{fontSize:"0.64rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.3rem"}}>{l}</div><div style={{fontSize:"0.92rem",color:C.text,lineHeight:1.6}}>{v}</div></div>)}
+          </div>
         </div>}
 
         {tab==="lectures"&&<div style={{animation:"fadeUp 0.4s ease"}}>
-          <Card><SH icon="📚" label="Lectures" sub="Sélectionnées pour ce profil précis"/>
-            {(s2.lectures||[]).map((l,i)=><div key={i} style={{marginBottom:"0.85rem",padding:"0.85rem",background:C.bg3,borderLeft:`2px solid ${C.goldD}`}}>
-              <div style={{display:"flex",gap:"0.52rem",alignItems:"flex-start",marginBottom:"0.28rem"}}><span style={{...MN,fontSize:"0.63rem",color:C.text,minWidth:"1.1rem",marginTop:"0.08rem"}}>0{i+1}</span><div><div style={{...SF,fontSize:"0.95rem",color:C.text,marginBottom:"0.06rem"}}>{l.titre}</div><div style={{fontSize:"0.68rem",color:C.textDim,...MN}}>{l.auteur}</div></div></div>
-              <div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.6,paddingLeft:"1.6rem"}}>{l.pourquoi}</div>
+          <SH icon="📚" label="Lectures" sub="Sélectionnées pour ce profil précis"/>
+          <div style={{marginTop:"0.8rem"}}>
+            {(s2.lectures||[]).map((l,i)=><div key={i} style={{marginBottom:"1.6rem",paddingBottom:"1.6rem",borderBottom:i<(s2.lectures.length-1)?`1px solid ${C.border}`:"none"}}>
+              <div style={{display:"flex",gap:"0.6rem",alignItems:"flex-start",marginBottom:"0.35rem"}}><span style={{...MN,fontSize:"0.63rem",color:C.gold,minWidth:"1.1rem",marginTop:"0.1rem"}}>0{i+1}</span><div><div style={{...SF,fontSize:"1.05rem",color:C.text,marginBottom:"0.1rem"}}>{l.titre}</div><div style={{fontSize:"0.7rem",color:C.textDim,...MN}}>{l.auteur}</div></div></div>
+              <div style={{fontSize:"0.88rem",color:C.textMid,lineHeight:1.65,paddingLeft:"1.7rem"}}>{l.pourquoi}</div>
             </div>)}
-          </Card>
+          </div>
         </div>}
 
         {tab==="coach"&&<div style={{animation:"fadeUp 0.4s ease"}}>

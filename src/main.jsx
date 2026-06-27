@@ -356,7 +356,7 @@ const SEGMENTS_FINANCES = [
     {id:"q_montant",label:"Quel revenu mensuel exact changerait concrètement ta vie ?",type:"text",ph:"Ex : 450 000 FCFA / mois",minLen:3,
      reward:"Cet ancrage calibre toutes les 12 semaines.",
      aide:{ex:"300 000 FCFA me permettrait de quitter mon emploi et vivre sereinement."}},
-    {id:"q_identite_future_fin",label:"Le jour où ces 10M FCFA d'actifs sont réels — qui es-tu à ce moment précis ? Qu'est-ce que ça change dans la façon dont tu te vois ?",type:"textarea",ph:"Je suis quelqu'un qui a tenu sa parole envers sa famille. Je ne me vois plus comme quelqu'un qui subit l'argent, mais comme quelqu'un qui le dirige.",minLen:20,
+    {id:"q_identite_future_fin",label:"Le jour où ton objectif financier est réellement atteint — qui es-tu à ce moment précis ? Qu'est-ce que ça change dans la façon dont tu te vois ?",type:"textarea",ph:"Je suis quelqu'un qui a tenu sa parole envers sa famille. Je ne me vois plus comme quelqu'un qui subit l'argent, mais comme quelqu'un qui le dirige.",minLen:20,
      reward:"Cette identité future est ce qu'on relit au moment de tout lâcher.",
      aide:{ex:"Je suis devenu quelqu'un de fiable financièrement. Je ne me vois plus comme un rêveur mais comme un bâtisseur."}},
   ]},
@@ -702,7 +702,9 @@ Génère UNIQUEMENT S7 à S12. JSON strict commence par {:
 Exactement 6 semaines S7-S12. Français concis.`
 }
 
-function buildPromptCoach(plan, plan2, weeks, dailyLogs, question, history) {
+function buildPromptCoach(plan, plan2, weeks, dailyLogs, question, history, answers) {
+  const a = flatAnswers(answers||{});
+  const g = id => a[id];
   const logs = Object.values(dailyLogs||{}).sort((a,b)=>a.day-b.day);
   const streak = computeStreak(dailyLogs);
   const recentLogs = logs.slice(-7);
@@ -747,6 +749,9 @@ PROFIL PSYCHOLOGIQUE :
 — Circonstance d'abandon : ${plan2?.protocole_rechute?.contexte||'?'}
 — Mission 90j : ${plan?.scorecard?.mission_centrale||'?'}
 — Version dominante : ${plan?.diagnostic?.resume?.split('.')[0]||'?'}
+
+FAITS DÉCLARÉS PAR LA PERSONNE ELLE-MÊME (Jour 1) — n'utilise QUE ce qui est listé ici, n'invente jamais un nom, un chiffre ou un détail qui n'y figure pas :
+${Object.entries(a).filter(([k,v])=>!["q_profil","q_domaine_principal","q_rythme"].includes(k)&&v&&typeof v==="string").map(([k,v])=>`— ${k.replace(/^q_/,"").replace(/_/g," ")} : ${v}`).join("\n")}
 ${memoireNarrative}
 
 HISTORIQUE RÉCENT :
@@ -758,6 +763,7 @@ RÈGLES ABSOLUES :
 — Tu es un coach comportemental socratique — tu POSES UNE QUESTION avant de donner un conseil
 — Exception : si l'utilisateur pose une question directe sur son plan ou ses données, réponds directement
 — Si on te demande qui tu es : présente-toi comme coach qui connaît les patterns et le plan
+— INTERDICTION ABSOLUE D'INVENTER : si une information précise (nom, date, montant, événement) n'est pas dans les FAITS DÉCLARÉS ci-dessus ou l'historique, dis "tu ne m'as pas donné cette information" plutôt que d'inventer un détail plausible
 — JAMAIS "crois en toi" / "tu peux le faire" / encouragements génériques
 — JAMAIS de conseil immédiat sans d'abord diagnostiquer : "Qu'est-ce qui s'est passé exactement ?" / "Quand précisément ?" / "Qu'est-ce que tu ressentais juste avant ?"
 — Si pattern détecté → nomme-le directement sans diplomatie
@@ -1574,7 +1580,7 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
   </div>;
 }
 
-function CoachChat({plan,plan2,weeks,dailyLogs}){
+function CoachChat({plan,plan2,weeks,dailyLogs,answers}){
   const COACH_KEY = `coach_history_${plan?.nom_guerre||'user'}`;
   const savedHistory = React.useMemo(()=>{
     try{ const h=localStorage.getItem(COACH_KEY); return h?JSON.parse(h):null; }catch{return null;}
@@ -1594,7 +1600,7 @@ function CoachChat({plan,plan2,weeks,dailyLogs}){
     const q=input.trim();setInput("");setMsgs(m=>[...m,{role:"user",content:q}]);setLoading(true);
     try{
       const res=await fetchWithRetry("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({prompt:buildPromptCoach(plan,plan2,weeks,dailyLogs,q,msgs),system:"Tu es un coach comportemental socratique. Tu poses UNE question avant de donner un conseil. Direct, humain, 3-4 phrases max.",max_tokens:500})});
+        body:JSON.stringify({prompt:buildPromptCoach(plan,plan2,weeks,dailyLogs,q,msgs,answers),system:"Tu es un coach comportemental socratique. Tu poses UNE question avant de donner un conseil. Direct, humain, 3-4 phrases max.",max_tokens:500})});
       if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error||`HTTP ${res.status}`);}
       const data=await res.json();
       const txt=data.content;
@@ -3028,7 +3034,7 @@ export default function App(){
         </Card>
         </div>
         {plan2?.rituel?.matin&&<Card><SH icon="🌬" label="Rituel du jour" sub="< 10 min · Timer intégré"/><RituelTimer steps={plan2.rituel.matin} nomGuerre={plan.nom_guerre} onComplete={()=>{if(todayLog){saveLog({...todayLog,rituel_done:true});}}} /></Card>}
-        <CoachChat plan={plan} plan2={plan2} weeks={weeks} dailyLogs={logs}/>
+        <CoachChat plan={plan} plan2={plan2} weeks={weeks} dailyLogs={logs} answers={answers}/>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.45rem"}}>
           {[{lbl:"📅 Plan semaines",sub:"12 semaines + checklist",action:()=>{setTab("plan");setScreen("result");if(!weeks&&!weeksLoading)generateWeeks(plan);}},{lbl:"📊 Dashboard",sub:"Scorecard + Identité future",action:()=>{setTab("dashboard");setScreen("result");}},{lbl:"🛡 Anti-abandon",sub:"Protocoles de rechute",action:()=>{setTab("anti-abandon");setScreen("result");}},{lbl:"↓ PDF Premium",sub:"Collector · Page identité",action:printPDF}].map(({lbl,sub,action})=><button key={lbl} onClick={action} style={{padding:"0.75rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,textAlign:"left",cursor:"pointer",transition:"all 0.2s"}}>
             <div style={{fontSize:"0.8rem",marginBottom:"0.15rem"}}>{lbl}</div>
@@ -3288,7 +3294,7 @@ export default function App(){
         </div>}
 
         {tab==="coach"&&<div style={{animation:"fadeUp 0.4s ease"}}>
-          <CoachChat plan={plan} plan2={plan2} weeks={weeks} dailyLogs={logs}/>
+          <CoachChat plan={plan} plan2={plan2} weeks={weeks} dailyLogs={logs} answers={answers}/>
           <div style={{padding:"0.7rem",background:C.bg2,border:`1px solid ${C.border}`,fontSize:"0.7rem",color:C.textDim,lineHeight:1.6}}>
             <strong style={{color:C.text}}>Exemples :</strong> "J'ai raté 2 jours" · "Mon saboteur s'est déclenché" · "Comment faire l'action S4 ?" · "J'ai envie d'abandonner"
           </div>

@@ -4,8 +4,8 @@
   "description": "Système de transformation comportementale 90 jours",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0A0A0A",
-  "theme_color": "#C9A84C",
+  "background_color": "#0D0C0A",
+  "theme_color": "#E5C158",
   "orientation": "portrait",
   "icons": [
     {

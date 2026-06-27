@@ -302,6 +302,9 @@ const SEGMENTS_FINANCES = [
     {id:"q_objectif",label:"Quel résultat financier concret doit changer en 90 jours ?",type:"text",ph:"Ex : Atteindre 300 000 FCFA/mois en revenus nets",minLen:10,
      reward:"Objectif ancré. Toutes les 12 semaines pointent vers ça.",
      aide:{ex:"Générer 500 000 FCFA/mois. Avoir 3 clients réguliers."}},
+    {id:"q_actif_passif",label:"Sur les 3 derniers mois, l'argent qui est entré est-il devenu un actif (qui te rapporte encore aujourd'hui) ou a-t-il juste disparu dans des dépenses sans retour ?",type:"textarea",ph:"Tout est parti en dépenses du quotidien et en remboursements. Je n'ai rien acheté qui me rapporte encore aujourd'hui — ni stock, ni outil, ni placement.",minLen:15,
+     reward:"Cette distinction actif/passif devient le filtre de chaque décision financière du plan.",
+     aide:{ex:"J'ai gagné plus ce trimestre, mais tout est parti en consommation. Zéro actif acquis."}},
     {id:"q_urgence",label:"Pourquoi c'est urgent maintenant — et pas dans 2 ans ?",type:"textarea",ph:"Parce que mes dettes augmentent. Parce que ma famille attend depuis trop longtemps. Chaque mois qui passe coûte.",minLen:15,
      reward:"Cette urgence tient quand la motivation lâche.",
      aide:{ex:"Parce que j'ai déjà perdu 3 ans à procrastiner."}},
@@ -580,6 +583,7 @@ DOMAINE: ${domaine}
 Frustration/État: ${g('q_frustration')||g('q_comportement_reccurent')||g('q_pensee_dominante')||g('q_etat_now')}
 Profil: ${g('q_profil_financier')||g('q_profil_comportemental')||g('q_etat_mental')||g('q_version_dominante')}
 Objectif: ${g('q_objectif')} | Urgence: ${g('q_urgence')||g('q_urgence_projection')||g('q_urgence_version_stable')||g('q_pourquoi_maintenant')}
+Actif vs passif (argent qui rapporte vs argent qui disparaît): ${g('q_actif_passif')||''}
 Sacrifice/Action repoussée: ${g('q_sacrifice')||g('q_activite_repoussee')}
 Coût inaction: ${g('q_cout_statu_quo')||g('q_cout_inaction')||g('q_si_pas')}
 Niveaux revenus: ${g('q_niveaux_revenus')||''}
@@ -620,7 +624,7 @@ ${g('q_moment')} | ${g('q_heures')} | Montant: ${g('q_montant')}
 ACTIONS : QUOI + QUAND (heure précise) + DURÉE + CONTEXTE. Jamais vague.
 
 Génère ce JSON valide EXACTEMENT — sans texte avant ni après, sans backticks :
-{"rituel":{"autosuggestion":"RÈGLE AUTOSUGGESTION : phrase au présent, première personne, 15-25 mots MAX. Doit utiliser des éléments PRÉCIS du profil (objectif, domaine, point fort). Doit être l'opposé EXACT de la phrase négative avec SES propres mots transformés. EXEMPLES si phrase négative='je n'arrive jamais à finir ce que je commence' → 'Je suis quelqu'un qui termine ce qu'il commence — chaque action complétée me prouve qui je suis vraiment.' JAMAIS générique. JAMAIS 'je suis fort et courageux'.","matin":[{"etape":"Respiration","duree":"5 min","action":"4-7-8"},{"etape":"Recentrage","duree":"2 min","action":"visualisation objectif"},{"etape":"Autosuggestion","duree":"1 min","action":"3 fois à voix haute"}],"premiere_action_du_jour":"1 action dans les 2 min","soir":{"duree":"5 min","action":"révision"}},"anti_saboteur":{"racine":"string","declencheur":"string","strategie_1":"string","strategie_2":"string","strategie_3":"string"},"protocole_rechute":{"contexte":"string","5_minutes":"string","24h":"string","48h":"string","regle_non_zero":"string","jour_difficile":"string","motivation_basse":"string","rechute_emotionnelle":"string","fatigue_mentale":"string"},"anti_abandon":{"regles":["string","string","string"],"version_minimale":"string"},"lectures":[{"titre":"string","auteur":"string","pourquoi":"string"},{"titre":"string","auteur":"string","pourquoi":"string"},{"titre":"string","auteur":"string","pourquoi":"string"}],"message_final":"string","contrat":"string"}
+{"rituel":{"autosuggestion":"RÈGLE AUTOSUGGESTION : phrase au présent, première personne, 15-25 mots MAX. Doit utiliser des éléments PRÉCIS du profil (objectif, domaine, point fort). Doit être l'opposé EXACT de la phrase négative avec SES propres mots transformés. EXEMPLES si phrase négative='je n'arrive jamais à finir ce que je commence' → 'Je suis quelqu'un qui termine ce qu'il commence — chaque action complétée me prouve qui je suis vraiment.' JAMAIS générique. JAMAIS 'je suis fort et courageux'.","matin":[{"etape":"Respiration","duree":"5 min","action":"4-7-8"},{"etape":"Recentrage","duree":"2 min","action":"visualisation objectif"},{"etape":"Autosuggestion","duree":"2 min","action":"3 fois à voix haute et forte, DEBOUT, épaules ouvertes — pas assis, pas chuchoté"}],"premiere_action_du_jour":"1 action dans les 2 min","soir":{"duree":"5 min","action":"révision"}},"anti_saboteur":{"racine":"string","declencheur":"string","strategie_1":"string","strategie_2":"string","strategie_3":"string"},"protocole_rechute":{"contexte":"string","5_minutes":"string","24h":"string","48h":"string","regle_non_zero":"string","jour_difficile":"string","motivation_basse":"string","rechute_emotionnelle":"string","fatigue_mentale":"string"},"anti_abandon":{"regles":["string","string","string"],"version_minimale":"string"},"lectures":[{"titre":"string","auteur":"string","pourquoi":"string"},{"titre":"string","auteur":"string","pourquoi":"string"},{"titre":"string","auteur":"string","pourquoi":"string"}],"message_final":"string","contrat":"string"}
 Français direct. Aucun texte hors du JSON.`;
 }
 

@@ -316,6 +316,9 @@ const SEGMENTS_FINANCES = [
      aide:{ex:"Dans 3 ans : même salaire, mêmes dettes. Ma famille aura perdu confiance en moi."}},
   ]},
   { id:"blocages", label:"BLOCAGES", icon:"⚠", subtitle:"Ce qui freine vraiment ta progression", questions:[
+    {id:"q_reussite_passee",label:"Quand as-tu déjà tenu un engagement financier difficile, même une seule fois — qu'est-ce que ça prouve sur ta capacité à le refaire ?",type:"textarea",ph:"Il y a 2 ans j'ai remboursé une dette en 6 mois sans craquer. Ça prouve que je tiens quand l'enjeu est clair et que j'ai un plan précis.",minLen:20,
+     reward:"Cette preuve devient ton point d'appui — pas un hasard, une compétence déjà démontrée.",
+     aide:{ex:"J'ai épargné pour un objectif précis une fois et j'ai tenu 4 mois. Je suis capable de tenir quand le but est concret."}},
     {id:"q_mensonge",label:"Quel mensonge ton cerveau utilise-t-il pour éviter d'agir ?",type:"select",
      opts:["Je ne suis pas encore prêt","Je manque de capital","Ce n'est pas le bon moment","Je dois encore apprendre","Je n'ai pas le temps","Les conditions ne sont pas réunies","Je vais commencer bientôt","Autre"],
      reward:"Ce mensonge est nommé. Il perd son pouvoir.",
@@ -335,6 +338,9 @@ const SEGMENTS_FINANCES = [
      opts:["Je scrolle les réseaux sociaux","Je dors ou j'évite d'y penser","Je travaille dans tous les sens sans stratégie","Je mange pour compenser","Je procrastine et remets à demain","Je regarde des vidéos ou séries","Je coupe les contacts","Je cherche une solution immédiatement"],
      reward:"Ce comportement de fuite est dans le protocole anti-rechute.",
      aide:{ex:"Quand j'ai des problèmes d'argent, je scrolle Instagram pendant des heures."}},
+    {id:"q_soutien",label:"Qui, précisément (prénom et lien), sait exactement ce que tu construis ces 90 jours — et pourrait te le rappeler si tu lâches ? Si personne, dis-le aussi.",type:"textarea",ph:"Personne ne sait vraiment. Ma sœur connaît l'objectif vague mais pas le plan précis.",minLen:10,
+     reward:"S'il existe, ce lien devient un point d'ancrage dans ton protocole anti-abandon. S'il n'existe pas, le plan en tient compte aussi.",
+     aide:{ex:"Mon associé, Karim — il connaît le chiffre exact et me le redemande chaque semaine."}},
   ]},
   { id:"execution", label:"EXÉCUTION", icon:"▶", subtitle:"Ton engagement concret sur 90 jours", questions:[
     {id:"q_pari",label:"Tu paries combien sur 100 que tu réussis ces 90 jours — et pourquoi pas plus, pourquoi pas moins ?",type:"textarea",ph:"65/100. Pas plus parce que j'ai déjà essayé et abandonné. Pas moins parce que cette fois j'ai un vrai système.",minLen:20,
@@ -347,6 +353,9 @@ const SEGMENTS_FINANCES = [
     {id:"q_montant",label:"Quel revenu mensuel exact changerait concrètement ta vie ?",type:"text",ph:"Ex : 450 000 FCFA / mois",minLen:3,
      reward:"Cet ancrage calibre toutes les 12 semaines.",
      aide:{ex:"300 000 FCFA me permettrait de quitter mon emploi et vivre sereinement."}},
+    {id:"q_identite_future_fin",label:"Le jour où ces 10M FCFA d'actifs sont réels — qui es-tu à ce moment précis ? Qu'est-ce que ça change dans la façon dont tu te vois ?",type:"textarea",ph:"Je suis quelqu'un qui a tenu sa parole envers sa famille. Je ne me vois plus comme quelqu'un qui subit l'argent, mais comme quelqu'un qui le dirige.",minLen:20,
+     reward:"Cette identité future est ce qu'on relit au moment de tout lâcher.",
+     aide:{ex:"Je suis devenu quelqu'un de fiable financièrement. Je ne me vois plus comme un rêveur mais comme un bâtisseur."}},
   ]},
 ];
 const SEGMENTS_COMPORTEMENT = [
@@ -381,6 +390,9 @@ const SEGMENTS_COMPORTEMENT = [
      aide:{ex:"Supprimer Netflix 30 jours. Couper les notifications pendant les heures de travail."}},
   ]},
   { id:"blocages", label:"BLOCAGES", icon:"⚠", subtitle:"Tes mécanismes de sabotage", questions:[
+    {id:"q_reussite_passee",label:"Quand as-tu déjà résisté à ce comportement, même une seule fois — qu'est-ce que ça prouve sur ta capacité à le refaire ?",type:"textarea",ph:"Une fois j'ai tenu 3 semaines sans procrastiner sur un projet qui me tenait à cœur. Ça prouve que je peux tenir quand le sens est clair.",minLen:20,
+     reward:"Cette preuve devient ton point d'appui — pas un hasard, une compétence déjà démontrée.",
+     aide:{ex:"J'ai arrêté de fumer 2 mois une fois. Je sais que je peux tenir quand je décide vraiment."}},
     {id:"q_mensonge",label:"Quel mensonge utilises-tu pour justifier tes mauvaises habitudes ?",type:"select",
      opts:["Je changerai quand ma situation s'améliorera","C'est plus fort que moi — c'est ma nature","J'ai essayé mais ça ne marche pas pour moi","Je n'ai pas le temps","Je manque de volonté","C'est à cause de mon entourage","Je le ferai demain","Autre"],
      reward:"Ce mensonge est nommé. Il perd son pouvoir.",
@@ -404,6 +416,9 @@ const SEGMENTS_COMPORTEMENT = [
     {id:"q_environnement",label:"Quel environnement renforce le plus tes mauvaises habitudes ?",type:"textarea",ph:"À la maison sans structure je procrastine tout. Mon entourage a les mêmes habitudes que moi.",minLen:15,
      reward:"L'environnement est maintenant dans les stratégies du plan.",
      aide:{ex:"Le salon avec la télé. Mon téléphone sur le bureau. Mes amis qui ne font rien le week-end."}},
+    {id:"q_soutien",label:"Qui, précisément (prénom et lien), sait exactement ce que tu construis ces 90 jours — et pourrait te le rappeler si tu lâches ? Si personne, dis-le aussi.",type:"textarea",ph:"Personne ne sait vraiment ce que je vise. Mon copain sait juste que 'je me bouge en ce moment'.",minLen:10,
+     reward:"S'il existe, ce lien devient un point d'ancrage dans ton protocole anti-abandon. S'il n'existe pas, le plan en tient compte aussi.",
+     aide:{ex:"Ma colocataire, Aïcha — elle me demande mon avancement chaque dimanche."}},
   ]},
   { id:"execution", label:"EXÉCUTION", icon:"▶", subtitle:"Ton engagement concret", questions:[
     {id:"q_pari",label:"Tu paries combien sur 100 que tu réussis ces 90 jours — et pourquoi pas plus, pourquoi pas moins ?",type:"textarea",ph:"60/100. Pas plus parce que j'ai déjà échoué plusieurs fois. Pas moins parce que cette fois j'ai un vrai système.",minLen:20,
@@ -450,6 +465,9 @@ const SEGMENTS_MENTAL = [
      aide:{ex:"Dans 3 ans : même épuisement, même anxiété. Et mes proches en pâtiront."}},
   ]},
   { id:"blocages", label:"BLOCAGES", icon:"⚠", subtitle:"Ce qui pèse réellement", questions:[
+    {id:"q_reussite_passee",label:"Quand as-tu déjà retrouvé du calme en pleine tempête, même brièvement — qu'est-ce que ça prouve sur ta capacité à le refaire ?",type:"textarea",ph:"Le jour de l'enterrement de mon père, j'ai trouvé un calme que je ne comprends pas encore. Ça prouve que cette stabilité existe déjà en moi, même si je n'y accède pas souvent.",minLen:20,
+     reward:"Cette preuve devient ton point d'appui — pas un hasard, une capacité déjà démontrée.",
+     aide:{ex:"Pendant une crise au travail, j'ai géré sans paniquer. Je sais que je peux rester stable sous pression réelle."}},
     {id:"q_resistance_perte",label:"Si tu trouvais la paix intérieure — que risques-tu de perdre ? Et quel échec t'a le plus fragilisé mentalement ?",type:"textarea",ph:"Je perdrais l'identité de celui qui souffre. Et en 2020 quand tout s'est effondré, j'ai conclu que je n'étais pas fait pour réussir.",minLen:20,
      reward:"Les résistances inconscientes et le schéma fragilisant sont identifiés.",
      aide:{ex:"Je perdrais la familiarité de mon anxiété. Échec : mon divorce, conclusion : je ne mérite pas mieux."}},
@@ -472,6 +490,9 @@ const SEGMENTS_MENTAL = [
     {id:"q_habitude_calmante",label:"Quelle habitude calme vraiment ton cerveau — et quand l'as-tu pratiquée pour la dernière fois ?",type:"textarea",ph:"La marche me calme. Mais je ne l'ai pas faite depuis 3 semaines. La prière aussi — mais j'ai arrêté.",minLen:15,
      reward:"Cette habitude calmante entre dans le rituel quotidien.",
      aide:{ex:"La méditation. Le sport. La lecture. Dernière fois : il y a 2 semaines."}},
+    {id:"q_soutien",label:"Qui, précisément (prénom et lien), sait exactement ce que tu traverses — et pourrait te le rappeler si tu lâches ? Si personne, dis-le aussi.",type:"textarea",ph:"Personne ne sait vraiment l'ampleur de ce que je traverse. Je garde ça pour moi.",minLen:10,
+     reward:"S'il existe, ce lien devient un point d'ancrage dans ton protocole anti-abandon. S'il n'existe pas, le plan en tient compte aussi.",
+     aide:{ex:"Ma mère — elle sent quand ça ne va pas et m'appelle toujours au bon moment."}},
   ]},
   { id:"execution", label:"EXÉCUTION", icon:"▶", subtitle:"Ton engagement concret", questions:[
     {id:"q_pari",label:"Tu paries combien sur 100 que tu vis cette transformation en 90 jours — et pourquoi pas plus, pourquoi pas moins ?",type:"textarea",ph:"62/100. Pas plus parce que mon mental résiste depuis longtemps. Pas moins parce que je comprends enfin pourquoi.",minLen:20,
@@ -481,6 +502,9 @@ const SEGMENTS_MENTAL = [
      selects:[{id:"heures",label:"Minutes / jour",opts:["15 à 30 minutes","30 à 60 minutes","1 à 2 heures","Plus de 2 heures"]},{id:"moment",label:"Moment naturel",opts:["Matin (avant 12h)","Après-midi (12h–18h)","Soir (après 20h)","Variable"]}],
      reward:"Les pratiques sont calées sur ton minimum réel.",
      aide:{ex:"15 minutes le matin avant que la journée commence."}},
+    {id:"q_identite_future_mental",label:"Le jour où cette transformation est acquise — qui es-tu à ce moment précis ? Qu'est-ce que ça change dans ta façon de penser et de réagir ?",type:"textarea",ph:"Je suis quelqu'un qui répond au lieu de réagir. Je ne me vois plus comme quelqu'un de fragile, mais comme quelqu'un de stable même quand tout bouge autour.",minLen:20,
+     reward:"Cette identité future est ce qu'on relit au moment de tout lâcher.",
+     aide:{ex:"Je suis devenu quelqu'un de posé. Je ne me définis plus par mon anxiété mais par ma capacité à revenir au calme."}},
   ]},
 ];
 function getSegments(domaine) {
@@ -601,10 +625,12 @@ Consommation vs construction: ${g('q_consommation_vs_construction')||''} | Disci
 Habitude calmante: ${g('q_habitude_calmante')||''}
 Identité cible: ${g('q_identite_cible')||''} | Croyance transformée: ${g('q_croyance_transformation')||''}
 Pari: ${g('q_pari_complet')||g('q_pari')||''} | Temps: ${g('q_heures')} | Moment: ${g('q_moment')}
-Montant libérateur: ${g('q_montant')||''} | Engagement: ${g('q_engagement')||''}
+Montant libérateur: ${g('q_montant')||''} | Engagement/Identité future: ${g('q_engagement')||g('q_identite_future_fin')||g('q_identite_future_mental')||''}
+Réussite passée (preuve de capacité): ${g('q_reussite_passee')||''}
+Soutien/Redevabilité: ${g('q_soutien')||''}
 
 Génère ce JSON valide EXACTEMENT — sans texte avant ni après, sans backticks :
-{"nom_guerre":"string — surnom puissant lié à son profil PRÉCIS, pas générique","pourquoi_ce_nom":"string — explication directe en 1-2 phrases qui fait mouche","identite_future":{"comment_pense":"string — pensée concrète liée au domaine","comment_agit":"string — comportement observable","ne_tolere_plus":"string — lié à ses réponses réelles","nouveaux_standards":"string — ancré dans son objectif"},"diagnostic":{"resume":"3 phrases MAX. Confrontantes. Basées sur VERSION DOMINANTE + COMPORTEMENT D'ÉVITEMENT. Impossible à donner à quelqu'un d'autre.","bloquant_central":"1 seule phrase. Doit faire légèrement mal parce qu'elle est vraie.","schema_sabotage":"Mécanisme précis. Commence par 'Quand tu...' ou 'Dès que...'","lecon_echec":"Ce que l'échec passé révèle sur le mécanisme de sabotage FUTUR.","qualites_cachees":"2 forces réelles cachées derrière les blocages déclarés."},"scorecard":{"discipline":{"score":55,"lecture":"string — 1 phrase confrontante liée au profil"},"focus":{"score":50,"lecture":"string"},"energie":{"score":60,"lecture":"string"},"clarte":{"score":45,"lecture":"string"},"constance":{"score":40,"lecture":"string"},"risque_abandon":"Modéré","facteur_risque":"string — circonstance précise d'abandon probable","levier_principal":"string — point fort exploitable immédiatement","mission_centrale":"string — 1 phrase personnelle qui donne envie d'agir"},"citations_personnelles":["phrase construite à partir de SES PROPRES MOTS des réponses — reconnaissable par lui","phrase — liée à son objectif précis","phrase — liée à sa peur profonde transformée en force"]}
+{"nom_guerre":"string — surnom puissant lié à son profil PRÉCIS, pas générique","pourquoi_ce_nom":"string — explication directe en 1-2 phrases qui fait mouche","identite_future":{"comment_pense":"string — pensée concrète liée au domaine","comment_agit":"string — comportement observable","ne_tolere_plus":"string — lié à ses réponses réelles","nouveaux_standards":"string — ancré dans son objectif"},"diagnostic":{"resume":"3 phrases MAX. Confrontantes. Basées sur VERSION DOMINANTE + COMPORTEMENT D'ÉVITEMENT. Impossible à donner à quelqu'un d'autre.","bloquant_central":"1 seule phrase. Doit faire légèrement mal parce qu'elle est vraie.","schema_sabotage":"Mécanisme précis. Commence par 'Quand tu...' ou 'Dès que...'","lecon_echec":"Ce que l'échec passé révèle sur le mécanisme de sabotage FUTUR.","qualites_cachees":"2 forces réelles cachées derrière les blocages déclarés — au moins 1 doit s'appuyer sur la RÉUSSITE PASSÉE donnée plus haut, pas être inventée."},"scorecard":{"discipline":{"score":55,"lecture":"string — 1 phrase confrontante liée au profil"},"focus":{"score":50,"lecture":"string"},"energie":{"score":60,"lecture":"string"},"clarte":{"score":45,"lecture":"string"},"constance":{"score":40,"lecture":"string"},"risque_abandon":"Modéré","facteur_risque":"string — circonstance précise d'abandon probable","levier_principal":"string — point fort exploitable immédiatement","mission_centrale":"string — 1 phrase personnelle qui donne envie d'agir"},"citations_personnelles":["phrase construite à partir de SES PROPRES MOTS des réponses — reconnaissable par lui","phrase — liée à son objectif précis","phrase — liée à sa peur profonde transformée en force"]}
 Scores contrastés (écart min 10pts entre scores). Français. Aucun texte hors du JSON.`;
 }
 

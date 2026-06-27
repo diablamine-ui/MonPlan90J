@@ -1518,7 +1518,7 @@ function CoachChat({plan,plan2,weeks,dailyLogs}){
     }catch(e){setMsgs(m=>[...m,{role:"assistant",content:`[Erreur coach: ${e.message}]`}]);}
     finally{setLoading(false);}
   };
-  return <Card accent>
+  return <Card>
     <SH icon="💬" label="Coach IA" sub="Mémoire comportementale · Contextuel"/>
     <div style={{maxHeight:"260px",overflowY:"auto",marginBottom:"0.65rem",display:"flex",flexDirection:"column",gap:"0.45rem"}}>
       {msgs.map((m,i)=><div key={i} style={{padding:"0.6rem 0.8rem",background:m.role==="user"?`${C.gold}0E`:C.bg3,border:`1px solid ${m.role==="user"?C.goldD:C.border}`,borderLeft:`3px solid ${m.role==="user"?C.gold:C.textDim}`,alignSelf:m.role==="user"?"flex-end":"flex-start",maxWidth:"92%"}}>
@@ -2851,7 +2851,7 @@ export default function App(){
           <div style={{fontSize:"0.54rem",color:C.text,letterSpacing:"0.18em",...MN,marginBottom:"0.2rem"}}>MESSAGE JOUR {dn}</div>
           <div style={{fontSize:"0.8rem",color:C.text,lineHeight:1.65,fontStyle:"italic"}}>{contMsg.msg}</div>
         </div>}
-        <Card accent>
+        <Card>
           <div style={{display:"flex",gap:"0.9rem",alignItems:"center",marginBottom:"0.9rem"}}>
             <ProgressCircle day={Math.min(dn,90)} size={105}/>
             <div style={{flex:1}}>
@@ -2947,7 +2947,7 @@ export default function App(){
               {[["Comment je pense",s.identite_future.comment_pense,C.gold],["Comment j'agis",s.identite_future.comment_agit,C.goldL],["Ce que je ne tolère plus",s.identite_future.ne_tolere_plus,C.red],["Mes nouveaux standards",s.identite_future.nouveaux_standards,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.55rem 0.75rem",background:`${c}0A`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
             </div>
           </Card>}
-          <Card accent><SH icon="◈" label="Diagnostic Lucide"/>
+          <Card><SH icon="◈" label="Diagnostic Lucide"/>
             <p style={{color:C.textMid,lineHeight:1.78,fontSize:"0.87rem",marginBottom:"0.85rem"}}>{s.diagnostic?.resume}</p>
             {[["Bloquant central",s.diagnostic?.bloquant_central,C.red],["Schéma de sabotage",s.diagnostic?.schema_sabotage,C.gold],["Leçon",s.diagnostic?.lecon_echec,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.58rem 0.78rem",background:`${c}0A`,border:`1px solid ${c}25`,borderLeft:`3px solid ${c}`,marginBottom:"0.5rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
           </Card>
@@ -2990,14 +2990,14 @@ export default function App(){
           {s.citations_personnelles?.length>0&&<Card><SH icon="✦" label="Phrases personnelles" sub="Générées à partir de ton profil"/>
             {s.citations_personnelles.map((c,i)=><div key={i} style={{padding:"0.65rem 0.85rem",border:`1.5px solid ${C.goldD}`,marginBottom:"0.45rem",background:C.bg3}}><div style={{...SF,fontSize:"0.92rem",color:C.text,fontStyle:"italic",lineHeight:1.55}}>{c}</div></div>)}
           </Card>}
-          <Card accent><SH icon="✦" label="Message Final"/>
+          <Card><SH icon="✦" label="Message Final"/>
             <p style={{color:C.textMid,lineHeight:1.85,fontSize:"0.87rem",fontStyle:"italic"}}>{s2.message_final}</p>
           </Card>
           <div style={{padding:"0.95rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`,textAlign:"center",marginBottom:"1rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>Contrat</div><div style={{...SF,fontSize:"0.97rem",color:C.text,fontStyle:"italic",lineHeight:1.6}}>{s2.contrat}</div></div>
         </div>}
 
         {tab==="rituel"&&<div style={{animation:"fadeUp 0.4s ease"}}>
-          <Card accent><SH icon="🌬" label="Rituel d'Activation" sub="< 10 min · Timer intégré · Chaque jour"/>
+          <Card><SH icon="🌬" label="Rituel d'Activation" sub="< 10 min · Timer intégré · Chaque jour"/>
             <div style={{padding:"0.82rem 0.95rem",background:`${C.gold}0E`,border:`1px solid ${C.goldD}`,borderLeft:`3px solid ${C.gold}`,marginBottom:"1rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.28rem"}}>Autosuggestion — 3× à voix haute</div><div style={{...SF,fontSize:"1.02rem",color:C.text,fontStyle:"italic",lineHeight:1.6}}>{s2.rituel?.autosuggestion}</div></div>
             {s2.rituel?.matin&&<RituelTimer steps={s2.rituel.matin}/>}
             <div style={{marginTop:"0.85rem",padding:"0.68rem 0.82rem",background:`${C.green}0A`,border:`1px solid ${C.green}25`}}><div style={{fontSize:"0.54rem",color:C.green,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>◉ Première action — dans les 2 min</div><div style={{fontSize:"0.83rem",color:C.text,lineHeight:1.5}}>{s2.rituel?.premiere_action_du_jour}</div></div>
@@ -3039,7 +3039,7 @@ export default function App(){
         </div>}
 
         {tab==="anti-abandon"&&<div style={{animation:"fadeUp 0.4s ease"}}>
-          <Card accent><SH icon="🔒" label="Système Anti-Abandon" sub="Le système tient quand la motivation lâche"/>
+          <Card><SH icon="🔒" label="Système Anti-Abandon" sub="Le système tient quand la motivation lâche"/>
             <div style={{marginBottom:"0.85rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.15em",...MN,marginBottom:"0.4rem"}}>Règles de continuité</div>
               {(s2.anti_abandon?.regles||[]).map((r,i)=><div key={i} style={{display:"flex",gap:"0.6rem",marginBottom:"0.38rem",alignItems:"flex-start"}}><span style={{...MN,fontSize:"0.63rem",color:C.text,minWidth:"1.4rem",marginTop:"0.08rem"}}>{String(i+1).padStart(2,"0")}</span><span style={{fontSize:"0.81rem",color:C.text,lineHeight:1.55}}>{r}</span></div>)}
             </div>

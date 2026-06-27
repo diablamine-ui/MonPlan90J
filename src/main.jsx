@@ -107,7 +107,7 @@ const sbLoadAll = async(userKey) => {
 // ══════════════════════════════════════════════════════════════
 const C = {
   bg:"#FAF8F3",bg1:"#F5F0E6",bg2:"#EFE8D8",bg3:"#E2DDD0",
-  border:"#E2DDD0",gold:"#C9A84C",goldL:"#C9A84C",goldD:"#C9A84C",
+  border:"#B8AD93",gold:"#C9A84C",goldL:"#C9A84C",goldD:"#C9A84C",
   text:"#000000",textDim:"#000000",textMid:"#000000",
   red:"#A8362A",green:"#1A6B3C",blue:"#1F5E8C",purple:"#6B3380",
   onGold:"#000000", // texte sur fond doré — fixe, indépendant de C.bg
@@ -852,7 +852,7 @@ const MN={fontFamily:"'DM Mono',monospace"};
 const SF={fontFamily:"'Jost',sans-serif"};
 
 function Divider(){return <div style={{width:"50px",height:"1px",background:`linear-gradient(90deg,transparent,${C.gold},transparent)`,margin:"0 auto"}}/>;}
-function Card({children,accent=false,style={}}){return <div style={{background:C.bg2,border:`1px solid ${accent?C.goldD:C.border}`,borderTop:`2px solid ${accent?C.gold:C.border}`,padding:"1.4rem",marginBottom:"1rem",...style}}>{children}</div>;}
+function Card({children,accent=false,style={}}){return <div style={{background:C.bg2,border:`1.5px solid ${accent?C.goldD:C.border}`,borderTop:`2.5px solid ${accent?C.gold:C.border}`,padding:"1.4rem",marginBottom:"1rem",...style}}>{children}</div>;}
 function Tag({children,color=C.gold}){return <span style={{display:"inline-block",padding:"0.18rem 0.5rem",background:`${color}18`,border:`1px solid ${color}55`,color:C.text,fontSize:"0.67rem",letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>{children}</span>;}
 function SH({icon,label,sub}){return <div style={{marginBottom:"1.1rem"}}><div style={{display:"flex",alignItems:"center",gap:"0.55rem",marginBottom:"0.2rem"}}><span style={{color:C.textDim}}>{icon}</span><span style={{fontSize:"0.58rem",letterSpacing:"0.28em",color:C.textDim,textTransform:"uppercase",...MN}}>{label}</span></div>{sub&&<div style={{fontSize:"0.75rem",color:C.textDim,paddingLeft:"1.35rem"}}>{sub}</div>}</div>;}
 
@@ -2988,7 +2988,7 @@ export default function App(){
           </Card>
 
           {s.citations_personnelles?.length>0&&<Card><SH icon="✦" label="Phrases personnelles" sub="Générées à partir de ton profil"/>
-            {s.citations_personnelles.map((c,i)=><div key={i} style={{padding:"0.65rem 0.85rem",borderLeft:`2px solid ${C.goldD}`,marginBottom:"0.45rem",background:C.bg3}}><div style={{...SF,fontSize:"0.92rem",color:C.text,fontStyle:"italic",lineHeight:1.55}}>{c}</div></div>)}
+            {s.citations_personnelles.map((c,i)=><div key={i} style={{padding:"0.65rem 0.85rem",border:`1.5px solid ${C.goldD}`,marginBottom:"0.45rem",background:C.bg3}}><div style={{...SF,fontSize:"0.92rem",color:C.text,fontStyle:"italic",lineHeight:1.55}}>{c}</div></div>)}
           </Card>}
           <Card accent><SH icon="✦" label="Message Final"/>
             <p style={{color:C.textMid,lineHeight:1.85,fontSize:"0.87rem",fontStyle:"italic"}}>{s2.message_final}</p>

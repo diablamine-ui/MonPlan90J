@@ -56,8 +56,8 @@ const SHEETJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.ful
 // ══════════════════════════════════════════════════════════════
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════════════════
-const SB_URL = "https://mjsqkejxnanexokfdfca.supabase.co";
-const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qc3FrZWp4bmFuZXhva2ZkZmNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDM5NTYsImV4cCI6MjA5NDcxOTk1Nn0.KRSdylbMaBwkFYWG441IOGjlTXDlodBE4R-UhdA9OZY";
+const SB_URL = "https://qecttvhjeplveivyamhj.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlY3R0dmhqZXBsdmVpdnlhbWhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3NjU3NDgsImV4cCI6MjA5OTM0MTc0OH0.ABvZK2JdV_LXoVCprUsayqs5Dlrf9AlKAa9N2b8TSnc";
 const sbHeaders = {"Content-Type":"application/json","apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`};
 
 // Sauvegarde cloud Supabase (upsert)

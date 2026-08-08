@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
-import { inject, track } from '@vercel/analytics';
-inject();
 
 // ══════════════════════════════════════════════════════════════
 // fetchWithRetry — réessaie automatiquement sur 429 (rate limit Groq)
@@ -49,15 +47,14 @@ const loadAllDomains = () => {
   return result;
 };
 const getLastDomain = () => { try{ return localStorage.getItem(LAST_DOMAIN_KEY)||null; }catch{return null;} };
-const FONT = "https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400&family=Jost:wght@200;300;400;500&display=swap";
-const FONT_PDF = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap";
+const FONT = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Jost:wght@200;300;400;500&display=swap";
 const SHEETJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
 
 // ══════════════════════════════════════════════════════════════
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════════════════
-const SB_URL = "https://qecttvhjeplveivyamhj.supabase.co";
-const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlY3R0dmhqZXBsdmVpdnlhbWhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3NjU3NDgsImV4cCI6MjA5OTM0MTc0OH0.ABvZK2JdV_LXoVCprUsayqs5Dlrf9AlKAa9N2b8TSnc";
+const SB_URL = "https://mjsqkejxnanexokfdfca.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qc3FrZWp4bmFuZXhva2ZkZmNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDM5NTYsImV4cCI6MjA5NDcxOTk1Nn0.KRSdylbMaBwkFYWG441IOGjlTXDlodBE4R-UhdA9OZY";
 const sbHeaders = {"Content-Type":"application/json","apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`};
 
 // Sauvegarde cloud Supabase (upsert)
@@ -108,25 +105,24 @@ const sbLoadAll = async(userKey) => {
 // PALETTE
 // ══════════════════════════════════════════════════════════════
 const C = {
-  bg:"#080808",bg1:"#0F0F0F",bg2:"#161616",bg3:"#1E1E1E",
-  border:"#2A2A2A",gold:"#C9A84C",goldL:"#E8C97A",goldD:"#8B6914",
-  text:"#F0EAD6",textDim:"#7A7060",textMid:"#A89880",
-  red:"#E74C3C",green:"#27AE60",blue:"#3498DB",purple:"#8E44AD",
-  onGold:"#1A1408", // texte sombre lisible sur les boutons/fonds dorés
+  bg:"#FAF8F3",bg1:"#F5F0E6",bg2:"#EFE8D8",bg3:"#E2DDD0",
+  border:"#E2DDD0",gold:"#C9A84C",goldL:"#C9A84C",goldD:"#C9A84C",
+  text:"#1C1A16",textDim:"#5C574C",textMid:"#5C574C",
+  red:"#A8362A",green:"#1A6B3C",blue:"#1F5E8C",purple:"#6B3380",
 };
 
 // ══════════════════════════════════════════════════════════════
 // DONNÉES STATIQUES
 // ══════════════════════════════════════════════════════════════
 const CONTINUATION_MSGS = [
-  {day:3,  msg:"Le danger maintenant : croire que comprendre suffit. Comprendre sans agir est la forme d'abandon la plus subtile."},
-  {day:7,  msg:"Ton ancien système essaie déjà de revenir. Pas violemment — juste par l'habitude, par le confort. Tu vois ça ?"},
-  {day:14, msg:"La motivation baisse. C'est exactement ici que commence réellement la transformation. Pas quand c'était facile."},
-  {day:21, msg:"21 jours. Le vieux circuit neuronal résiste encore. Mais chaque action répétée l'affaiblit. Tu es dans la zone de friction maximale — continue."},
-  {day:30, msg:"Un mois. Pas d'euphorie — juste du travail fait. C'est la preuve la plus solide : tu tiens sans avoir besoin de te sentir inspiré."},
-  {day:45, msg:"Mi-parcours. La question n'est plus 'suis-je capable ?' Elle est : 'qui suis-je en train de devenir ?'"},
-  {day:60, msg:"60 jours de vie différente. Ton identité a changé même si tu ne le vois pas encore clairement. La clarté arrive à 90."},
-  {day:75, msg:"15 jours. Pas le moment de ralentir. C'est maintenant que certains abandonnent en croyant que c'est gagné. Ce n'est pas gagné — c'est ancré."},
+  {day:3,  msg:"3 jours. Le piège maintenant c'est de croire qu'on a compris. Comprendre sans agir, c'est la forme d'abandon la plus silencieuse. On continue."},
+  {day:7,  msg:"7 jours. L'ancien système essaie de reprendre la main — pas par la force, par le confort. On le voit venir. Et on reste."},
+  {day:14, msg:"14 jours. La motivation du début s'est calmée — c'est normal, c'est là que ça commence vraiment. Ceux qui tiennent ici, ils vont au bout."},
+  {day:21, msg:"21 jours. Le circuit ancien résiste encore — mais chaque action le fragilise un peu plus. On est dans la zone de friction maximale. C'est là que l'identité se forge."},
+  {day:30, msg:"Un mois de travail réel. Pas d'euphorie — juste des actes posés. C'est la preuve la plus solide qui soit : on tient sans avoir besoin d'être inspiré."},
+  {day:45, msg:"Mi-parcours. La question a changé. Ce n'est plus 'est-ce qu'on peut ?' — on sait qu'on peut. La vraie question maintenant : 'qui est-ce qu'on est en train de devenir ?'"},
+  {day:60, msg:"60 jours de vie différente. L'identité a bougé — même si on ne la voit pas encore clairement. La clarté arrive à 90. On continue."},
+  {day:75, msg:"15 jours. Pas le moment de ralentir. C'est exactement ici que certains lâchent en croyant que c'est gagné. Ce n'est pas gagné — c'est ancré. Nuance."},
 ];
 
 const WEEK_ROLES = {
@@ -298,17 +294,11 @@ const SEGMENTS_FINANCES = [
     {id:"q_visibilite",label:"Quand tu dois vendre ou te rendre visible — que se passe-t-il dans ta tête ?",type:"textarea",ph:"Je remets à plus tard. J'ai peur du refus. Je n'ose pas relancer mes clients ou augmenter mes prix.",minLen:15,
      reward:"Ce mécanisme est identifié. Le plan le désamorce concrètement.",
      aide:{ex:"Je préfère baisser mes prix plutôt que de négocier."}},
-    {id:"q_perception_externe",label:"Si quelqu'un observait tes finances sans rien te demander, juste à partir de tes actions du dernier mois — que conclurait-il sur tes vraies priorités ?",type:"textarea",ph:"Il verrait que je dépense plus pour paraître que pour construire. Que je dis vouloir investir mais que rien ne le montre dans mes comptes.",minLen:15,
-     reward:"L'écart entre ce que tu dis et ce que prouvent tes actions devient visible — et exploitable.",
-     aide:{ex:"Il conclurait que le confort immédiat passe avant mes objectifs déclarés."}},
   ]},
   { id:"objectif", label:"OBJECTIF", icon:"✦", subtitle:"Ce que tu veux changer concrètement", questions:[
     {id:"q_objectif",label:"Quel résultat financier concret doit changer en 90 jours ?",type:"text",ph:"Ex : Atteindre 300 000 FCFA/mois en revenus nets",minLen:10,
      reward:"Objectif ancré. Toutes les 12 semaines pointent vers ça.",
      aide:{ex:"Générer 500 000 FCFA/mois. Avoir 3 clients réguliers."}},
-    {id:"q_actif_passif",label:"Sur les 3 derniers mois, l'argent qui est entré est-il devenu un actif (qui te rapporte encore aujourd'hui) ou a-t-il juste disparu dans des dépenses sans retour ?",type:"textarea",ph:"Tout est parti en dépenses du quotidien et en remboursements. Je n'ai rien acheté qui me rapporte encore aujourd'hui — ni stock, ni outil, ni placement.",minLen:15,
-     reward:"Cette distinction actif/passif devient le filtre de chaque décision financière du plan.",
-     aide:{ex:"J'ai gagné plus ce trimestre, mais tout est parti en consommation. Zéro actif acquis."}},
     {id:"q_urgence",label:"Pourquoi c'est urgent maintenant — et pas dans 2 ans ?",type:"textarea",ph:"Parce que mes dettes augmentent. Parce que ma famille attend depuis trop longtemps. Chaque mois qui passe coûte.",minLen:15,
      reward:"Cette urgence tient quand la motivation lâche.",
      aide:{ex:"Parce que j'ai déjà perdu 3 ans à procrastiner."}},
@@ -320,9 +310,6 @@ const SEGMENTS_FINANCES = [
      aide:{ex:"Dans 3 ans : même salaire, mêmes dettes. Ma famille aura perdu confiance en moi."}},
   ]},
   { id:"blocages", label:"BLOCAGES", icon:"⚠", subtitle:"Ce qui freine vraiment ta progression", questions:[
-    {id:"q_reussite_passee",label:"Quand as-tu déjà tenu un engagement financier difficile, même une seule fois — qu'est-ce que ça prouve sur ta capacité à le refaire ?",type:"textarea",ph:"Il y a 2 ans j'ai remboursé une dette en 6 mois sans craquer. Ça prouve que je tiens quand l'enjeu est clair et que j'ai un plan précis.",minLen:20,
-     reward:"Cette preuve devient ton point d'appui — pas un hasard, une compétence déjà démontrée.",
-     aide:{ex:"J'ai épargné pour un objectif précis une fois et j'ai tenu 4 mois. Je suis capable de tenir quand le but est concret."}},
     {id:"q_mensonge",label:"Quel mensonge ton cerveau utilise-t-il pour éviter d'agir ?",type:"select",
      opts:["Je ne suis pas encore prêt","Je manque de capital","Ce n'est pas le bon moment","Je dois encore apprendre","Je n'ai pas le temps","Les conditions ne sont pas réunies","Je vais commencer bientôt","Autre"],
      reward:"Ce mensonge est nommé. Il perd son pouvoir.",
@@ -330,7 +317,7 @@ const SEGMENTS_FINANCES = [
     {id:"q_perte_succes",label:"Si tu réussissais vraiment ces 90 jours — que risques-tu de perdre ? Et quelle relation à l'argent refuses-tu de continuer après ça ?",type:"textarea",ph:"Je perdrais l'excuse de ne pas avoir réussi. Et je refuse de continuer à finir le mois à zéro.",minLen:15,
      reward:"Les résistances au succès sont identifiées. Ta ligne rouge est posée.",
      aide:{ex:"Je perdrais le confort de me plaindre. Je refuse de dépenser avant d'épargner."}},
-    {id:"q_echec_historique",label:"La dernière fois que tu as échoué financièrement — que s'est-il passé exactement, quelle conclusion as-tu tirée sur toi, et c'était ta combientième tentative de ce genre ?",type:"textarea",ph:"En 2021 j'ai lancé un business qui a échoué — ma 3e tentative d'entreprendre. J'ai conclu que je n'étais pas fait pour ça. Depuis j'hésite à tout.",minLen:20,
+    {id:"q_echec_historique",label:"La dernière fois que tu as échoué financièrement — que s'est-il passé exactement et quelle conclusion as-tu tirée sur toi ?",type:"textarea",ph:"En 2021 j'ai lancé un business qui a échoué. J'ai conclu que je n'étais pas fait pour entreprendre. Depuis j'hésite à tout.",minLen:20,
      reward:"Ce schéma est identifié. Le plan est construit pour le désamorcer.",
      aide:{ex:"Mon projet a échoué. J'ai pensé : 'Je suis nul en gestion.' C'est depuis que j'évite de recommencer."}},
   ]},
@@ -342,9 +329,6 @@ const SEGMENTS_FINANCES = [
      opts:["Je scrolle les réseaux sociaux","Je dors ou j'évite d'y penser","Je travaille dans tous les sens sans stratégie","Je mange pour compenser","Je procrastine et remets à demain","Je regarde des vidéos ou séries","Je coupe les contacts","Je cherche une solution immédiatement"],
      reward:"Ce comportement de fuite est dans le protocole anti-rechute.",
      aide:{ex:"Quand j'ai des problèmes d'argent, je scrolle Instagram pendant des heures."}},
-    {id:"q_soutien",label:"Qui, précisément (prénom et lien), sait exactement ce que tu construis ces 90 jours — et pourrait te le rappeler si tu lâches ? Si personne, dis-le aussi.",type:"textarea",ph:"Personne ne sait vraiment. Ma sœur connaît l'objectif vague mais pas le plan précis.",minLen:10,
-     reward:"S'il existe, ce lien devient un point d'ancrage dans ton protocole anti-abandon. S'il n'existe pas, le plan en tient compte aussi.",
-     aide:{ex:"Mon associé, Karim — il connaît le chiffre exact et me le redemande chaque semaine."}},
   ]},
   { id:"execution", label:"EXÉCUTION", icon:"▶", subtitle:"Ton engagement concret sur 90 jours", questions:[
     {id:"q_pari",label:"Tu paries combien sur 100 que tu réussis ces 90 jours — et pourquoi pas plus, pourquoi pas moins ?",type:"textarea",ph:"65/100. Pas plus parce que j'ai déjà essayé et abandonné. Pas moins parce que cette fois j'ai un vrai système.",minLen:20,
@@ -357,9 +341,6 @@ const SEGMENTS_FINANCES = [
     {id:"q_montant",label:"Quel revenu mensuel exact changerait concrètement ta vie ?",type:"text",ph:"Ex : 450 000 FCFA / mois",minLen:3,
      reward:"Cet ancrage calibre toutes les 12 semaines.",
      aide:{ex:"300 000 FCFA me permettrait de quitter mon emploi et vivre sereinement."}},
-    {id:"q_identite_future_fin",label:"Le jour où ton objectif financier est réellement atteint — qui es-tu à ce moment précis ? Qu'est-ce que ça change dans la façon dont tu te vois ?",type:"textarea",ph:"Je suis quelqu'un qui a tenu sa parole envers sa famille. Je ne me vois plus comme quelqu'un qui subit l'argent, mais comme quelqu'un qui le dirige.",minLen:20,
-     reward:"Cette identité future est ce qu'on relit au moment de tout lâcher.",
-     aide:{ex:"Je suis devenu quelqu'un de fiable financièrement. Je ne me vois plus comme un rêveur mais comme un bâtisseur."}},
   ]},
 ];
 const SEGMENTS_COMPORTEMENT = [
@@ -378,9 +359,6 @@ const SEGMENTS_COMPORTEMENT = [
      opts:["Je procrastine beaucoup","Je manque de constance","Je commence puis j'abandonne","Je me disperse facilement","Je manque de discipline","Je fuis l'inconfort","Je retombe toujours dans les mêmes habitudes"],
      reward:"Ce profil comportemental est au cœur de ton diagnostic.",
      aide:{ex:"Si tu lances des projets sans les finir → 'Je commence puis j'abandonne'."}},
-    {id:"q_perception_externe",label:"Si quelqu'un t'observait une semaine sans te parler, juste tes actions — qu'est-ce qu'il conclurait sur tes vraies priorités, pas celles que tu annonces ?",type:"textarea",ph:"Il verrait que je passe plus de temps à planifier qu'à agir. Que mon téléphone gagne contre mes objectifs presque chaque jour.",minLen:15,
-     reward:"L'écart entre ce que tu dis vouloir et ce que prouvent tes actions devient visible — et exploitable.",
-     aide:{ex:"Il conclurait que le confort immédiat passe systématiquement avant mes engagements."}},
   ]},
   { id:"objectif", label:"OBJECTIF", icon:"✦", subtitle:"La transformation que tu veux vraiment", questions:[
     {id:"q_objectif",label:"Quel comportement précis veux-tu transformer en 90 jours ?",type:"textarea",ph:"Arrêter de procrastiner mes tâches importantes. Tenir mes engagements envers moi-même. Installer une routine quotidienne.",minLen:20,
@@ -397,14 +375,11 @@ const SEGMENTS_COMPORTEMENT = [
      aide:{ex:"Supprimer Netflix 30 jours. Couper les notifications pendant les heures de travail."}},
   ]},
   { id:"blocages", label:"BLOCAGES", icon:"⚠", subtitle:"Tes mécanismes de sabotage", questions:[
-    {id:"q_reussite_passee",label:"Quand as-tu déjà résisté à ce comportement, même une seule fois — qu'est-ce que ça prouve sur ta capacité à le refaire ?",type:"textarea",ph:"Une fois j'ai tenu 3 semaines sans procrastiner sur un projet qui me tenait à cœur. Ça prouve que je peux tenir quand le sens est clair.",minLen:20,
-     reward:"Cette preuve devient ton point d'appui — pas un hasard, une compétence déjà démontrée.",
-     aide:{ex:"J'ai arrêté de fumer 2 mois une fois. Je sais que je peux tenir quand je décide vraiment."}},
     {id:"q_mensonge",label:"Quel mensonge utilises-tu pour justifier tes mauvaises habitudes ?",type:"select",
      opts:["Je changerai quand ma situation s'améliorera","C'est plus fort que moi — c'est ma nature","J'ai essayé mais ça ne marche pas pour moi","Je n'ai pas le temps","Je manque de volonté","C'est à cause de mon entourage","Je le ferai demain","Autre"],
      reward:"Ce mensonge est nommé. Il perd son pouvoir.",
      aide:{ex:"'Je changerai quand j'aurai moins de stress.' / 'Je suis comme ça de nature.'"}},
-    {id:"q_resistance_abandon",label:"Si tu changeais vraiment — que perdrais-tu ? Quelle est la vraie raison derrière tes abandons, et c'est la combientième fois que tu essaies de changer ce comportement précis ?",type:"textarea",ph:"Je perdrais le confort de me plaindre. J'abandonne quand c'est inconfortable. C'est ma 4e tentative sérieuse sur ce point précis.",minLen:15,
+    {id:"q_resistance_abandon",label:"Si tu changeais vraiment — que perdrais-tu ? Et quelle est la vraie raison derrière tes abandons ?",type:"textarea",ph:"Je perdrais le confort de me plaindre. Et j'abandonne toujours quand c'est inconfortable ou quand je ne vois pas de résultats rapides.",minLen:15,
      reward:"Les résistances inconscientes et le mécanisme d'abandon sont identifiés.",
      aide:{ex:"Je perdrais la familiarité du chaos. J'abandonne quand une émotion forte arrive."}},
     {id:"q_emotion_declencheur",label:"Quelle émotion déclenche le plus souvent tes comportements destructeurs ?",type:"select",
@@ -423,12 +398,6 @@ const SEGMENTS_COMPORTEMENT = [
     {id:"q_environnement",label:"Quel environnement renforce le plus tes mauvaises habitudes ?",type:"textarea",ph:"À la maison sans structure je procrastine tout. Mon entourage a les mêmes habitudes que moi.",minLen:15,
      reward:"L'environnement est maintenant dans les stratégies du plan.",
      aide:{ex:"Le salon avec la télé. Mon téléphone sur le bureau. Mes amis qui ne font rien le week-end."}},
-    {id:"q_sommeil",label:"Comment dors-tu en ce moment — et vois-tu un lien avec ce comportement que tu veux changer ?",type:"textarea",ph:"Je dors mal, je me couche tard sur mon téléphone. Quand je dors mal, ma discipline s'effondre le lendemain.",minLen:15,
-     reward:"Le sommeil est un des meilleurs prédicteurs de rechute — il entre dans le rituel du soir.",
-     aide:{ex:"5-6h par nuit, irrégulier. Les jours où je dors mal, je craque plus facilement."}},
-    {id:"q_soutien",label:"Qui, précisément (prénom et lien), sait exactement ce que tu construis ces 90 jours — et pourrait te le rappeler si tu lâches ? Si personne, dis-le aussi.",type:"textarea",ph:"Personne ne sait vraiment ce que je vise. Mon copain sait juste que 'je me bouge en ce moment'.",minLen:10,
-     reward:"S'il existe, ce lien devient un point d'ancrage dans ton protocole anti-abandon. S'il n'existe pas, le plan en tient compte aussi.",
-     aide:{ex:"Ma colocataire, Aïcha — elle me demande mon avancement chaque dimanche."}},
   ]},
   { id:"execution", label:"EXÉCUTION", icon:"▶", subtitle:"Ton engagement concret", questions:[
     {id:"q_pari",label:"Tu paries combien sur 100 que tu réussis ces 90 jours — et pourquoi pas plus, pourquoi pas moins ?",type:"textarea",ph:"60/100. Pas plus parce que j'ai déjà échoué plusieurs fois. Pas moins parce que cette fois j'ai un vrai système.",minLen:20,
@@ -462,9 +431,6 @@ const SEGMENTS_MENTAL = [
     {id:"q_peur_dominante",label:"Quelle peur influence silencieusement la majorité de tes décisions aujourd'hui ?",type:"textarea",ph:"La peur d'échouer. La peur du jugement. La peur de décevoir ma famille. La peur de ne pas être à la hauteur.",minLen:15,
      reward:"Cette peur est identifiée. Le plan est construit pour la désarmer.",
      aide:{ex:"Peur du rejet. Peur d'être insuffisant. Peur de prendre la mauvaise décision."}},
-    {id:"q_perception_externe",label:"Si quelqu'un proche de toi décrivait ton état mental réel des dernières semaines — pas celui que tu montres — que dirait-il ?",type:"textarea",ph:"Il dirait que je tiens debout en façade mais que je suis épuisé. Que je souris mais que je réponds de moins en moins aux messages.",minLen:15,
-     reward:"L'écart entre ce que tu montres et ce qui se passe vraiment devient visible — et traitable.",
-     aide:{ex:"Il dirait que je parais fort mais que je m'isole de plus en plus."}},
   ]},
   { id:"objectif", label:"OBJECTIF", icon:"✦", subtitle:"La transformation intérieure que tu veux", questions:[
     {id:"q_objectif",label:"Quelle transformation mentale ou émotionnelle veux-tu vivre en 90 jours ?",type:"textarea",ph:"Retrouver la paix intérieure. Arrêter d'être gouverné par mes pensées négatives. Avoir plus de clarté.",minLen:20,
@@ -478,10 +444,7 @@ const SEGMENTS_MENTAL = [
      aide:{ex:"Dans 3 ans : même épuisement, même anxiété. Et mes proches en pâtiront."}},
   ]},
   { id:"blocages", label:"BLOCAGES", icon:"⚠", subtitle:"Ce qui pèse réellement", questions:[
-    {id:"q_reussite_passee",label:"Quand as-tu déjà retrouvé du calme en pleine tempête, même brièvement — qu'est-ce que ça prouve sur ta capacité à le refaire ?",type:"textarea",ph:"Le jour de l'enterrement de mon père, j'ai trouvé un calme que je ne comprends pas encore. Ça prouve que cette stabilité existe déjà en moi, même si je n'y accède pas souvent.",minLen:20,
-     reward:"Cette preuve devient ton point d'appui — pas un hasard, une capacité déjà démontrée.",
-     aide:{ex:"Pendant une crise au travail, j'ai géré sans paniquer. Je sais que je peux rester stable sous pression réelle."}},
-    {id:"q_resistance_perte",label:"Si tu trouvais la paix intérieure — que risques-tu de perdre ? Quel échec t'a le plus fragilisé mentalement, et combien de fois as-tu déjà essayé de t'en sortir avant cette fois ?",type:"textarea",ph:"Je perdrais l'identité de celui qui souffre. En 2020 tout s'est effondré — c'était ma 2e vraie tentative de m'en sortir, après la thérapie abandonnée en 2018.",minLen:20,
+    {id:"q_resistance_perte",label:"Si tu trouvais la paix intérieure — que risques-tu de perdre ? Et quel échec t'a le plus fragilisé mentalement ?",type:"textarea",ph:"Je perdrais l'identité de celui qui souffre. Et en 2020 quand tout s'est effondré, j'ai conclu que je n'étais pas fait pour réussir.",minLen:20,
      reward:"Les résistances inconscientes et le schéma fragilisant sont identifiés.",
      aide:{ex:"Je perdrais la familiarité de mon anxiété. Échec : mon divorce, conclusion : je ne mérite pas mieux."}},
     {id:"q_reaction_pression",label:"Quand tu es sous pression — tu deviens plutôt ?",type:"select",
@@ -491,9 +454,6 @@ const SEGMENTS_MENTAL = [
     {id:"q_croyance_limitante",label:"Quelle croyance sur toi-même aimerais-tu enfin arrêter de porter ?",type:"textarea",ph:"'Je ne suis pas assez bien.' / 'Je suis en retard sur tout le monde.' / 'Je ne mérite pas mieux que ça.'",minLen:10,
      reward:"Cette croyance est dans le diagnostic. L'autosuggestion en est l'opposé exact.",
      aide:{ex:"'Je suis une déception.' / 'Je n'arriverai jamais à rien.'"}},
-    {id:"q_honte",label:"Y a-t-il une honte précise que tu n'as jamais dite à voix haute ? Tu peux rester vague si tu en as besoin — l'important, c'est de la nommer un minimum.",type:"textarea",ph:"J'ai honte de ne pas avoir réussi à l'âge où je pensais l'avoir fait. J'ai honte de ce que mes parents penseraient s'ils savaient où j'en suis vraiment.",minLen:10,
-     reward:"Nommer une honte, même partiellement, lui retire une partie de son pouvoir silencieux.",
-     aide:{ex:"Honte de dépendre encore financièrement de quelqu'un à mon âge."}},
   ]},
   { id:"energie", label:"ÉNERGIE", icon:"◉", subtitle:"Ta charge mentale et tes habitudes", questions:[
     {id:"q_fuite_charge",label:"Qu'est-ce qui surcharge le plus ton esprit — et vers quoi tu fuis automatiquement quand c'est trop lourd ?",type:"textarea",ph:"Des décisions en attente et des conflits non résolus. Je fuis vers mon téléphone ou je dors.",minLen:15,
@@ -506,9 +466,6 @@ const SEGMENTS_MENTAL = [
     {id:"q_habitude_calmante",label:"Quelle habitude calme vraiment ton cerveau — et quand l'as-tu pratiquée pour la dernière fois ?",type:"textarea",ph:"La marche me calme. Mais je ne l'ai pas faite depuis 3 semaines. La prière aussi — mais j'ai arrêté.",minLen:15,
      reward:"Cette habitude calmante entre dans le rituel quotidien.",
      aide:{ex:"La méditation. Le sport. La lecture. Dernière fois : il y a 2 semaines."}},
-    {id:"q_soutien",label:"Qui, précisément (prénom et lien), sait exactement ce que tu traverses — et pourrait te le rappeler si tu lâches ? Si personne, dis-le aussi.",type:"textarea",ph:"Personne ne sait vraiment l'ampleur de ce que je traverse. Je garde ça pour moi.",minLen:10,
-     reward:"S'il existe, ce lien devient un point d'ancrage dans ton protocole anti-abandon. S'il n'existe pas, le plan en tient compte aussi.",
-     aide:{ex:"Ma mère — elle sent quand ça ne va pas et m'appelle toujours au bon moment."}},
   ]},
   { id:"execution", label:"EXÉCUTION", icon:"▶", subtitle:"Ton engagement concret", questions:[
     {id:"q_pari",label:"Tu paries combien sur 100 que tu vis cette transformation en 90 jours — et pourquoi pas plus, pourquoi pas moins ?",type:"textarea",ph:"62/100. Pas plus parce que mon mental résiste depuis longtemps. Pas moins parce que je comprends enfin pourquoi.",minLen:20,
@@ -518,9 +475,6 @@ const SEGMENTS_MENTAL = [
      selects:[{id:"heures",label:"Minutes / jour",opts:["15 à 30 minutes","30 à 60 minutes","1 à 2 heures","Plus de 2 heures"]},{id:"moment",label:"Moment naturel",opts:["Matin (avant 12h)","Après-midi (12h–18h)","Soir (après 20h)","Variable"]}],
      reward:"Les pratiques sont calées sur ton minimum réel.",
      aide:{ex:"15 minutes le matin avant que la journée commence."}},
-    {id:"q_identite_future_mental",label:"Le jour où cette transformation est acquise — qui es-tu à ce moment précis ? Qu'est-ce que ça change dans ta façon de penser et de réagir ?",type:"textarea",ph:"Je suis quelqu'un qui répond au lieu de réagir. Je ne me vois plus comme quelqu'un de fragile, mais comme quelqu'un de stable même quand tout bouge autour.",minLen:20,
-     reward:"Cette identité future est ce qu'on relit au moment de tout lâcher.",
-     aide:{ex:"Je suis devenu quelqu'un de posé. Je ne me définis plus par mon anxiété mais par ma capacité à revenir au calme."}},
   ]},
 ];
 function getSegments(domaine) {
@@ -615,7 +569,6 @@ function buildPrompt1(answers) {
 INTERDICTIONS : "crois en toi" | conseils génériques | jargon coaching | "tu peux le faire"
 TEST : chaque phrase doit être impossible à donner à quelqu'un d'autre.
 DIAGNOSTIC : MAUVAIS="Tu manques de discipline." BON="Tu relies ton exécution à ton état émotionnel."
-SI HONTE NON-DITE renseignée : ne jamais la répéter crûment ni la citer mot pour mot dans le diagnostic ou les citations. L'utiliser seulement pour comprendre le mécanisme en interne, jamais pour confronter directement — la confrontation porte sur le comportement observable, pas sur la honte elle-même.
 
 DOMAINE : ${domaine}
 PROFIL :
@@ -624,7 +577,6 @@ DOMAINE: ${domaine}
 Frustration/État: ${g('q_frustration')||g('q_comportement_reccurent')||g('q_pensee_dominante')||g('q_etat_now')}
 Profil: ${g('q_profil_financier')||g('q_profil_comportemental')||g('q_etat_mental')||g('q_version_dominante')}
 Objectif: ${g('q_objectif')} | Urgence: ${g('q_urgence')||g('q_urgence_projection')||g('q_urgence_version_stable')||g('q_pourquoi_maintenant')}
-Actif vs passif (argent qui rapporte vs argent qui disparaît): ${g('q_actif_passif')||''}
 Sacrifice/Action repoussée: ${g('q_sacrifice')||g('q_activite_repoussee')}
 Coût inaction: ${g('q_cout_statu_quo')||g('q_cout_inaction')||g('q_si_pas')}
 Niveaux revenus: ${g('q_niveaux_revenus')||''}
@@ -642,15 +594,10 @@ Consommation vs construction: ${g('q_consommation_vs_construction')||''} | Disci
 Habitude calmante: ${g('q_habitude_calmante')||''}
 Identité cible: ${g('q_identite_cible')||''} | Croyance transformée: ${g('q_croyance_transformation')||''}
 Pari: ${g('q_pari_complet')||g('q_pari')||''} | Temps: ${g('q_heures')} | Moment: ${g('q_moment')}
-Montant libérateur: ${g('q_montant')||''} | Engagement/Identité future: ${g('q_engagement')||g('q_identite_future_fin')||g('q_identite_future_mental')||''}
-Réussite passée (preuve de capacité): ${g('q_reussite_passee')||''}
-Soutien/Redevabilité: ${g('q_soutien')||''}
-Perception externe (écart dire/faire): ${g('q_perception_externe')||''}
-Sommeil: ${g('q_sommeil')||''}
-Honte non-dite: ${g('q_honte')||''}
+Montant libérateur: ${g('q_montant')||''} | Engagement: ${g('q_engagement')||''}
 
 Génère ce JSON valide EXACTEMENT — sans texte avant ni après, sans backticks :
-{"nom_guerre":"string — surnom puissant lié à son profil PRÉCIS, pas générique","pourquoi_ce_nom":"string — explication directe en 1-2 phrases qui fait mouche","identite_future":{"comment_pense":"string — pensée concrète liée au domaine","comment_agit":"string — comportement observable","ne_tolere_plus":"string — lié à ses réponses réelles","nouveaux_standards":"string — ancré dans son objectif"},"diagnostic":{"resume":"3 phrases MAX. Confrontantes. Basées sur VERSION DOMINANTE + COMPORTEMENT D'ÉVITEMENT. Impossible à donner à quelqu'un d'autre.","bloquant_central":"1 seule phrase. Doit faire légèrement mal parce qu'elle est vraie.","schema_sabotage":"Mécanisme précis. Commence par 'Quand tu...' ou 'Dès que...'","lecon_echec":"Ce que l'échec passé révèle sur le mécanisme de sabotage FUTUR.","qualites_cachees":"2 forces réelles cachées derrière les blocages déclarés — au moins 1 doit s'appuyer sur la RÉUSSITE PASSÉE donnée plus haut, pas être inventée."},"scorecard":{"discipline":{"score":55,"lecture":"string — 1 phrase confrontante liée au profil"},"focus":{"score":50,"lecture":"string"},"energie":{"score":60,"lecture":"string"},"clarte":{"score":45,"lecture":"string"},"constance":{"score":40,"lecture":"string"},"risque_abandon":"Modéré","facteur_risque":"string — circonstance précise d'abandon probable","levier_principal":"string — point fort exploitable immédiatement","mission_centrale":"string — 1 phrase personnelle qui donne envie d'agir"},"citations_personnelles":["phrase construite à partir de SES PROPRES MOTS des réponses — reconnaissable par lui","phrase — liée à son objectif précis","phrase — liée à sa peur profonde transformée en force"]}
+{"nom_guerre":"string — surnom puissant lié à son profil PRÉCIS, pas générique","pourquoi_ce_nom":"string — explication directe en 1-2 phrases qui fait mouche","identite_future":{"comment_pense":"string — pensée concrète liée au domaine","comment_agit":"string — comportement observable","ne_tolere_plus":"string — lié à ses réponses réelles","nouveaux_standards":"string — ancré dans son objectif"},"diagnostic":{"resume":"3 phrases MAX. Confrontantes. Basées sur VERSION DOMINANTE + COMPORTEMENT D'ÉVITEMENT. Impossible à donner à quelqu'un d'autre.","bloquant_central":"1 seule phrase. Doit faire légèrement mal parce qu'elle est vraie.","schema_sabotage":"Mécanisme précis. Commence par 'Quand tu...' ou 'Dès que...'","lecon_echec":"Ce que l'échec passé révèle sur le mécanisme de sabotage FUTUR.","qualites_cachees":"2 forces réelles cachées derrière les blocages déclarés."},"scorecard":{"discipline":{"score":55,"lecture":"string — 1 phrase confrontante liée au profil"},"focus":{"score":50,"lecture":"string"},"energie":{"score":60,"lecture":"string"},"clarte":{"score":45,"lecture":"string"},"constance":{"score":40,"lecture":"string"},"risque_abandon":"Modéré","facteur_risque":"string — circonstance précise d'abandon probable","levier_principal":"string — point fort exploitable immédiatement","mission_centrale":"string — 1 phrase personnelle qui donne envie d'agir"},"citations_personnelles":["phrase construite à partir de SES PROPRES MOTS des réponses — reconnaissable par lui","phrase — liée à son objectif précis","phrase — liée à sa peur profonde transformée en force"]}
 Scores contrastés (écart min 10pts entre scores). Français. Aucun texte hors du JSON.`;
 }
 
@@ -670,7 +617,7 @@ ${g('q_moment')} | ${g('q_heures')} | Montant: ${g('q_montant')}
 ACTIONS : QUOI + QUAND (heure précise) + DURÉE + CONTEXTE. Jamais vague.
 
 Génère ce JSON valide EXACTEMENT — sans texte avant ni après, sans backticks :
-{"rituel":{"autosuggestion":"RÈGLE AUTOSUGGESTION : phrase au présent, première personne, 15-25 mots MAX. Doit utiliser des éléments PRÉCIS du profil (objectif, domaine, point fort). Doit être l'opposé EXACT de la phrase négative avec SES propres mots transformés. EXEMPLES si phrase négative='je n'arrive jamais à finir ce que je commence' → 'Je suis quelqu'un qui termine ce qu'il commence — chaque action complétée me prouve qui je suis vraiment.' JAMAIS générique. JAMAIS 'je suis fort et courageux'.","matin":[{"etape":"Respiration","duree":"5 min","action":"4-7-8"},{"etape":"Recentrage","duree":"2 min","action":"visualisation objectif"},{"etape":"Autosuggestion","duree":"2 min","action":"3 fois à voix haute et forte, DEBOUT, épaules ouvertes — pas assis, pas chuchoté"}],"premiere_action_du_jour":"1 action dans les 2 min","soir":{"duree":"5 min","action":"révision"}},"anti_saboteur":{"racine":"string","declencheur":"string","strategie_1":"string","strategie_2":"string","strategie_3":"string"},"protocole_rechute":{"contexte":"string","5_minutes":"string","24h":"string","48h":"string","regle_non_zero":"string","jour_difficile":"string","motivation_basse":"string","rechute_emotionnelle":"string","fatigue_mentale":"string"},"anti_abandon":{"regles":["string","string","string"],"version_minimale":"string"},"lectures":[{"titre":"string","auteur":"string","pourquoi":"string"},{"titre":"string","auteur":"string","pourquoi":"string"},{"titre":"string","auteur":"string","pourquoi":"string"}],"message_final":"string","contrat":"string"}
+{"rituel":{"autosuggestion":"RÈGLE AUTOSUGGESTION : phrase au présent, première personne, 15-25 mots MAX. Doit utiliser des éléments PRÉCIS du profil (objectif, domaine, point fort). Doit être l'opposé EXACT de la phrase négative avec SES propres mots transformés. EXEMPLES si phrase négative='je n'arrive jamais à finir ce que je commence' → 'Je suis quelqu'un qui termine ce qu'il commence — chaque action complétée me prouve qui je suis vraiment.' JAMAIS générique. JAMAIS 'je suis fort et courageux'.","matin":[{"etape":"Respiration","duree":"5 min","action":"4-7-8"},{"etape":"Recentrage","duree":"2 min","action":"visualisation objectif"},{"etape":"Autosuggestion","duree":"1 min","action":"3 fois à voix haute"}],"premiere_action_du_jour":"1 action dans les 2 min","soir":{"duree":"5 min","action":"révision"}},"anti_saboteur":{"racine":"string","declencheur":"string","strategie_1":"string","strategie_2":"string","strategie_3":"string"},"protocole_rechute":{"contexte":"string","5_minutes":"string","24h":"string","48h":"string","regle_non_zero":"string","jour_difficile":"string","motivation_basse":"string","rechute_emotionnelle":"string","fatigue_mentale":"string"},"anti_abandon":{"regles":["string","string","string"],"version_minimale":"string"},"lectures":[{"titre":"string","auteur":"string","pourquoi":"string"},{"titre":"string","auteur":"string","pourquoi":"string"},{"titre":"string","auteur":"string","pourquoi":"string"}],"message_final":"string","contrat":"string"}
 Français direct. Aucun texte hors du JSON.`;
 }
 
@@ -703,9 +650,7 @@ Génère UNIQUEMENT S7 à S12. JSON strict commence par {:
 Exactement 6 semaines S7-S12. Français concis.`
 }
 
-function buildPromptCoach(plan, plan2, weeks, dailyLogs, question, history, answers) {
-  const a = flatAnswers(answers||{});
-  const g = id => a[id];
+function buildPromptCoach(plan, plan2, weeks, dailyLogs, question, history) {
   const logs = Object.values(dailyLogs||{}).sort((a,b)=>a.day-b.day);
   const streak = computeStreak(dailyLogs);
   const recentLogs = logs.slice(-7);
@@ -750,9 +695,6 @@ PROFIL PSYCHOLOGIQUE :
 — Circonstance d'abandon : ${plan2?.protocole_rechute?.contexte||'?'}
 — Mission 90j : ${plan?.scorecard?.mission_centrale||'?'}
 — Version dominante : ${plan?.diagnostic?.resume?.split('.')[0]||'?'}
-
-FAITS DÉCLARÉS PAR LA PERSONNE ELLE-MÊME (Jour 1) — n'utilise QUE ce qui est listé ici, n'invente jamais un nom, un chiffre ou un détail qui n'y figure pas :
-${Object.entries(a).filter(([k,v])=>!["q_profil","q_domaine_principal","q_rythme"].includes(k)&&v&&typeof v==="string").map(([k,v])=>`— ${k.replace(/^q_/,"").replace(/_/g," ")} : ${v}`).join("\n")}
 ${memoireNarrative}
 
 HISTORIQUE RÉCENT :
@@ -764,7 +706,6 @@ RÈGLES ABSOLUES :
 — Tu es un coach comportemental socratique — tu POSES UNE QUESTION avant de donner un conseil
 — Exception : si l'utilisateur pose une question directe sur son plan ou ses données, réponds directement
 — Si on te demande qui tu es : présente-toi comme coach qui connaît les patterns et le plan
-— INTERDICTION ABSOLUE D'INVENTER : si une information précise (nom, date, montant, événement) n'est pas dans les FAITS DÉCLARÉS ci-dessus ou l'historique, dis "tu ne m'as pas donné cette information" plutôt que d'inventer un détail plausible
 — JAMAIS "crois en toi" / "tu peux le faire" / encouragements génériques
 — JAMAIS de conseil immédiat sans d'abord diagnostiquer : "Qu'est-ce qui s'est passé exactement ?" / "Quand précisément ?" / "Qu'est-ce que tu ressentais juste avant ?"
 — Si pattern détecté → nomme-le directement sans diplomatie
@@ -772,41 +713,6 @@ RÈGLES ABSOLUES :
 — Termine toujours par UNE action concrète avec heure et durée
 — Ton : direct, stratégique, parfois confrontant — pas thérapeute
 — 3-4 phrases maximum. 1 question. 1 action.`;
-}
-
-function buildPromptCloture(answers, plan, plan2, dailyLogs, autoEval) {
-  const a = flatAnswers(answers);
-  const g = id => a[id] || "Non renseigné";
-  const stats = computeStats(dailyLogs);
-  const croyance = g('q_mensonge') || g('q_croyance_limitante') || g('q_phrase_neg') || "Non renseigné";
-  const pari = g('q_pari_complet') || g('q_pari') || "Non renseigné";
-  const ancienneAutosuggestion = plan2?.rituel?.autosuggestion || "";
-  const bloquant = plan?.diagnostic?.bloquant_central || "";
-
-  return `TU ES UN JUGE QUI PRONONCE UN VERDICT BASÉ UNIQUEMENT SUR DES PREUVES FACTUELLES — PAS UN COACH QUI FÉLICITE.
-
-CROYANCE INITIALE (Jour 1, à confronter) : "${croyance}"
-PARI INITIAL (Jour 1) : ${pari}
-BLOQUANT DIAGNOSTIQUÉ (Jour 1) : ${bloquant}
-ANCIENNE AUTOSUGGESTION (Jour 1) : "${ancienneAutosuggestion}"
-
-PREUVES RÉELLES DES 90 JOURS — UTILISE EXACTEMENT CES CHIFFRES, N'EN INVENTE AUCUN :
-— Jours loggués sur 90 : ${stats.total}
-— Actions réalisées : ${stats.done}
-— Streak maximal : ${stats.streak} jours consécutifs
-— Rechutes traversées : ${stats.relapses}
-— Temps total investi : ${Math.round(stats.totalMins/60*10)/10}h
-— Taux d'exécution global : ${stats.execRate}%
-— À J90, la personne dit que la croyance initiale décrit ENCORE qui elle est : ${autoEval?.toujoursVrai||"Non renseigné"}
-— Auto-évaluation "je suis capable de réussir" (1-10) : ${autoEval?.capable??"?"}
-— Auto-évaluation "je fais confiance à mon futur" (1-10) : ${autoEval?.confiance??"?"}
-
-RÈGLE ABSOLUE : si peu de jours loggués (moins de 20), le verdict doit être honnête et nuancé — ne jamais inventer un triomphe qui ne correspond pas aux chiffres. Si les rechutes sont nombreuses et l'exécution faible, un verdict mitigé est PLUS utile qu'un faux compliment.
-INTERDICTIONS : "félicitations", "bravo", "tu as réussi !", ton de diplôme scolaire, tournures génériques.
-
-Génère ce JSON valide EXACTEMENT — sans texte avant ni après, sans backticks :
-{"mensonge":"reprend mot pour mot la croyance initiale ci-dessus","preuves":["preuve factuelle 1, avec un chiffre réel ci-dessus","preuve factuelle 2","preuve factuelle 3","preuve factuelle 4"],"verdict":"3-4 phrases. Ton de juge qui analyse des preuves, pas de coach qui félicite. Doit nommer explicitement si la croyance initiale tient encore ou non, en s'appuyant uniquement sur les preuves listées.","nouvelle_identite":"Une seule phrase d'OBSERVATION factuelle (pas une affirmation au futur, pas 'je vais devenir') — ce que les 90 jours prouvent que cette personne EST déjà.","lettre_futur":"80-120 mots. Lettre narrative de cette personne à elle-même dans 90 jours. Doit citer au moins 2 chiffres réels ci-dessus et au moins 1 moment difficile traversé si rechutes>0."}
-Français. Direct, sobre. Aucun texte hors du JSON.`;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -932,20 +838,19 @@ const CSS=`
   @keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(60px) rotate(360deg);opacity:0}}
   @keyframes popIn{0%{transform:scale(0.3);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
   *{box-sizing:border-box;margin:0;padding:0}
-  html{font-size:114%}
-  body{background:${C.bg};color:${C.text};font-family:'Jost',sans-serif;font-weight:400;-webkit-font-smoothing:antialiased}
-  ::placeholder{color:#5C5850!important}
+  body{background:${C.bg};color:${C.text};font-family:'Jost',sans-serif;font-weight:300;-webkit-font-smoothing:antialiased}
+  ::placeholder{color:#2A2520!important}
   ::-webkit-scrollbar{width:8px}
   ::-webkit-scrollbar-track{background:${C.bg2}}
   ::-webkit-scrollbar-thumb{background:${C.gold};border-radius:4px}
   ::-webkit-scrollbar-thumb:hover{background:${C.goldL}}
-  textarea,input,select,button{font-family:'Jost',sans-serif;font-weight:400}
+  textarea,input,select,button{font-family:'Jost',sans-serif;font-weight:300}
 `;
 const MN={fontFamily:"'DM Mono',monospace"};
-const SF={fontFamily:"'Jost',sans-serif"};
+const SF={fontFamily:"'Cormorant Garamond',serif"};
 
 function Divider(){return <div style={{width:"50px",height:"1px",background:`linear-gradient(90deg,transparent,${C.gold},transparent)`,margin:"0 auto"}}/>;}
-function Card({children,accent=false,accentColor=C.gold,style={}}){return <div style={{background:C.bg2,borderRadius:"14px",border:`1px solid ${accent?accentColor:C.border}`,borderTop:accent?`2px solid ${accentColor}`:`1px solid ${C.border}`,padding:"1.75rem",marginBottom:"1.5rem",...style}}>{children}</div>;}
+function Card({children,accent=false,style={}}){return <div style={{background:C.bg2,border:`1px solid ${accent?C.goldD:C.border}`,borderTop:`2px solid ${accent?C.gold:C.border}`,padding:"1.4rem",marginBottom:"1rem",...style}}>{children}</div>;}
 function Tag({children,color=C.gold}){return <span style={{display:"inline-block",padding:"0.18rem 0.5rem",background:`${color}18`,border:`1px solid ${color}55`,color:C.text,fontSize:"0.67rem",letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>{children}</span>;}
 function SH({icon,label,sub}){return <div style={{marginBottom:"1.1rem"}}><div style={{display:"flex",alignItems:"center",gap:"0.55rem",marginBottom:"0.2rem"}}><span style={{color:C.textDim}}>{icon}</span><span style={{fontSize:"0.58rem",letterSpacing:"0.28em",color:C.textDim,textTransform:"uppercase",...MN}}>{label}</span></div>{sub&&<div style={{fontSize:"0.75rem",color:C.textDim,paddingLeft:"1.35rem"}}>{sub}</div>}</div>;}
 
@@ -1243,7 +1148,7 @@ function RituelTimer({steps, onComplete, nomGuerre}){
       </div>
       <button onClick={nextStep} style={{
         width:"100%",padding:"0.85rem",background:doneMsg.color,border:"none",
-        color:doneMsg.color===C.gold?C.onGold:C.bg,fontSize:"0.72rem",letterSpacing:"0.12em",cursor:"pointer",fontWeight:500
+        color:C.bg,fontSize:"0.72rem",letterSpacing:"0.12em",cursor:"pointer",fontWeight:500
       }}>Continuer →</button>
     </div>
   );
@@ -1278,7 +1183,7 @@ function RituelTimer({steps, onComplete, nomGuerre}){
       )}
       <button onClick={startCountdown} style={{
         width:"100%",padding:"0.9rem",background:C.gold,border:"none",
-        color:C.onGold,fontSize:"0.72rem",letterSpacing:"0.18em",textTransform:"uppercase",
+        color:C.bg,fontSize:"0.72rem",letterSpacing:"0.18em",textTransform:"uppercase",
         fontWeight:500,cursor:"pointer",animation:"glow 2s ease-in-out infinite"
       }}>▶ Démarrer</button>
       <button onClick={skipStep} style={{width:"100%",padding:"0.35rem",background:"transparent",border:"none",color:C.textDim,fontSize:"0.62rem",cursor:"pointer",marginTop:"0.3rem"}}>Passer →</button>
@@ -1350,7 +1255,7 @@ function DailyTracker({dayNum,todayLog,onSave,logs={}}){
     </div>
     {[["ÉNERGIE",energie,setEnergie],["FOCUS",focus,setFocus]].map(([lbl,val,set])=><div key={lbl} style={{marginBottom:"0.8rem"}}>
       <div style={{fontSize:"0.56rem",color:C.text,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>{lbl}</div>
-      <div style={{display:"flex",gap:"0.35rem"}}>{[1,2,3,4,5].map(n=><button key={n} onClick={()=>set(n)} style={{flex:1,padding:"0.42rem",background:val===n?`${C.gold}20`:val&&n<=val?`${C.gold}08`:"transparent",border:`1px solid ${val===n?C.gold:C.border}`,color:val===n?C.text:C.textMid,...MN,fontSize:"0.83rem",cursor:"pointer",transition:"all 0.15s"}}>{n}</button>)}</div>
+      <div style={{display:"flex",gap:"0.35rem"}}>{[1,2,3,4,5].map(n=><button key={n} onClick={()=>set(n)} style={{flex:1,padding:"0.42rem",background:val===n?`${C.gold}20`:val&&n<=val?`${C.gold}08`:"transparent",border:`1px solid ${val===n?C.gold:C.border}`,color:val===n?C.gold:C.textMid,...MN,fontSize:"0.83rem",cursor:"pointer",transition:"all 0.15s"}}>{n}</button>)}</div>
     </div>)}
     <div style={{marginBottom:"0.8rem"}}>
       <div style={{fontSize:"0.56rem",color:C.text,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>ACTION PRINCIPALE</div>
@@ -1365,7 +1270,7 @@ function DailyTracker({dayNum,todayLog,onSave,logs={}}){
     </div>
     <div style={{marginBottom:"0.8rem"}}>
       <div style={{fontSize:"0.56rem",color:C.text,letterSpacing:"0.15em",...MN,marginBottom:"0.35rem"}}>TEMPS INVESTI</div>
-      <div style={{display:"flex",gap:"0.3rem"}}>{[0,15,30,45,60,90].map(n=><button key={n} onClick={()=>setTemps(n)} style={{flex:1,padding:"0.38rem 0.1rem",background:temps===n?`${C.gold}18`:"transparent",border:`1px solid ${temps===n?C.gold:C.border}`,color:temps===n?C.text:C.textMid,...MN,fontSize:"0.7rem",cursor:"pointer"}}>{n===0?"0":n+"'"}</button>)}</div>
+      <div style={{display:"flex",gap:"0.3rem"}}>{[0,15,30,45,60,90].map(n=><button key={n} onClick={()=>setTemps(n)} style={{flex:1,padding:"0.38rem 0.1rem",background:temps===n?`${C.gold}18`:"transparent",border:`1px solid ${temps===n?C.gold:C.border}`,color:temps===n?C.gold:C.textMid,...MN,fontSize:"0.7rem",cursor:"pointer"}}>{n===0?"0":n+"'"}</button>)}</div>
     </div>
     {showRelapseDiag&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.9)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"1.5rem"}}>
       <div style={{background:C.bg2,border:`1px solid ${C.red}`,borderTop:`3px solid ${C.red}`,padding:"1.5rem",maxWidth:"380px",width:"100%"}}>
@@ -1381,7 +1286,7 @@ function DailyTracker({dayNum,todayLog,onSave,logs={}}){
         <button onClick={()=>setShowRelapseDiag(false)} style={{width:"100%",padding:"0.7rem",background:C.red,border:"none",color:"#fff",fontSize:"0.72rem",letterSpacing:"0.1em",cursor:"pointer"}}>Enregistrer et continuer</button>
       </div>
     </div>}
-    <button onClick={()=>{if(!ready)return;onSave({day:dayNum,humeur,energie,focus,action_done:action,rituel_done:rituel,rechute,temps,score,date:todayKey(),rechute_cause:relapseCause,rechute_lecon:relapseLesson});setSaved(true);}} disabled={!ready} style={{width:"100%",padding:"0.82rem",background:ready?C.gold:C.bg3,border:"none",color:ready?C.onGold:C.textDim,fontSize:"0.73rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,opacity:ready?1:0.5,transition:"all 0.25s",cursor:ready?"pointer":"not-allowed"}}>
+    <button onClick={()=>{if(!ready)return;onSave({day:dayNum,humeur,energie,focus,action_done:action,rituel_done:rituel,rechute,temps,score,date:todayKey(),rechute_cause:relapseCause,rechute_lecon:relapseLesson});setSaved(true);}} disabled={!ready} style={{width:"100%",padding:"0.82rem",background:ready?C.gold:C.bg3,border:"none",color:ready?C.bg:C.textDim,fontSize:"0.73rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,opacity:ready?1:0.5,transition:"all 0.25s",cursor:ready?"pointer":"not-allowed"}}>
       Enregistrer{score>0?` · Score ${score}/100`:""}
     </button>
     {saved&&<div style={{textAlign:"center",padding:"0.75rem 0",animation:"fadeIn 0.4s ease"}}>
@@ -1471,7 +1376,7 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
         {weekNum<12&&<p style={{fontSize:"0.78rem",color:C.textDim,lineHeight:1.6,fontStyle:"italic"}}>✦ Continue le tracker chaque jour pour maximiser ton score.</p>}
         {weekNum===12&&<p style={{fontSize:"0.85rem",color:C.green,lineHeight:1.6}}>✦ Tu as tenu les 90 jours. Peu de gens peuvent dire ça.</p>}
       </div>
-      <button onClick={()=>setShowWeekDone(false)} style={{position:"relative",zIndex:1,width:"100%",padding:"0.9rem",background:pc,border:"none",color:pc===C.gold?C.onGold:C.bg,fontSize:"0.74rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,cursor:"pointer"}}>
+      <button onClick={()=>setShowWeekDone(false)} style={{position:"relative",zIndex:1,width:"100%",padding:"0.9rem",background:pc,border:"none",color:C.bg,fontSize:"0.74rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,cursor:"pointer"}}>
         Voir la semaine ✦
       </button>
     </div>
@@ -1582,7 +1487,7 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
   </div>;
 }
 
-function CoachChat({plan,plan2,weeks,dailyLogs,answers}){
+function CoachChat({plan,plan2,weeks,dailyLogs}){
   const COACH_KEY = `coach_history_${plan?.nom_guerre||'user'}`;
   const savedHistory = React.useMemo(()=>{
     try{ const h=localStorage.getItem(COACH_KEY); return h?JSON.parse(h):null; }catch{return null;}
@@ -1599,24 +1504,23 @@ function CoachChat({plan,plan2,weeks,dailyLogs,answers}){
   useEffect(()=>endRef.current?.scrollIntoView({behavior:"smooth"}),[msgs]);
   const send=async()=>{
     if(!input.trim()||loading)return;
-    track('coach_message_sent');
     const q=input.trim();setInput("");setMsgs(m=>[...m,{role:"user",content:q}]);setLoading(true);
     try{
       const res=await fetchWithRetry("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({prompt:buildPromptCoach(plan,plan2,weeks,dailyLogs,q,msgs,answers),system:"Tu es un coach comportemental socratique. Tu poses UNE question avant de donner un conseil. Direct, humain, 3-4 phrases max.",max_tokens:500})});
+        body:JSON.stringify({prompt:buildPromptCoach(plan,plan2,weeks,dailyLogs,q,msgs),system:"Tu es un confident, pas un consultant. Tu parles en 'on' et 'nous'. Tu ne diagnostiques pas, tu accompagnes. Tu poses UNE seule question si nécessaire. 3-4 phrases max. Chaleur et respect — jamais de jugement.",max_tokens:500})});
       if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error||`HTTP ${res.status}`);}
       const data=await res.json();
-      const txt=data.content;
+      const txt=data.result||data.text||data.content;
       if(!txt)throw new Error("Réponse vide");
       setMsgs(m=>[...m,{role:"assistant",content:txt}]);
     }catch(e){setMsgs(m=>[...m,{role:"assistant",content:`[Erreur coach: ${e.message}]`}]);}
     finally{setLoading(false);}
   };
-  return <Card>
+  return <Card accent>
     <SH icon="💬" label="Coach IA" sub="Mémoire comportementale · Contextuel"/>
     <div style={{maxHeight:"260px",overflowY:"auto",marginBottom:"0.65rem",display:"flex",flexDirection:"column",gap:"0.45rem"}}>
       {msgs.map((m,i)=><div key={i} style={{padding:"0.6rem 0.8rem",background:m.role==="user"?`${C.gold}0E`:C.bg3,border:`1px solid ${m.role==="user"?C.goldD:C.border}`,borderLeft:`3px solid ${m.role==="user"?C.gold:C.textDim}`,alignSelf:m.role==="user"?"flex-end":"flex-start",maxWidth:"92%"}}>
-        <div style={{fontSize:"0.53rem",color:m.role==="user"?C.text:C.textDim,letterSpacing:"0.12em",textTransform:"uppercase",...MN,marginBottom:"0.18rem"}}>{m.role==="user"?"Toi":"Coach"}</div>
+        <div style={{fontSize:"0.53rem",color:m.role==="user"?C.goldD:C.textDim,letterSpacing:"0.12em",textTransform:"uppercase",...MN,marginBottom:"0.18rem"}}>{m.role==="user"?"Toi":"Coach"}</div>
         <div style={{fontSize:"0.81rem",color:C.text,lineHeight:1.6}}>{m.content}</div>
       </div>)}
       {loading&&<div style={{padding:"0.7rem 0.9rem",background:C.bg3,border:`1px solid ${C.border}`,borderLeft:`3px solid ${C.gold}`,alignSelf:"flex-start",display:"flex",alignItems:"center",gap:"0.5rem"}}>
@@ -1629,7 +1533,7 @@ function CoachChat({plan,plan2,weeks,dailyLogs,answers}){
     </div>
     <div style={{display:"flex",gap:"0.35rem"}}>
       <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&send()} placeholder="Ta question…" style={{flex:1,padding:"0.68rem",background:C.bg,border:`1px solid ${C.border}`,borderBottom:`2px solid ${C.goldD}`,color:C.text,fontSize:"0.81rem",outline:"none"}}/>
-      <button onClick={send} disabled={!input.trim()||loading} style={{padding:"0.68rem 0.85rem",background:input.trim()&&!loading?C.gold:C.bg3,border:"none",color:input.trim()&&!loading?C.onGold:C.textDim,fontSize:"0.75rem",cursor:input.trim()&&!loading?"pointer":"default",transition:"all 0.2s"}}>→</button>
+      <button onClick={send} disabled={!input.trim()||loading} style={{padding:"0.68rem 0.85rem",background:input.trim()&&!loading?C.gold:C.bg3,border:"none",color:input.trim()&&!loading?C.bg:C.textDim,fontSize:"0.75rem",cursor:input.trim()&&!loading?"pointer":"default",transition:"all 0.2s"}}>→</button>
     </div>
   </Card>;
 }
@@ -1778,7 +1682,7 @@ function EngagementTab({plan, plan2, firstName}){
 
     ctx.fillStyle = "#8B6914";
     ctx.font = "11px monospace";
-    ctx.fillText("✦ Créé par Lamine Digital Lab · Mon Plan de Vie 90 Jours ✦", 450, 1160);
+    ctx.fillText("✦ Créé par Lamine Diabaté · Mon Plan de Vie 90 Jours ✦", 450, 1160);
 
     const link = document.createElement("a");
     link.download = `engagement-${(plan?.nom_guerre||"plan").replace(/\s+/g,"-").toLowerCase()}.png`;
@@ -1802,7 +1706,7 @@ function EngagementTab({plan, plan2, firstName}){
         }}>
           <div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.25em",textTransform:"uppercase",...MN,textAlign:"center",marginBottom:"0.8rem"}}>Engagement Personnel</div>
 
-          <div style={{...SF,fontSize:"1.3rem",color:C.text,textAlign:"center",marginBottom:"1rem",fontWeight:500}}>{plan?.nom_guerre||"…"}</div>
+          <div style={{...SF,fontSize:"1.3rem",color:C.textDim,textAlign:"center",marginBottom:"1rem",fontWeight:500}}>{plan?.nom_guerre||"…"}</div>
 
           <div style={{fontSize:"0.52rem",color:C.textDim,letterSpacing:"0.12em",textTransform:"uppercase",...MN,marginBottom:"0.25rem"}}>Je soussigné(e)</div>
           <input
@@ -1862,7 +1766,7 @@ function EngagementTab({plan, plan2, firstName}){
           style={{
             width:"100%",padding:"1rem",
             background:signerNom.trim()&&hasStrokes?C.gold:C.bg3,
-            border:"none",color:signerNom.trim()&&hasStrokes?C.onGold:C.textDim,
+            border:"none",color:signerNom.trim()&&hasStrokes?C.bg:C.textDim,
             fontSize:"0.74rem",letterSpacing:"0.18em",textTransform:"uppercase",fontWeight:500,
             cursor:signerNom.trim()&&hasStrokes?"pointer":"not-allowed",
             opacity:signerNom.trim()&&hasStrokes?1:0.5,
@@ -1913,11 +1817,6 @@ export default function App(){
   const [plan2,setPlan2]=useState(null);
   const [weeks,setWeeks]=useState(null);
   const [weeksLoading,setWeeksLoading]=useState(false);
-  const [cloture,setCloture]=useState(null);
-  const [clotureLoading,setClotureLoading]=useState(false);
-  const [clotureErr,setClotureErr]=useState("");
-  const [autoEval,setAutoEval]=useState(null);
-  const [clotureStarted,setClotureStarted]=useState(false);
   const [checks,setChecks]=useState({});
   const [logs,setLogs]=useState({});
   const [startDate,setStartDate]=useState(null);
@@ -1935,6 +1834,11 @@ export default function App(){
   const [tab,setTab]=useState("dashboard");
   const [trackerOpen,setTrackerOpen]=useState(false);
   const [foc,setFoc]=useState({});
+  const [miroirDone,setMiroirDone]=useState(false);
+  const [miroirData,setMiroirData]=useState(null);
+  const [miroirLoading,setMiroirLoading]=useState(false);
+  const [decisionReponse,setDecisionReponse]=useState("");
+  const [decisionSaved,setDecisionSaved]=useState(false);
 
   useEffect(()=>{
     const hydrate = async () => {
@@ -1945,16 +1849,16 @@ export default function App(){
         const saved = allLocal[lastDomain];
         setActiveDomain(lastDomain);
         setPlan(saved.plan);if(saved.plan2)setPlan2(saved.plan2);
-        if(saved.weeks)setWeeks(saved.weeks);if(saved.cloture)setCloture(saved.cloture);if(saved.answers)setAnswers(saved.answers);
+        if(saved.weeks)setWeeks(saved.weeks);if(saved.answers)setAnswers(saved.answers);
         if(saved.checks)setChecks(saved.checks);if(saved.logs)setLogs(saved.logs);
         if(saved.startDate)setStartDate(saved.startDate);if(saved.nom)setNom(saved.nom);
+        if(saved.miroirDone)setMiroirDone(true);if(saved.miroirData)setMiroirData(saved.miroirData);
         setScreen("home");
         const userKey = saved.nom || saved.email || lastDomain;
         const cloudData = await sbLoad(userKey, lastDomain);
         if(cloudData?.plan && cloudData.updated_at > (saved.updated_at||"")){
           setPlan(cloudData.plan);if(cloudData.plan2)setPlan2(cloudData.plan2);
           if(cloudData.weeks)setWeeks(cloudData.weeks);
-          if(cloudData.cloture)setCloture(cloudData.cloture);
           if(cloudData.checks)setChecks(cloudData.checks);
           if(cloudData.logs)setLogs(cloudData.logs);
           saveByDomain(lastDomain, cloudData);
@@ -1964,7 +1868,7 @@ export default function App(){
         if(!saved)return;
         if(saved.plan){
           setPlan(saved.plan);if(saved.plan2)setPlan2(saved.plan2);
-          if(saved.weeks)setWeeks(saved.weeks);if(saved.cloture)setCloture(saved.cloture);if(saved.answers)setAnswers(saved.answers);
+          if(saved.weeks)setWeeks(saved.weeks);if(saved.answers)setAnswers(saved.answers);
           if(saved.checks)setChecks(saved.checks);if(saved.logs)setLogs(saved.logs);
           if(saved.startDate)setStartDate(saved.startDate);if(saved.nom)setNom(saved.nom);
           setScreen("home");
@@ -1981,13 +1885,13 @@ export default function App(){
     if(!plan)return;
     const d=activeDomain||answers.q_domaine_principal||null;
     if(d&&DOMAIN_KEYS[d]){
-      const dataToSave={plan,plan2,weeks,cloture,answers,nom,email,checks,logs,startDate,updated_at:new Date().toISOString()};
+      const dataToSave={plan,plan2,weeks,answers,nom,email,checks,logs,startDate,updated_at:new Date().toISOString()};
       saveByDomain(d,dataToSave);
       if(!activeDomain)setActiveDomain(d);
       const userKey=nom||email||d;
       sbSave(userKey, d, dataToSave);
-    }else{const s=load()||{};save({...s,plan,plan2,weeks,cloture,answers,nom,email,checks,logs,startDate});}
-  },[plan,plan2,weeks,cloture,checks,logs,startDate,activeDomain]);
+    }else{const s=load()||{};save({...s,plan,plan2,weeks,answers,nom,email,checks,logs,startDate});}
+  },[plan,plan2,weeks,checks,logs,startDate,activeDomain]);
 
   const domaine = answers.q_domaine_principal || "";
   const activeSegs = getSegments(domaine) || SEGMENTS_FINANCES;
@@ -2003,59 +1907,15 @@ export default function App(){
 
   useEffect(()=>{ if(plan&&!logs[todayKey()]) setTrackerOpen(true); },[plan,startDate]);
 
-  useEffect(()=>{
-    if(!plan) return;
-    if(typeof Notification==="undefined") return;
-    if(Notification.permission!=="granted") return;
-    if(logs[todayKey()]) return; // déjà loggué aujourd'hui
-    if(new Date().getHours()<18) return; // ne rappelle qu'en fin de journée
-    const notifKey=`plan90_last_notif_${todayKey()}`;
-    if(localStorage.getItem(notifKey)) return; // déjà notifié aujourd'hui
-    navigator.serviceWorker?.ready.then(reg=>{
-      reg.showNotification("Mon Plan de Vie 90 Jours",{
-        body: plan2?.rituel?.premiere_action_du_jour ? `Pas encore loggué aujourd'hui — ${plan2.rituel.premiere_action_du_jour}` : "Tu n'as pas encore enregistré ta journée d'aujourd'hui.",
-        icon:"/icon-192.png", badge:"/icon-192.png", tag:"daily-reminder",
-      });
-      localStorage.setItem(notifKey,"1");
-    }).catch(()=>{});
-  },[plan,logs,startDate,screen]);
-
   const LOAD_STEPS=["Analyse psychologique du profil…","Construction du diagnostic…","Calcul du scorecard comportemental…","Génération du rituel et protocoles…","Finalisation du plan…"];
   const setF=(k,v)=>setFoc(p=>({...p,[k]:v}));
-  const iSt=k=>({width:"100%",padding:"1rem 1.1rem",borderRadius:"12px",background:C.bg2,border:`1px solid ${foc[k]?C.gold:C.border}`,boxShadow:foc[k]?`0 0 0 4px ${C.gold}1A`:"none",color:C.text,fontSize:"0.88rem",fontWeight:400,outline:"none",transition:"all 220ms ease-out"});
-  const BG={padding:"1.1rem 2.5rem",minHeight:"60px",background:C.gold,border:"none",borderRadius:"14px",color:C.onGold,fontSize:"0.75rem",letterSpacing:"0.18em",textTransform:"uppercase",fontWeight:500,cursor:"pointer",boxShadow:`0 10px 40px rgba(0,0,0,.18)`,transition:"all 220ms ease-out"};
+  const iSt=k=>({width:"100%",padding:"0.82rem 0.95rem",background:C.bg,border:`1px solid ${foc[k]?C.goldD:C.border}`,borderBottom:`2px solid ${foc[k]?C.gold:C.border}`,color:C.text,fontSize:"0.88rem",fontWeight:300,outline:"none",transition:"all 0.25s"});
+  const BG={padding:"1rem 2.5rem",background:C.gold,border:"none",color:C.bg,fontSize:"0.75rem",letterSpacing:"0.18em",textTransform:"uppercase",fontWeight:500,cursor:"pointer",boxShadow:`0 4px 22px ${C.gold}35`};
 
-  const [accessLoading,setAccessLoading]=useState(false);
-  const doAccess=async()=>{
+  const doAccess=()=>{
     if(!nom.trim()||nom.trim().length<2){setAccessErr("Entre ton nom complet.");setAccessShake(true);setTimeout(()=>setAccessShake(false),500);return;}
     if(!email.trim()||!email.includes("@")){setAccessErr("Email invalide.");setAccessShake(true);setTimeout(()=>setAccessShake(false),500);return;}
     if(!CODES.includes(code.trim().toUpperCase())){setAccessErr("Code secret invalide.");setAccessShake(true);setTimeout(()=>setAccessShake(false),500);return;}
-    track('access_submitted');
-    setAccessLoading(true);
-    try{
-      const userKey=nom.trim()||email.trim();
-      const cloudAll=await sbLoadAll(userKey);
-      const domains=Object.keys(cloudAll||{});
-      if(domains.length>0){
-        let best=domains[0];
-        domains.forEach(d=>{ if((cloudAll[d]?.updated_at||"")>(cloudAll[best]?.updated_at||"")) best=d; });
-        const data=cloudAll[best];
-        if(data?.plan){
-          track('plan_found_cloud',{domain:best});
-          setActiveDomain(best);
-          setPlan(data.plan);setPlan2(data.plan2||null);setWeeks(data.weeks||null);setCloture(data.cloture||null);
-          setAnswers(data.answers||{});setChecks(data.checks||{});setLogs(data.logs||{});
-          setStartDate(data.startDate||null);
-          localStorage.setItem(LAST_DOMAIN_KEY,best);
-          saveByDomain(best,data);
-          setTab("dashboard");setScreen("home");
-          setAccessLoading(false);
-          return;
-        }
-      }
-    }catch(e){ console.warn("Recherche plan existant échouée:",e); }
-    track('questionnaire_started');
-    setAccessLoading(false);
     setScreen("intro");
   };
 
@@ -2128,7 +1988,6 @@ export default function App(){
   };
   const generate=async()=>{
     const dom = answers.q_domaine_principal || "Finances";
-    track('questionnaire_completed',{domain:dom});
     setActiveDomain(dom);
     setScreen("loading");setLoadStep(0);
     const timers=LOAD_STEPS.map((_,i)=>setTimeout(()=>setLoadStep(i),i*4200));
@@ -2137,7 +1996,7 @@ export default function App(){
         body:JSON.stringify({prompt:prompt+"\n\nRAPPEL : commence par { immédiatement.",system:"Tu es un générateur de JSON strict. RÈGLE ABSOLUE : ta réponse commence IMMÉDIATEMENT par { et se termine par }. Zéro texte avant. Zéro backtick.",max_tokens:max})});
       if(!res.ok){const d=await res.json().catch(()=>({}));throw new Error(d.error||`Erreur API ${res.status}`);}
       const data=await res.json();
-      const rawC=data.content||"";
+      const rawC=data.result||data.text||data.content||"";
       const parsedC=repairJSON(rawC);
       if(!parsedC)throw new Error("JSON invalide — réessaie");
       return parsedC;
@@ -2151,12 +2010,10 @@ export default function App(){
       setStartDate(new Date().toISOString().split('T')[0]);
       setShowEmailPopup(true);
       setScreen("home");
-      track('plan_generated_success',{domain:dom});
     }catch(e){
       timers.forEach(clearTimeout);
       setErrMsg(e.message);
       setScreen("error");
-      track('plan_generated_error',{domain:dom,error:e.message});
     }
   };
 
@@ -2176,7 +2033,7 @@ export default function App(){
         body:JSON.stringify({prompt:prompt+"\n\nCommence par { immédiatement.",system:"Tu es un générateur de JSON strict. Commence IMMÉDIATEMENT par {.",max_tokens:3000})});
       if(!res.ok){const d=await res.json().catch(()=>({}));throw new Error(d.error||`HTTP ${res.status}`);}
       const data=await res.json();
-      const parsed=repairJSON(data.content||"");
+      const parsed=repairJSON(data.result||data.text||data.content||"");
       if(!parsed?.semaines){
         if(attempt<3){await new Promise(r=>setTimeout(r,2000*attempt));return callAPI(prompt,attempt+1);}
         throw new Error("JSON invalide après 3 tentatives");
@@ -2197,56 +2054,107 @@ export default function App(){
     }
   };
 
-  const generateCloture=async(evalData)=>{
-    if(cloture||clotureLoading)return;setClotureLoading(true);setClotureErr("");
-    const callAPI=async(prompt,attempt=1)=>{
-      const res=await fetchWithRetry("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({prompt:prompt+"\n\nCommence par { immédiatement.",system:"Tu es un générateur de JSON strict. Commence IMMÉDIATEMENT par {.",max_tokens:1200})});
-      if(!res.ok){const d=await res.json().catch(()=>({}));throw new Error(d.error||`HTTP ${res.status}`);}
-      const data=await res.json();
-      const parsed=repairJSON(data.content||"");
-      if(!parsed?.verdict){
-        if(attempt<3){await new Promise(r=>setTimeout(r,2000*attempt));return callAPI(prompt,attempt+1);}
-        throw new Error("JSON invalide après 3 tentatives");
+  const toggleCheck=(k,v)=>setChecks(p=>({...p,[k]:v}));
+
+  // ── MIROIR J11 — 3 observations IA sur les 10 premiers jours ──
+  const generateMiroir = async () => {
+    setMiroirLoading(true);
+    const recentLogs = Object.values(logs).sort((a,b)=>a.day-b.day).slice(0,10);
+    const logsText = recentLogs.map(l=>
+      `Jour ${l.day} : humeur=${l.humeur||'?'}/5, énergie=${l.energie||'?'}/5, action=${l.action_done?'faite':'non faite'}, rituel=${l.rituel_done?'fait':'non'}, rechute=${l.rechute?'oui':'non'}, temps=${l.temps||0}min${l.focus?' focus='+l.focus:''}${l.rechute_cause?' cause_rechute='+l.rechute_cause:''}`
+    ).join('\n');
+    const prompt = `Tu es un confident — pas un consultant. Tu parles à ${nom||'quelqu\'un'} qui fait un programme de transformation de 90 jours (domaine : ${activeDomain||'développement personnel'}). Son objectif central : ${plan?.scorecard?.mission_centrale||'non défini'}.
+
+Voici ses 10 premiers jours de données brutes :
+${logsText}
+
+Produis EXACTEMENT 3 observations. Pas plus. Format JSON strict :
+{"obs1":"...","obs2":"...","obs3":"...","ton_verdict":"..."}
+
+Règles absolues :
+- Parle en "on" et "nous" — jamais "tu as échoué" ou "tu n'as pas"
+- Nomme un mot ou comportement qui revient
+- Identifie ce qu'on semble éviter ou reporter
+- Repère le pattern temporel (quand on est le plus/moins actif)
+- Ton chaleureux, pair africain — pas consultant parisien
+- Chaque observation : 1 phrase percutante, max 20 mots
+- Le verdict : 1 phrase qui résume ce qu'on vient de voir ensemble, avec bienveillance
+- JSON uniquement, aucun autre texte`;
+
+    try {
+      const res = await fetchWithRetry('/api/generate', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({prompt, max_tokens:400})
+      });
+      const data = await res.json();
+      const raw = (data.result||data.text||'').replace(/\`\`\`json|\`\`\`/g,'').trim();
+      const parsed = JSON.parse(raw);
+      setMiroirData(parsed);
+      // Sauvegarder que le miroir a été généré
+      if(activeDomain){
+        const cur = loadByDomain(activeDomain)||{};
+        saveByDomain(activeDomain, {...cur, miroirDone:true, miroirData:parsed});
       }
-      return parsed;
-    };
-    try{
-      const result=await callAPI(buildPromptCloture(answers,plan,plan2,logs,evalData));
-      setCloture(result);
-      track('j90_verdict_generated');
-    }catch(e){
-      console.error("Clôture échec:",e);
-      setClotureErr(e.message||"Erreur de génération");
-      track('j90_verdict_error',{error:e.message});
-    }finally{
-      setClotureLoading(false);
+    } catch(e) {
+      setMiroirData({obs1:"On a évité une décision importante — sans encore la nommer.", obs2:"On est plus actif en début de semaine qu'en fin.", obs3:"Le rituel est ce qu'on saute en premier quand la pression monte.", ton_verdict:"On commence à voir nos angles morts. C'est exactement ça le but."});
     }
+    setMiroirLoading(false);
   };
 
-  const toggleCheck=(k,v)=>setChecks(p=>({...p,[k]:v}));
-  const saveLog=(log)=>{track('daily_log_saved',{done:!!log.action_done,rechute:!!log.rechute});const next={...logs,[todayKey()]:log};setLogs(next);if(activeDomain){saveByDomain(activeDomain,{logs:next,plan,plan2,weeks,answers,nom,email,checks,startDate});}else{const s=load()||{};save({...s,logs:next,plan,plan2,weeks,answers,nom,email,checks,startDate});}};
+  // ── SAVE DECISION J30/60/90 ──
+  const saveDecision = (jour, texte) => {
+    if(!texte.trim()) return;
+    const key = `decision_j${jour}`;
+    if(activeDomain){
+      const cur = loadByDomain(activeDomain)||{};
+      saveByDomain(activeDomain, {...cur, [key]: texte, [`${key}_date`]: new Date().toISOString()});
+    }
+    setDecisionSaved(true);
+    setTimeout(()=>setDecisionSaved(false), 3000);
+  };
+  const saveLog=(log)=>{
+    const next={...logs,[todayKey()]:log};
+    setLogs(next);
+    const currentData = activeDomain ? (loadByDomain(activeDomain)||{}) : (load()||{});
+    const merged = {...currentData,logs:next,plan,plan2,weeks,answers,nom,email,checks,startDate};
+    if(activeDomain){saveByDomain(activeDomain,merged);}else{save(merged);}
+    // ── Trigger email J14 une seule fois ──
+    const logCount = Object.keys(next).length;
+    const emailSent = currentData.j14_email_sent;
+    if(logCount >= 14 && !emailSent && (email||nom)){
+      const userEmail = email || null;
+      const userName = nom || plan?.nom_guerre || "toi";
+      if(userEmail){
+        fetch('/api/j14-email',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({email:userEmail,nom:userName,mission:plan?.scorecard?.mission_centrale||''})
+        }).catch(()=>{});
+      }
+      const mergedWithFlag = {...merged, j14_email_sent:true};
+      if(activeDomain){saveByDomain(activeDomain,mergedWithFlag);}else{save(mergedWithFlag);}
+    }
+  };
   const reset=()=>{clear();setPlan(null);setPlan2(null);setWeeks(null);setAnswers({});setChecks({});setLogs({});setStartDate(null);setSi(0);setQi(0);setNom("");setEmail("");setCode("");setAccessErr("");setErrMsg("");setTab("dashboard");setActiveDomain(null);setScreen("landing");};
   const switchDomain=(d)=>{
     const saved=loadByDomain(d);
     if(!saved?.plan)return;
     setActiveDomain(d);
-    setPlan(saved.plan);setPlan2(saved.plan2||null);setWeeks(saved.weeks||null);setCloture(saved.cloture||null);
+    setPlan(saved.plan);setPlan2(saved.plan2||null);setWeeks(saved.weeks||null);
     setAnswers(saved.answers||{});setChecks(saved.checks||{});setLogs(saved.logs||{});
     setStartDate(saved.startDate||null);setTab("dashboard");
     localStorage.setItem(LAST_DOMAIN_KEY,d);
     setScreen("home");
   };
   const startNewPlan=()=>{
-    setPlan(null);setPlan2(null);setWeeks(null);setCloture(null);setAutoEval(null);setClotureStarted(false);setAnswers({});setChecks({});setLogs({});
+    setPlan(null);setPlan2(null);setWeeks(null);setAnswers({});setChecks({});setLogs({});
     setStartDate(null);setSi(0);setQi(0);setErrMsg("");setTab("dashboard");
     setActiveDomain(null);
     setScreen("intro");
   };
 
-  const copyText=()=>{if(!plan)return;navigator.clipboard.writeText(`MON PLAN DE VIE 90 JOURS — ${firstName}\nNom de Guerre : ${plan.nom_guerre}\n\n${plan2?.message_final||""}\n\nContrat : ${plan2?.contrat||""}\n\nCréé par Lamine Digital Lab`).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);});};
+  const copyText=()=>{if(!plan)return;navigator.clipboard.writeText(`MON PLAN DE VIE 90 JOURS — ${firstName}\nNom de Guerre : ${plan.nom_guerre}\n\n${plan2?.message_final||""}\n\nContrat : ${plan2?.contrat||""}\n\nCréé par Lamine Diabaté`).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);});};
   const shareURL=()=>{if(!plan)return;try{const p={n:plan.nom_guerre,m:plan2?.message_final||"",c:plan2?.contrat||"",f:firstName};const enc=btoa(encodeURIComponent(JSON.stringify(p)));navigator.clipboard.writeText(`${window.location.href.split("?")[0]}?share=${enc}`).then(()=>alert("Lien copié !"));}catch(e){alert("Impossible de générer le lien.");}};
-  const shareWA=()=>{if(!plan)return;window.open(`https://wa.me/?text=${encodeURIComponent("✦ MON PLAN 90 JOURS ✦\nPour "+firstName+" — "+plan.nom_guerre+"\n\n"+(plan2?.message_final||"").slice(0,400)+"\n\n"+(plan2?.contrat||"")+"\n\nCréé par Lamine Digital Lab")}`,"_blank");};
+  const shareWA=()=>{if(!plan)return;window.open(`https://wa.me/?text=${encodeURIComponent("✦ MON PLAN 90 JOURS ✦\nPour "+firstName+" — "+plan.nom_guerre+"\n\n"+(plan2?.message_final||"").slice(0,400)+"\n\n"+(plan2?.contrat||"")+"\n\nCréé par Lamine Diabaté")}`,"_blank");};
   const joinCommunity=()=>window.open("https://chat.whatsapp.com/JSDmRbun1hxK6Q8sXjT4vS","_blank");
 
   const exportEmail=()=>{
@@ -2338,7 +2246,7 @@ export default function App(){
   const printPDF=()=>{
     if(!plan)return;const s=plan;const s2=plan2||{};
     const rows=Object.entries({Discipline:s.scorecard?.discipline,Focus:s.scorecard?.focus,Énergie:s.scorecard?.energie,Clarté:s.scorecard?.clarte,Constance:s.scorecard?.constance}).map(([k,v])=>`<tr><td>${k}</td><td style="color:#C9A84C">${v?.score}/100</td><td>${v?.lecture||""}</td></tr>`).join("");
-    const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Plan 90J — ${firstName}</title><style>@import url('${FONT_PDF}');*{margin:0;padding:0;box-sizing:border-box}body{background:#080808;color:#F0EAD6;font-family:'Jost',sans-serif;font-weight:300;font-size:10.5pt;line-height:1.75;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{max-width:210mm;margin:0 auto;padding:16mm 20mm}.cover{text-align:center;padding:18mm 0;border-bottom:1px solid #8B6914;margin-bottom:10mm}.nom{font-family:'Cormorant Garamond',serif;font-size:36pt;color:#C9A84C;font-weight:500;margin:5mm 0}.mantra{font-family:'Cormorant Garamond',serif;font-size:13pt;color:#E8C97A;font-style:italic;margin:3mm 0}.mission{font-size:9.5pt;color:#A89880;margin:4mm auto;max-width:140mm}.aa{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin:5mm 0}.col{padding:4mm;border:1px solid #1E1E1E}.col-lbl{font-size:6.5pt;color:#8B6914;letter-spacing:.2em;text-transform:uppercase;margin-bottom:2mm}h2{font-family:'Cormorant Garamond',serif;font-size:11pt;color:#C9A84C;margin-top:7mm;margin-bottom:2mm;border-bottom:1px solid #1E1E1E;padding-bottom:1mm}p{margin:1.5mm 0;color:#D0C8B8;line-height:1.8}ul{padding-left:5mm;margin:2mm 0}li{margin:1.5mm 0;color:#D0C8B8}b{color:#E8C97A;font-weight:400}table{width:100%;border-collapse:collapse;margin:3mm 0;font-size:9pt}th{background:#C9A84C15;color:#E8C97A;font-weight:400;padding:2mm 3mm;border:1px solid #2A2A2A;text-align:left}td{padding:2mm 3mm;border:1px solid #1E1E1E;color:#D0C8B8}.box{background:#C9A84C0A;border:1px solid #8B6914;padding:4mm 5mm;margin:5mm 0;font-style:italic;color:#E8C97A;text-align:center}.footer{margin-top:12mm;padding-top:4mm;border-top:1px solid #8B6914;text-align:center;font-size:6.5pt;color:#E8C97A;font-style:italic;letter-spacing:.1em}@media print{@page{margin:0;size:A4}}</style></head><body><div class="page">
+    const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Plan 90J — ${firstName}</title><style>@import url('${FONT}');*{margin:0;padding:0;box-sizing:border-box}body{background:#080808;color:#F0EAD6;font-family:'Jost',sans-serif;font-weight:300;font-size:10.5pt;line-height:1.75;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{max-width:210mm;margin:0 auto;padding:16mm 20mm}.cover{text-align:center;padding:18mm 0;border-bottom:1px solid #8B6914;margin-bottom:10mm}.nom{font-family:'Cormorant Garamond',serif;font-size:36pt;color:#C9A84C;font-weight:500;margin:5mm 0}.mantra{font-family:'Cormorant Garamond',serif;font-size:13pt;color:#E8C97A;font-style:italic;margin:3mm 0}.mission{font-size:9.5pt;color:#A89880;margin:4mm auto;max-width:140mm}.aa{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin:5mm 0}.col{padding:4mm;border:1px solid #1E1E1E}.col-lbl{font-size:6.5pt;color:#8B6914;letter-spacing:.2em;text-transform:uppercase;margin-bottom:2mm}h2{font-family:'Cormorant Garamond',serif;font-size:11pt;color:#C9A84C;margin-top:7mm;margin-bottom:2mm;border-bottom:1px solid #1E1E1E;padding-bottom:1mm}p{margin:1.5mm 0;color:#D0C8B8;line-height:1.8}ul{padding-left:5mm;margin:2mm 0}li{margin:1.5mm 0;color:#D0C8B8}b{color:#E8C97A;font-weight:400}table{width:100%;border-collapse:collapse;margin:3mm 0;font-size:9pt}th{background:#C9A84C15;color:#E8C97A;font-weight:400;padding:2mm 3mm;border:1px solid #2A2A2A;text-align:left}td{padding:2mm 3mm;border:1px solid #1E1E1E;color:#D0C8B8}.box{background:#C9A84C0A;border:1px solid #8B6914;padding:4mm 5mm;margin:5mm 0;font-style:italic;color:#E8C97A;text-align:center}.footer{margin-top:12mm;padding-top:4mm;border-top:1px solid #8B6914;text-align:center;font-size:6.5pt;color:#8B6914;letter-spacing:.1em}@media print{@page{margin:0;size:A4}}</style></head><body><div class="page">
 <div class="cover"><div style="font-size:6.5pt;color:#8B6914;letter-spacing:.3em;text-transform:uppercase">Programme de Transformation Comportementale · 90 Jours</div><div class="nom">${s.nom_guerre}</div><div class="mantra">${(s.citations_personnelles||[])[0]||s2.rituel?.autosuggestion||""}</div><div class="mission">${s.scorecard?.mission_centrale||""}</div><div style="font-size:6.5pt;color:#8B6914;letter-spacing:.2em;text-transform:uppercase;margin-top:3mm">Pour ${firstName} · ${new Date().toLocaleDateString("fr-FR")}</div></div>
 <h2>AVANT / APRÈS</h2><div class="aa"><div class="col"><div class="col-lbl">Aujourd'hui</div><p>${answers.q_etat_now||""}</p></div><div class="col"><div class="col-lbl">Dans 90 jours</div><p style="color:#C9A84C">${answers.q_identite_cible||""}</p></div></div>
 <h2>DIAGNOSTIC LUCIDE</h2><p>${s.diagnostic?.resume||""}</p><p><b>Bloquant :</b> ${s.diagnostic?.bloquant_central||""}</p><p><b>Schéma :</b> ${s.diagnostic?.schema_sabotage||""}</p>
@@ -2348,7 +2256,7 @@ export default function App(){
 <h2>IDENTITÉ FUTURE</h2>${s.identite_future?`<p><b>Je pense :</b> ${s.identite_future.comment_pense}</p><p><b>J'agis :</b> ${s.identite_future.comment_agit}</p><p><b>Je ne tolère plus :</b> ${s.identite_future.ne_tolere_plus}</p><p><b>Nouveaux standards :</b> ${s.identite_future.nouveaux_standards}</p>`:""}
 <h2>LECTURES</h2>${(s2.lectures||[]).map(l=>`<p><b>${l.titre}</b> — ${l.auteur} : ${l.pourquoi}</p>`).join("")}
 <h2>MESSAGE FINAL</h2><p>${s2.message_final||""}</p><div class="box">${s2.contrat||""}</div>
-<div class="footer">✦ Créé par Lamine Digital Lab · Mon Plan de Vie 90 Jours ✦</div></div><script>window.onload=()=>{window.print();setTimeout(()=>window.close(),2000);};<\/script></body></html>`;
+<div class="footer">✦ Créé par Lamine Diabaté · Mon Plan de Vie 90 Jours · "90 Jours pour Renaître" ✦</div></div><script>window.onload=()=>{window.print();setTimeout(()=>window.close(),2000);};<\/script></body></html>`;
     const w=window.open("","_blank","width=900,height=700");if(!w){alert("Autorise les popups.");return;}w.document.write(html);w.document.close();
   };
 
@@ -2374,7 +2282,7 @@ export default function App(){
           <div style={{padding:"0.75rem",background:`${C.gold}0A`,border:`1px solid ${C.goldD}`,textAlign:"center",...SF,fontSize:"0.92rem",color:C.text,fontStyle:"italic"}}>{p.c}</div>
         </Card>
         <div style={{textAlign:"center",marginTop:"0.9rem"}}>
-          <div style={{fontSize:"0.75rem",color:C.textDim,marginBottom:"0.9rem"}}>Généré par <span style={{color:C.goldL,fontStyle:"italic"}}>Lamine Digital Lab</span></div>
+          <div style={{fontSize:"0.75rem",color:C.textDim,marginBottom:"0.9rem"}}>Généré par <span style={{color:C.text}}>Lamine Diabaté</span></div>
           <button onClick={()=>setScreen("landing")} style={{...BG}}>Créer mon propre plan ✦</button>
         </div>
       </div>
@@ -2425,7 +2333,7 @@ export default function App(){
               onKeyDown={e=>e.key==='Enter'&&handleEmailSubscribe()}
               style={{width:'100%',padding:'0.8rem',background:C.bg3,border:`1px solid ${C.goldD}`,color:C.text,fontSize:'0.85rem',marginBottom:'0.8rem',outline:'none',boxSizing:'border-box'}}
             />
-            <button onClick={handleEmailSubscribe} disabled={emailLoading} style={{width:'100%',padding:'0.85rem',background:C.gold,border:'none',color:C.onGold,fontSize:'0.75rem',letterSpacing:'0.15em',fontWeight:500,cursor:'pointer',marginBottom:'0.6rem'}}>
+            <button onClick={handleEmailSubscribe} disabled={emailLoading} style={{width:'100%',padding:'0.85rem',background:C.gold,border:'none',color:C.bg,fontSize:'0.75rem',letterSpacing:'0.15em',fontWeight:500,cursor:'pointer',marginBottom:'0.6rem'}}>
               {emailLoading ? 'Envoi...' : 'JE M\'INSCRIS →'}
             </button>
             <button onClick={()=>setShowEmailPopup(false)} style={{width:'100%',padding:'0.4rem',background:'transparent',border:'none',color:C.textDim,fontSize:'0.68rem',cursor:'pointer'}}>
@@ -2441,14 +2349,14 @@ export default function App(){
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",overflowX:"hidden"}}>
       <link rel="stylesheet" href={FONT}/>
       <script defer data-domain="monplan90.vercel.app" src="https://plausible.io/js/script.js"/>
-      <meta name="theme-color" content="#080808"/>
+      <meta name="theme-color" content="#FAF7F0"/>
       <meta name="apple-mobile-web-app-capable" content="yes"/>
       <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
       <meta name="apple-mobile-web-app-title" content="Plan 90"/>
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
       <style>{CSS}</style>
       <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"3rem 1.5rem",textAlign:"center",position:"relative"}}>
-        <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,background:`radial-gradient(ellipse at 50% 0%,${C.gold}22 0%,transparent 55%),radial-gradient(ellipse at 20% 80%,${C.blue}15 0%,transparent 45%),radial-gradient(ellipse at 85% 70%,${C.purple}12 0%,transparent 40%)`,pointerEvents:"none"}}/>
+        <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,background:`radial-gradient(ellipse at 50% 0%,${C.gold}08 0%,transparent 55%),radial-gradient(ellipse at 20% 80%,${C.blue}05 0%,transparent 40%)`,pointerEvents:"none"}}/>
 
         <div style={{marginBottom:"0.5rem"}}>
           <Divider/>
@@ -2456,7 +2364,7 @@ export default function App(){
         </div>
         <h1 style={{...SF,fontSize:"clamp(3.2rem,11vw,6rem)",fontWeight:400,color:C.text,lineHeight:0.88,marginBottom:"0.1rem"}}>Mon Plan</h1>
         <h1 style={{...SF,fontSize:"clamp(3.2rem,11vw,6rem)",fontWeight:300,fontStyle:"italic",color:C.text,lineHeight:0.88,marginBottom:"1.5rem"}}>de Vie</h1>
-        <div style={{display:"inline-block",padding:"0.5rem 1.8rem",border:`2px solid ${C.gold}`,background:`${C.gold}20`,...SF,fontSize:"clamp(1.1rem,3.5vw,1.8rem)",color:C.text,fontWeight:500,letterSpacing:"0.2em",marginBottom:"2rem",boxShadow:`0 3px 14px ${C.gold}30`}}>90 Jours</div>
+        <div style={{display:"inline-block",padding:"0.45rem 1.6rem",border:`1px solid ${C.goldD}`,background:`${C.gold}08`,...SF,fontSize:"clamp(1.1rem,3.5vw,1.8rem)",color:C.text,letterSpacing:"0.2em",marginBottom:"2rem"}}>90 Jours</div>
 
         <p style={{maxWidth:"360px",color:C.textMid,lineHeight:1.9,fontSize:"clamp(0.85rem,2.5vw,0.95rem)",marginBottom:"2rem"}}>
           Pas un texte inspirant.<br/>
@@ -2465,10 +2373,10 @@ export default function App(){
 
         <div style={{display:"flex",gap:"0.5rem",marginBottom:"2rem",flexWrap:"wrap",justifyContent:"center"}}>
           {Object.entries(DOMAIN_CONFIG).map(([name,cfg])=>(
-            <div key={name} style={{padding:"0.55rem 1rem",background:`${cfg.color}14`,border:`2px solid ${cfg.color}`,display:"flex",alignItems:"center",gap:"0.45rem",boxShadow:`0 2px 8px ${cfg.color}25`}}>
-              <span style={{fontSize:"1.1rem"}}>{cfg.icon}</span>
+            <div key={name} style={{padding:"0.5rem 0.9rem",background:`${cfg.color}10`,border:`1px solid ${cfg.color}30`,display:"flex",alignItems:"center",gap:"0.4rem"}}>
+              <span style={{fontSize:"0.9rem"}}>{cfg.icon}</span>
               <div style={{textAlign:"left"}}>
-                <div style={{fontSize:"0.75rem",color:C.text,fontWeight:600}}>{name}</div>
+                <div style={{fontSize:"0.75rem",color:C.text,fontWeight:400}}>{name}</div>
                 <div style={{fontSize:"0.58rem",color:C.textDim,...MN}}>{cfg.desc}</div>
               </div>
             </div>
@@ -2480,7 +2388,7 @@ export default function App(){
         <div style={{display:"flex",gap:"1.8rem",flexWrap:"wrap",justifyContent:"center"}}>
           {[["22","Questions ciblées"],["~12'","Pour remplir"],["12","Semaines structurées"],["90","Jours transformants"]].map(([n,l])=>(
             <div key={n} style={{textAlign:"center"}}>
-              <div style={{...SF,fontSize:"1.8rem",color:"#8B6914",fontWeight:500}}>{n}</div>
+              <div style={{...SF,fontSize:"1.8rem",color:C.textDim}}>{n}</div>
               <div style={{fontSize:"0.6rem",color:C.textDim,letterSpacing:"0.1em",textTransform:"uppercase",...MN}}>{l}</div>
             </div>
           ))}
@@ -2510,7 +2418,7 @@ export default function App(){
             <input type="text" value={code} placeholder="LD-XXXXX" onChange={e=>{setAccessErr("");setCode(e.target.value.toUpperCase());}} onKeyDown={e=>e.key==="Enter"&&doAccess()} onFocus={()=>setF("cod",true)} onBlur={()=>setF("cod",false)} style={{...iSt("cod"),textAlign:"center",letterSpacing:"0.25em",...MN,color:C.text,fontSize:"1.05rem"}}/>
           </div>
           {accessErr&&<div style={{fontSize:"0.7rem",color:C.red,textAlign:"center",marginBottom:"0.8rem"}}>{accessErr}</div>}
-          <button onClick={doAccess} disabled={accessLoading} style={{...BG,width:"100%",padding:"0.92rem",opacity:accessLoading?0.6:1,cursor:accessLoading?"wait":"pointer"}}>{accessLoading?"Recherche de ton plan…":"Accéder ✦"}</button>
+          <button onClick={doAccess} style={{...BG,width:"100%",padding:"0.92rem"}}>Accéder ✦</button>
         </Card>
         <div style={{textAlign:"center",marginTop:"0.5rem"}}><button onClick={()=>setScreen("landing")} style={{background:"none",border:"none",color:C.textDim,fontSize:"0.68rem",cursor:"pointer"}}>← Présentation</button></div>
         <div style={{textAlign:"center",marginTop:"1.5rem",padding:"1.2rem",background:C.bg2,border:`1px solid ${C.border}`}}>
@@ -2772,7 +2680,7 @@ export default function App(){
         <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
 
         <div style={{paddingTop:"0.6rem",marginBottom:"1.2rem"}}>
-          <div style={{display:"flex",gap:"0.28rem",marginBottom:"0.65rem"}}>{(getSegments(answers.q_domaine_principal)||SEGMENTS_FINANCES).map((sg,i)=><div key={sg.id} style={{flex:1,padding:"0.28rem",textAlign:"center",border:`1px solid ${i===si?C.goldD:C.border}`,background:i===si?`${C.gold}10`:"transparent",transition:"all 0.3s"}}><div style={{fontSize:"0.56rem",color:i===si?C.text:C.textDim,...MN}}>{sg.icon} {sg.label}</div></div>)}</div>
+          <div style={{display:"flex",gap:"0.28rem",marginBottom:"0.65rem"}}>{(getSegments(answers.q_domaine_principal)||SEGMENTS_FINANCES).map((sg,i)=><div key={sg.id} style={{flex:1,padding:"0.28rem",textAlign:"center",border:`1px solid ${i===si?C.goldD:C.border}`,background:i===si?`${C.gold}10`:"transparent",transition:"all 0.3s"}}><div style={{fontSize:"0.56rem",color:i===si?C.gold:C.textDim,...MN}}>{sg.icon} {sg.label}</div></div>)}</div>
           <div style={{display:"flex",justifyContent:"space-between",fontSize:"0.6rem",color:C.textDim,marginBottom:"0.22rem",...MN}}>
             <span>{doneQ+1}/{totalQ}</span>
             <span style={{color:C.text}}>≈ {timeLeft} min restantes</span>
@@ -2798,7 +2706,7 @@ export default function App(){
 
           {showAide&&q.aide&&<div style={{background:`${C.gold}07`,borderLeft:`3px solid ${C.gold}`,border:`1px solid ${C.goldD}`,padding:"0.75rem 0.85rem",marginBottom:"0.65rem",animation:"fadeIn 0.2s ease"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.3rem"}}><span style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>Guide</span><button onClick={()=>setShowAide(false)} style={{background:"none",border:"none",color:C.textDim,fontSize:"0.88rem",cursor:"pointer"}}>✕</button></div>
-            {[["Ce qu'on cherche",q.aide.quoi,C.textDim],["Exemple",aidEx||q.aide.ex,C.text],["À éviter",q.aide.evite,C.textDim]].map(([t,v,c])=><div key={t} style={{marginBottom:"0.32rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.1rem"}}>{t}</div><div style={{fontSize:"0.75rem",color:c,lineHeight:1.5,fontStyle:t==="Exemple"?"italic":"normal"}}>{v}</div></div>)}
+            {[["Ce qu'on cherche",q.aide.quoi,C.textDim],["Exemple",aidEx||q.aide.ex,C.goldL],["À éviter",q.aide.evite,C.textDim]].map(([t,v,c])=><div key={t} style={{marginBottom:"0.32rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.1rem"}}>{t}</div><div style={{fontSize:"0.75rem",color:c,lineHeight:1.5,fontStyle:t==="Exemple"?"italic":"normal"}}>{v}</div></div>)}
           </div>}
 
           <div style={{width:"24px",height:"1px",background:C.gold,opacity:0.4,marginBottom:"0.85rem"}}/>
@@ -2808,15 +2716,15 @@ export default function App(){
             onFocus={()=>setF("q",true)} onBlur={()=>setF("q",false)}/>}
 
           {q.type==="textarea"&&<textarea value={val||""} onChange={e=>setVal(e.target.value)} placeholder={ph} rows={4}
-            style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${qError?C.red:C.border}`,borderBottom:`2px solid ${qError?C.red:C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:400,animation:qShake?"shake 0.45s ease":"none"}}
+            style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${qError?C.red:C.border}`,borderBottom:`2px solid ${qError?C.red:C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:300,animation:qShake?"shake 0.45s ease":"none"}}
             onFocus={e=>{e.target.style.borderColor=`${C.gold}55`;e.target.style.borderBottomColor=`${C.gold}55`;}} onBlur={e=>{e.target.style.borderColor=qError?C.red:C.border;e.target.style.borderBottomColor=qError?C.red:C.border;}}/>}
 
-          {q.type==="select"&&<div style={{animation:qShake?"shake 0.45s ease":"none"}}>{q.opts.map(opt=><button key={opt} onClick={()=>setVal(opt)} style={{width:"100%",display:"flex",gap:"0.6rem",marginBottom:"0.38rem",alignItems:"center",background:val===opt?`${C.gold}14`:"transparent",border:`1px solid ${val===opt?C.gold:C.border}`,color:val===opt?C.text:C.textMid,padding:"0.68rem 0.85rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.84rem",cursor:"pointer"}}><span style={{fontSize:"0.58rem"}}>{val===opt?"◉":"◎"}</span>{opt}</button>)}</div>}
+          {q.type==="select"&&<div style={{animation:qShake?"shake 0.45s ease":"none"}}>{q.opts.map(opt=><button key={opt} onClick={()=>setVal(opt)} style={{width:"100%",display:"flex",gap:"0.6rem",marginBottom:"0.38rem",alignItems:"center",background:val===opt?`${C.gold}14`:"transparent",border:`1px solid ${val===opt?C.gold:C.border}`,color:val===opt?C.gold:C.textMid,padding:"0.68rem 0.85rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.84rem",cursor:"pointer"}}><span style={{fontSize:"0.58rem"}}>{val===opt?"◉":"◎"}</span>{opt}</button>)}</div>}
 
           {q.type==="dual_select"&&<div style={{animation:qShake?"shake 0.45s ease":"none",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.75rem"}}>
             {q.selects.map(sel=>{const sv=(val||{})[sel.id];return <div key={sel.id}>
               <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>{sel.label}</div>
-              {sel.opts.map(opt=><button key={opt} onClick={()=>setSubVal(q.id,sel.id,opt)} style={{width:"100%",display:"flex",gap:"0.45rem",marginBottom:"0.3rem",alignItems:"center",background:sv===opt?`${C.gold}14`:"transparent",border:`1px solid ${sv===opt?C.gold:C.border}`,color:sv===opt?C.text:C.textMid,padding:"0.55rem 0.65rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.78rem",cursor:"pointer"}}><span style={{fontSize:"0.55rem"}}>{sv===opt?"◉":"◎"}</span>{opt.split("(")[0].trim()}</button>)}
+              {sel.opts.map(opt=><button key={opt} onClick={()=>setSubVal(q.id,sel.id,opt)} style={{width:"100%",display:"flex",gap:"0.45rem",marginBottom:"0.3rem",alignItems:"center",background:sv===opt?`${C.gold}14`:"transparent",border:`1px solid ${sv===opt?C.gold:C.border}`,color:sv===opt?C.gold:C.textMid,padding:"0.55rem 0.65rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.78rem",cursor:"pointer"}}><span style={{fontSize:"0.55rem"}}>{sv===opt?"◉":"◎"}</span>{opt.split("(")[0].trim()}</button>)}
             </div>;})}
           </div>}
 
@@ -2824,7 +2732,7 @@ export default function App(){
             <div style={{marginBottom:"0.8rem"}}>
               <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.35rem"}}>{q.multi.label} <span style={{color:C.textDim}}>max {q.multi.max}</span></div>
               {q.multi.opts.map(opt=>{const sel=((val||{}).domaines||[]).includes(opt);const atMax=((val||{}).domaines||[]).length>=q.multi.max&&!sel;
-                return <button key={opt} onClick={()=>{if(atMax)return;const cur=(val||{}).domaines||[];setSubVal(q.id,"domaines",sel?cur.filter(v=>v!==opt):[...cur,opt]);}} style={{width:"100%",display:"flex",gap:"0.55rem",marginBottom:"0.3rem",alignItems:"center",background:sel?`${C.gold}14`:"transparent",border:`1px solid ${sel?C.gold:atMax?C.bg3:C.border}`,color:sel?C.text:atMax?C.bg3:C.textMid,padding:"0.58rem 0.75rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.82rem",opacity:atMax?0.3:1,cursor:atMax?"not-allowed":"pointer"}}><span style={{fontSize:"0.56rem"}}>{sel?"◉":"◎"}</span>{opt}</button>;
+                return <button key={opt} onClick={()=>{if(atMax)return;const cur=(val||{}).domaines||[];setSubVal(q.id,"domaines",sel?cur.filter(v=>v!==opt):[...cur,opt]);}} style={{width:"100%",display:"flex",gap:"0.55rem",marginBottom:"0.3rem",alignItems:"center",background:sel?`${C.gold}14`:"transparent",border:`1px solid ${sel?C.gold:atMax?C.bg3:C.border}`,color:sel?C.gold:atMax?C.bg3:C.textMid,padding:"0.58rem 0.75rem",textAlign:"left",transition:"all 0.2s",fontFamily:"'Jost',sans-serif",fontSize:"0.82rem",opacity:atMax?0.3:1,cursor:atMax?"not-allowed":"pointer"}}><span style={{fontSize:"0.56rem"}}>{sel?"◉":"◎"}</span>{opt}</button>;
               })}
             </div>
             <div>
@@ -2842,14 +2750,14 @@ export default function App(){
                 <div style={{fontSize:"0.72rem",color:C.text,lineHeight:1.5}}>{q.follow?.[(val||{}).choice]?.ph||""}</div>
               </div>
               <textarea value={(val||{}).follow_answer||""} onChange={e=>setSubVal(q.id,"follow_answer",e.target.value)} placeholder={(val||{}).choice==="Oui, je les ai définis"?"Décris tes objectifs à 10 ans...":(val||{}).choice==="Pas encore"?"Qu'est-ce qui t'a empêché...":"Décris concrètement ce qui se passerait..."} rows={3}
-                style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:400}}
+                style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:300}}
                 onFocus={e=>e.target.style.borderColor=`${C.gold}55`} onBlur={e=>e.target.style.borderColor=C.border}/>
             </div>}
             {(val||{}).choice&&<div style={{animation:"fadeIn 0.3s ease"}}>
               <div style={{height:"1px",background:C.border,marginBottom:"0.8rem"}}/>
               <div style={{fontSize:"0.75rem",color:C.text,lineHeight:1.6,marginBottom:"0.5rem",fontWeight:400}}>{q.fixed?.label}</div>
               <textarea value={(val||{}).fixed_answer||""} onChange={e=>setSubVal(q.id,"fixed_answer",e.target.value)} placeholder={q.fixed?.ph||""} rows={3}
-                style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:400}}
+                style={{width:"100%",padding:"0.85rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,fontFamily:"'Jost',sans-serif",fontSize:"0.85rem",lineHeight:1.7,resize:"vertical",outline:"none",fontWeight:300}}
                 onFocus={e=>e.target.style.borderColor=`${C.gold}55`} onBlur={e=>e.target.style.borderColor=C.border}/>
             </div>}
           </div>}
@@ -2858,7 +2766,7 @@ export default function App(){
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingBottom:"1.8rem",gap:"0.65rem",marginTop:"1.2rem"}}>
           {doneQ>0?<button onClick={goBack} style={{padding:"0.68rem 1rem",background:"transparent",border:`1px solid ${C.border}`,color:C.textDim,fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>← Retour</button>:<div/>}
           <button onClick={tryNext} style={{
-            padding:"0.85rem 1.6rem",background:C.gold,border:"none",color:C.onGold,
+            padding:"0.85rem 1.6rem",background:C.gold,border:"none",color:C.bg,
             fontSize:"0.74rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,
             boxShadow:`0 4px 18px ${C.gold}35`,transition:"all 0.25s",cursor:"pointer",
             flex:doneQ===0?1:"auto"
@@ -2941,22 +2849,22 @@ export default function App(){
 
     const getRetourMsg = (days) => {
       if(days >= 14) return {
-        titre: `${days} jours d'absence.`,
-        corps: "Pas de jugement. Pas d'explication nécessaire. Le plan t'attend exactement là où tu l'as laissé.",
-        action: "Une seule chose maintenant : ouvre le tracker et note ta journée d'aujourd'hui.",
-        color: C.red,
+        titre: "On reprend.",
+        corps: `${days} jours sans ouvrir ça — et on est quand même là. C'est ça qui compte. Pas ce qu'on a raté. Ce qu'on fait maintenant. Le plan t'a attendu, exactement là où on l'a laissé.`,
+        action: "Une seule chose : enregistre aujourd'hui. Rien d'autre.",
+        color: C.green,
       };
       if(days >= 7) return {
-        titre: `${days} jours sans tracker.`,
-        corps: "C'est ton pattern de résistance qui parle — pas toi. Ça arrive. Ce qui compte c'est maintenant.",
-        action: "Reprends avec 5 minutes aujourd'hui. Pas plus. Juste 5 minutes.",
-        color: C.gold,
+        titre: "On revient.",
+        corps: `${days} jours — c'est la vie qui a parlé. Ça arrive aux meilleurs. La résistance fait partie du chemin, pas une preuve qu'on a échoué. On a juste fait une pause.`,
+        action: "5 minutes ce soir. Juste noter ce qui s'est passé. C'est suffisant.",
+        color: C.green,
       };
       return {
-        titre: `${days} jours sans tracker.`,
-        corps: "Tu as manqué quelques jours. C'est humain. La continuité ne demande pas la perfection — elle demande le retour.",
-        action: "Enregistre ta journée d'aujourd'hui. C'est tout.",
-        color: C.gold,
+        titre: "On est là.",
+        corps: "Quelques jours sans check-in. C'est humain — personne ne tient parfaitement. Ce qui différencie ceux qui transforment leur vie, c'est le retour. Pas la perfection.",
+        action: "Enregistre ta journée d'aujourd'hui. Le reste suit.",
+        color: C.green,
       };
     };
     const retourMsg = isAbsent ? getRetourMsg(absenceDays) : null;
@@ -2970,28 +2878,14 @@ export default function App(){
             <div style={{...SF,fontSize:"1rem",color:C.text}}>{plan.nom_guerre}</div>
           </div>
           <div style={{display:"flex",gap:"0.5rem",alignItems:"center"}}>
-            {curStreak>0&&<div style={{display:"flex",alignItems:"center",gap:"0.25rem",padding:"0.3rem 0.6rem",background:curStreak>=7?`${C.green}18`:curStreak>=3?`${C.gold}18`:`${C.bg3}`,border:`1px solid ${curStreak>=7?C.green:curStreak>=3?C.goldD:C.border}`}}>
-              <span style={{fontSize:"0.8rem"}}>🔥</span>
-              <span style={{fontSize:"0.7rem",color:curStreak>=7?C.green:curStreak>=3?C.text:C.textDim,...MN,fontWeight:400}}>{curStreak}j</span>
-            </div>}
+            <div style={{padding:"0.3rem 0.75rem",background:C.bg2,border:`1px solid ${C.border}`}}>
+              <span style={{fontSize:"0.7rem",color:C.textDim,...MN}}>Jour {Math.min(dn,90)}</span>
+            </div>
             <button onClick={()=>setScreen("result")} style={{padding:"0.38rem 0.65rem",background:`${C.gold}12`,border:`1px solid ${C.goldD}`,color:C.text,fontSize:"0.6rem",letterSpacing:"0.08em",...MN,cursor:"pointer"}}>Plan complet</button>
             <button onClick={()=>setScreen("plan-select")} style={{padding:"0.38rem 0.65rem",background:"transparent",border:`1px solid ${C.goldD}`,color:C.text,fontSize:"0.6rem",...MN,cursor:"pointer"}} title="Mes plans">⊞</button>
             <button onClick={reset} style={{padding:"0.38rem 0.5rem",background:"transparent",border:`1px solid ${C.border}`,color:C.textDim,fontSize:"0.6rem",...MN,cursor:"pointer"}}>↩</button>
           </div>
         </div>
-
-        {typeof Notification!=="undefined"&&Notification.permission==="default"&&<button onClick={()=>{Notification.requestPermission().then(p=>track('notif_permission',{result:p}));}} style={{
-          width:"100%",display:"flex",alignItems:"center",gap:"0.7rem",
-          padding:"0.7rem 0.9rem",marginBottom:"1rem",
-          background:`${C.gold}10`,border:`1px solid ${C.goldD}`,
-          cursor:"pointer",textAlign:"left",
-        }}>
-          <span style={{fontSize:"1.1rem"}}>🔔</span>
-          <div style={{flex:1}}>
-            <div style={{fontSize:"0.78rem",color:C.text}}>Active un rappel quotidien</div>
-            <div style={{fontSize:"0.62rem",color:C.textDim,...MN,marginTop:"0.1rem"}}>Une notification si tu n'as pas encore loggué ta journée</div>
-          </div>
-        </button>}
 
         <button onClick={joinCommunity} style={{
           width:"100%",display:"flex",alignItems:"center",gap:"0.75rem",
@@ -3001,10 +2895,10 @@ export default function App(){
         }}>
           <span style={{fontSize:"1.2rem"}}>💬</span>
           <div style={{textAlign:"left",flex:1}}>
-            <div style={{fontSize:"0.78rem",color:"#0D7A3D",fontWeight:600}}>Rejoindre la Communauté 90 Jours ✦</div>
+            <div style={{fontSize:"0.78rem",color:"#25D366",fontWeight:400}}>Rejoindre la Communauté 90 Jours ✦</div>
             <div style={{fontSize:"0.62rem",color:C.textDim,...MN,marginTop:"0.1rem"}}>Des centaines de personnes vivent ce programme · Partage · Questions · Victoires</div>
           </div>
-          <span style={{fontSize:"0.7rem",color:"#0D7A3D"}}>→</span>
+          <span style={{fontSize:"0.7rem",color:"#25D366"}}>→</span>
         </button>
 
         {retourMsg&&<div style={{
@@ -3038,15 +2932,84 @@ export default function App(){
           <div style={{fontSize:"0.54rem",color:C.text,letterSpacing:"0.18em",...MN,marginBottom:"0.2rem"}}>MESSAGE JOUR {dn}</div>
           <div style={{fontSize:"0.8rem",color:C.text,lineHeight:1.65,fontStyle:"italic"}}>{contMsg.msg}</div>
         </div>}
-        <Card>
+
+        {/* ── MIROIR J11 ── */}
+        {dn>=11&&dn<=14&&!miroirDone&&!miroirData&&!retourMsg&&(
+          <div style={{marginBottom:"1rem",padding:"1.4rem 1.5rem",background:C.bg,border:`1px solid ${C.border}`,borderTop:`3px solid ${C.text}`,animation:"fadeUp 0.5s ease"}}>
+            <div style={{fontSize:"0.52rem",color:C.textDim,letterSpacing:"0.28em",textTransform:"uppercase",...MN,marginBottom:"0.8rem"}}>Miroir — Jour {dn}</div>
+            <div style={{...SF,fontSize:"clamp(1.1rem,3.5vw,1.4rem)",color:C.text,lineHeight:1.5,marginBottom:"0.6rem"}}>On a collecté 10 jours.</div>
+            <p style={{fontSize:"0.85rem",color:C.textMid,lineHeight:1.75,marginBottom:"1.2rem"}}>L'IA a observé sans juger. Elle a maintenant 3 choses à te dire — sur ce qu'on répète, ce qu'on évite, et le moment où on résiste le plus. Ça prend 40 secondes.</p>
+            <button onClick={generateMiroir} disabled={miroirLoading} style={{width:"100%",padding:"0.9rem",background:C.text,border:"none",color:C.bg,fontSize:"0.74rem",letterSpacing:"0.12em",...MN,cursor:miroirLoading?"wait":"pointer",fontWeight:500,transition:"all 0.2s"}}>
+              {miroirLoading?"Analyse en cours…":"Voir mon miroir ✦"}
+            </button>
+          </div>
+        )}
+
+        {/* ── MIROIR J11 — RÉSULTAT ── */}
+        {miroirData&&!miroirDone&&(
+          <div style={{marginBottom:"1rem",background:C.bg,border:`1px solid ${C.border}`,borderTop:`3px solid ${C.text}`,animation:"fadeUp 0.5s ease",overflow:"hidden"}}>
+            <div style={{padding:"1.4rem 1.5rem 0"}}>
+              <div style={{fontSize:"0.52rem",color:C.textDim,letterSpacing:"0.28em",textTransform:"uppercase",...MN,marginBottom:"1rem"}}>Ce qu'on a observé ensemble</div>
+              {[miroirData.obs1,miroirData.obs2,miroirData.obs3].filter(Boolean).map((obs,i)=>(
+                <div key={i} style={{display:"flex",gap:"1rem",alignItems:"flex-start",marginBottom:"1.1rem"}}>
+                  <div style={{width:"24px",height:"24px",background:C.bg3,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"0.6rem",color:C.textDim,...MN}}>{i+1}</div>
+                  <p style={{fontSize:"0.9rem",color:C.text,lineHeight:1.65,margin:0,fontStyle:"italic"}}>{obs}</p>
+                </div>
+              ))}
+              {miroirData.ton_verdict&&(
+                <div style={{padding:"1rem 1.1rem",background:C.bg2,borderLeft:`3px solid ${C.text}`,marginBottom:"1.2rem"}}>
+                  <div style={{fontSize:"0.52rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>Ce qu'on retient</div>
+                  <p style={{fontSize:"0.88rem",color:C.text,lineHeight:1.65,margin:0,...SF,fontStyle:"italic"}}>{miroirData.ton_verdict}</p>
+                </div>
+              )}
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",borderTop:`1px solid ${C.border}`}}>
+              <button onClick={()=>{setMiroirDone(true);if(activeDomain){const cur=loadByDomain(activeDomain)||{};saveByDomain(activeDomain,{...cur,miroirDone:true,miroirData});}}} style={{padding:"1rem",background:C.text,border:"none",color:C.bg,fontSize:"0.75rem",letterSpacing:"0.1em",...MN,cursor:"pointer",fontWeight:500}}>C'est vrai ✓</button>
+              <button onClick={()=>{setMiroirDone(true);setMiroirData(null);if(activeDomain){const cur=loadByDomain(activeDomain)||{};saveByDomain(activeDomain,{...cur,miroirDone:true,miroirData:null});}}} style={{padding:"1rem",background:"transparent",border:"none",borderLeft:`1px solid ${C.border}`,color:C.textDim,fontSize:"0.75rem",letterSpacing:"0.1em",...MN,cursor:"pointer"}}>Pas tout à fait</button>
+            </div>
+          </div>
+        )}
+
+        {/* ── QUESTION DÉCISION J30 / J60 / J90 ── */}
+        {([30,60,90].includes(dn))&&!retourMsg&&(()=>{
+          const curKey = `decision_j${dn}`;
+          const savedDecision = (() => { try{ const d=loadByDomain(activeDomain); return d?.[curKey]||null; }catch{return null;} })();
+          if(savedDecision) return (
+            <div style={{marginBottom:"1rem",padding:"1.2rem 1.4rem",background:C.bg2,border:`1px solid ${C.border}`,borderLeft:`3px solid ${C.green}`}}>
+              <div style={{fontSize:"0.52rem",color:C.textDim,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>Ta décision · Jour {dn}</div>
+              <p style={{fontSize:"0.88rem",color:C.text,lineHeight:1.65,margin:0,...SF,fontStyle:"italic"}}>"{savedDecision}"</p>
+            </div>
+          );
+          return (
+            <div style={{marginBottom:"1rem",padding:"1.4rem 1.5rem",background:C.bg,border:`1px solid ${C.border}`,borderTop:`3px solid ${C.green}`,animation:"fadeUp 0.6s ease"}}>
+              <div style={{fontSize:"0.52rem",color:C.green,letterSpacing:"0.28em",textTransform:"uppercase",...MN,marginBottom:"0.8rem"}}>Question Jour {dn} — facultative</div>
+              <p style={{...SF,fontSize:"clamp(1rem,3vw,1.2rem)",color:C.text,lineHeight:1.6,marginBottom:"1.2rem",fontStyle:"italic"}}>Est-ce qu'on a pris une décision ces dernières semaines qu'on n'aurait pas prise avant ? Si oui, laquelle — en une phrase.</p>
+              <textarea
+                value={decisionReponse}
+                onChange={e=>setDecisionReponse(e.target.value)}
+                placeholder="Une décision concrète, nommable…"
+                rows={3}
+                style={{width:"100%",padding:"0.75rem",background:C.bg2,border:`1px solid ${C.border}`,borderBottom:`2px solid ${C.green}`,color:C.text,fontSize:"0.85rem",resize:"none",outline:"none",fontFamily:"'Jost',sans-serif",lineHeight:1.5,boxSizing:"border-box"}}
+              />
+              <div style={{display:"flex",gap:"0.5rem",marginTop:"0.75rem"}}>
+                <button onClick={()=>{saveDecision(dn,decisionReponse);setDecisionReponse("");}} disabled={!decisionReponse.trim()||decisionSaved} style={{flex:1,padding:"0.82rem",background:decisionSaved?C.green:C.text,border:"none",color:C.bg,fontSize:"0.73rem",letterSpacing:"0.12em",...MN,cursor:decisionReponse.trim()?"pointer":"not-allowed",fontWeight:500,transition:"all 0.3s"}}>
+                  {decisionSaved?"✓ Enregistré":"Enregistrer ma réponse"}
+                </button>
+                <button onClick={()=>saveDecision(dn,'__skip__')} style={{padding:"0.82rem 1rem",background:"transparent",border:`1px solid ${C.border}`,color:C.textDim,fontSize:"0.7rem",...MN,cursor:"pointer"}}>Passer</button>
+              </div>
+            </div>
+          );
+        })()}
+
+        <Card accent>
           <div style={{display:"flex",gap:"0.9rem",alignItems:"center",marginBottom:"0.9rem"}}>
             <ProgressCircle day={Math.min(dn,90)} size={105}/>
             <div style={{flex:1}}>
-              <div style={{fontSize:"0.54rem",color:C.text,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.25rem"}}>Niveau — {lv.label}</div>
-              <div style={{...SF,fontSize:"0.95rem",color:C.text,lineHeight:1.4,marginBottom:"0.5rem"}}>{sc.mission_centrale}</div>
-              <div style={{fontSize:"0.56rem",color:C.text,...MN,marginBottom:"0.2rem"}}>Exécution — {stats.execRate}%</div>
+              <div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.25rem"}}>Niveau — {lv.label}</div>
+              <div style={{...SF,fontSize:"0.95rem",color:C.textDim,lineHeight:1.4,marginBottom:"0.5rem"}}>{sc.mission_centrale}</div>
+              <div style={{fontSize:"0.56rem",color:C.textDim,...MN,marginBottom:"0.2rem"}}>Exécution — {stats.execRate}%</div>
               <div style={{height:"4px",background:C.bg3,marginBottom:"0.25rem"}}><div style={{height:"100%",width:`${stats.execRate}%`,background:`linear-gradient(90deg,${C.goldD},${C.gold})`,transition:"width 1s ease"}}/></div>
-              <div style={{fontSize:"0.65rem",color:C.text}}>{lv.desc}</div>
+              <div style={{fontSize:"0.65rem",color:C.textDim}}>{lv.desc}</div>
             </div>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"0.35rem",paddingTop:"0.7rem",borderTop:`1px solid ${C.border}`}}>
@@ -3056,7 +3019,7 @@ export default function App(){
             </div>)}
           </div>
         </Card>
-        {dn<90?<div style={{
+        <div style={{
           padding:"1.2rem 1.3rem",marginBottom:"1rem",
           background:`linear-gradient(135deg,${C.green}15,${C.green}05)`,
           border:`2px solid ${C.green}50`,borderTop:`4px solid ${C.green}`,
@@ -3073,21 +3036,7 @@ export default function App(){
             style={{width:"100%",padding:"0.75rem",background:C.green,border:"none",color:C.bg,fontSize:"0.74rem",letterSpacing:"0.12em",...MN,cursor:"pointer",fontWeight:500}}>
             ✓ C'est fait — Enregistrer
           </button>
-        </div>:<div style={{
-          padding:"1.3rem 1.4rem",marginBottom:"1rem",
-          background:`linear-gradient(135deg,${C.gold}15,${C.gold}05)`,
-          border:`2px solid ${C.gold}50`,borderTop:`4px solid ${C.gold}`,
-          position:"relative",animation:"fadeUp 0.4s ease",textAlign:"center"
-        }}>
-          <div style={{fontSize:"0.56rem",color:C.gold,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.7rem"}}>◆ Jour {dn} — Les 90 jours sont passés</div>
-          <div style={{...SF,fontSize:"1.05rem",color:C.text,lineHeight:1.6,marginBottom:"1rem"}}>
-            Il y a 90 jours, tu portais une croyance précise sur toi-même. Les faits ont eu le temps de parler.
-          </div>
-          <button onClick={()=>{track('j90_verdict_clicked');setScreen("cloture");}}
-            style={{width:"100%",padding:"0.85rem",background:C.gold,border:"none",color:C.onGold,fontSize:"0.74rem",letterSpacing:"0.12em",...MN,cursor:"pointer",fontWeight:600}}>
-            Découvrir le verdict →
-          </button>
-        </div>}
+        </div>
 
         <div id="tracker-section">
         <Card>
@@ -3099,103 +3048,13 @@ export default function App(){
         </Card>
         </div>
         {plan2?.rituel?.matin&&<Card><SH icon="🌬" label="Rituel du jour" sub="< 10 min · Timer intégré"/><RituelTimer steps={plan2.rituel.matin} nomGuerre={plan.nom_guerre} onComplete={()=>{if(todayLog){saveLog({...todayLog,rituel_done:true});}}} /></Card>}
-        <CoachChat plan={plan} plan2={plan2} weeks={weeks} dailyLogs={logs} answers={answers}/>
+        <CoachChat plan={plan} plan2={plan2} weeks={weeks} dailyLogs={logs}/>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.45rem"}}>
           {[{lbl:"📅 Plan semaines",sub:"12 semaines + checklist",action:()=>{setTab("plan");setScreen("result");if(!weeks&&!weeksLoading)generateWeeks(plan);}},{lbl:"📊 Dashboard",sub:"Scorecard + Identité future",action:()=>{setTab("dashboard");setScreen("result");}},{lbl:"🛡 Anti-abandon",sub:"Protocoles de rechute",action:()=>{setTab("anti-abandon");setScreen("result");}},{lbl:"↓ PDF Premium",sub:"Collector · Page identité",action:printPDF}].map(({lbl,sub,action})=><button key={lbl} onClick={action} style={{padding:"0.75rem",background:C.bg2,border:`1px solid ${C.border}`,color:C.text,textAlign:"left",cursor:"pointer",transition:"all 0.2s"}}>
             <div style={{fontSize:"0.8rem",marginBottom:"0.15rem"}}>{lbl}</div>
             <div style={{fontSize:"0.63rem",color:C.textDim}}>{sub}</div>
           </button>)}
         </div>
-      </div>
-    );
-  }
-
-  // ── CLÔTURE J90 ──
-  if(screen==="cloture"&&plan){
-    const croyanceJ1=flatAnswers(answers).q_mensonge||flatAnswers(answers).q_croyance_limitante||flatAnswers(answers).q_phrase_neg||"";
-    return(
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",maxWidth:"560px",margin:"0 auto",padding:"0 1rem 3rem"}}>
-        <link rel="stylesheet" href={FONT}/><style>{CSS}</style>
-        <div style={{padding:"1rem 0 0.5rem"}}>
-          <button onClick={()=>setScreen("home")} style={{background:"none",border:"none",color:C.textDim,fontSize:"0.68rem",letterSpacing:"0.1em",...MN,cursor:"pointer"}}>← Accueil</button>
-        </div>
-
-        {!clotureStarted&&!cloture&&<div style={{animation:"fadeUp 0.4s ease"}}>
-          <div style={{textAlign:"center",marginBottom:"2rem",marginTop:"1rem"}}>
-            <div style={{fontSize:"0.56rem",letterSpacing:"0.3em",color:C.gold,textTransform:"uppercase",...MN,marginBottom:"0.6rem"}}>◆ Avant le verdict</div>
-            <div style={{...SF,fontSize:"1.3rem",color:C.text,lineHeight:1.5}}>Trois questions. Réponds sans réfléchir trop longtemps.</div>
-          </div>
-
-          <Card>
-            <div style={{fontSize:"0.6rem",color:C.textDim,...MN,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"0.6rem"}}>Le Jour 1, tu avais écrit</div>
-            <div style={{...SF,fontSize:"1.05rem",color:C.text,fontStyle:"italic",lineHeight:1.6,marginBottom:"1.6rem",paddingLeft:"1rem",borderLeft:`2px solid ${C.gold}`}}>"{croyanceJ1||"…"}"</div>
-
-            <div style={{fontSize:"0.85rem",color:C.text,marginBottom:"0.7rem"}}>Est-ce que cette phrase décrit encore qui tu es aujourd'hui ?</div>
-            <div style={{display:"flex",gap:"0.4rem",marginBottom:"1.6rem"}}>
-              {["Oui","Partiellement","Non"].map(opt=><button key={opt} onClick={()=>setAutoEval(p=>({...(p||{}),toujoursVrai:opt}))} style={{flex:1,padding:"0.6rem 0.3rem",background:autoEval?.toujoursVrai===opt?`${C.gold}20`:"transparent",border:`1px solid ${autoEval?.toujoursVrai===opt?C.gold:C.border}`,color:autoEval?.toujoursVrai===opt?C.text:C.textMid,fontSize:"0.75rem",cursor:"pointer",borderRadius:"10px"}}>{opt}</button>)}
-            </div>
-
-            <div style={{fontSize:"0.85rem",color:C.text,marginBottom:"0.6rem"}}>Aujourd'hui, je crois que je suis capable de réussir <span style={{color:C.textDim}}>(1-10)</span></div>
-            <div style={{display:"flex",gap:"0.3rem",marginBottom:"1.6rem"}}>
-              {[1,2,3,4,5,6,7,8,9,10].map(n=><button key={n} onClick={()=>setAutoEval(p=>({...(p||{}),capable:n}))} style={{flex:1,padding:"0.45rem 0.1rem",background:autoEval?.capable===n?C.gold:"transparent",border:`1px solid ${autoEval?.capable===n?C.gold:C.border}`,color:autoEval?.capable===n?C.onGold:C.textMid,fontSize:"0.72rem",cursor:"pointer",borderRadius:"8px"}}>{n}</button>)}
-            </div>
-
-            <div style={{fontSize:"0.85rem",color:C.text,marginBottom:"0.6rem"}}>Je fais confiance à mon futur <span style={{color:C.textDim}}>(1-10)</span></div>
-            <div style={{display:"flex",gap:"0.3rem",marginBottom:"0.5rem"}}>
-              {[1,2,3,4,5,6,7,8,9,10].map(n=><button key={n} onClick={()=>setAutoEval(p=>({...(p||{}),confiance:n}))} style={{flex:1,padding:"0.45rem 0.1rem",background:autoEval?.confiance===n?C.gold:"transparent",border:`1px solid ${autoEval?.confiance===n?C.gold:C.border}`,color:autoEval?.confiance===n?C.onGold:C.textMid,fontSize:"0.72rem",cursor:"pointer",borderRadius:"8px"}}>{n}</button>)}
-            </div>
-          </Card>
-
-          <button disabled={!autoEval?.toujoursVrai||!autoEval?.capable||!autoEval?.confiance}
-            onClick={()=>{setClotureStarted(true);generateCloture(autoEval);}}
-            style={{...BG,width:"100%",marginTop:"1.3rem",opacity:(!autoEval?.toujoursVrai||!autoEval?.capable||!autoEval?.confiance)?0.4:1,cursor:(!autoEval?.toujoursVrai||!autoEval?.capable||!autoEval?.confiance)?"not-allowed":"pointer"}}>
-            Voir le verdict →
-          </button>
-        </div>}
-
-        {clotureStarted&&!cloture&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"4rem 0",gap:"1.2rem"}}>
-          <div style={{width:"40px",height:"40px",border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`,borderRadius:"50%",animation:"spin 1.1s linear infinite"}}/>
-          <div style={{color:C.textDim,fontSize:"0.8rem",...MN,textAlign:"center"}}>{clotureLoading?"Analyse des 90 jours en cours…":clotureErr?"":""}</div>
-          {clotureErr&&<div style={{textAlign:"center"}}>
-            <div style={{color:C.red,fontSize:"0.78rem",marginBottom:"1rem"}}>{clotureErr}</div>
-            <button onClick={()=>generateCloture(autoEval)} style={{padding:"0.6rem 1.2rem",background:C.gold,border:"none",color:C.onGold,fontSize:"0.7rem",letterSpacing:"0.1em",cursor:"pointer",borderRadius:"10px"}}>Réessayer</button>
-          </div>}
-        </div>}
-
-        {cloture&&<div style={{animation:"fadeUp 0.5s ease"}}>
-          <div style={{textAlign:"center",marginBottom:"2.5rem",marginTop:"1rem"}}>
-            <div style={{fontSize:"0.56rem",letterSpacing:"0.3em",color:C.gold,textTransform:"uppercase",...MN,marginBottom:"0.7rem"}}>◆ Le Verdict — Jour 90</div>
-          </div>
-
-          <div style={{marginBottom:"2.5rem"}}>
-            <div style={{fontSize:"0.6rem",color:C.textDim,...MN,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:"0.7rem"}}>Le Mensonge — Jour 1</div>
-            <div style={{...SF,fontSize:"1.15rem",color:C.text,fontStyle:"italic",lineHeight:1.6,paddingLeft:"1rem",borderLeft:`2px solid ${C.red}`}}>"{cloture.mensonge}"</div>
-          </div>
-
-          <div style={{marginBottom:"2.5rem"}}>
-            <div style={{fontSize:"0.6rem",color:C.textDim,...MN,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:"0.9rem"}}>Les Preuves</div>
-            <div style={{display:"flex",flexDirection:"column",gap:"0.7rem"}}>
-              {(cloture.preuves||[]).map((p,i)=><div key={i} style={{display:"flex",gap:"0.6rem",alignItems:"flex-start"}}><span style={{color:C.green,fontSize:"0.85rem",marginTop:"0.1rem"}}>✓</span><span style={{fontSize:"0.92rem",color:C.text,lineHeight:1.6}}>{p}</span></div>)}
-            </div>
-          </div>
-
-          <div style={{marginBottom:"2.5rem",padding:"1.2rem",background:C.bg2,border:`1px solid ${C.border}`,borderRadius:"14px"}}>
-            <div style={{fontSize:"0.6rem",color:C.textDim,...MN,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:"0.7rem"}}>Le Verdict</div>
-            <div style={{fontSize:"0.95rem",color:C.text,lineHeight:1.75}}>{cloture.verdict}</div>
-          </div>
-
-          <div style={{marginBottom:"2.5rem",textAlign:"center"}}>
-            <div style={{fontSize:"0.6rem",color:C.textDim,...MN,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:"0.9rem"}}>Ce que tu es devenu</div>
-            <div style={{...SF,fontSize:"1.2rem",color:C.gold,lineHeight:1.6}}>{cloture.nouvelle_identite}</div>
-          </div>
-
-          <div style={{marginBottom:"2rem",paddingTop:"2rem",borderTop:`1px solid ${C.border}`}}>
-            <div style={{fontSize:"0.6rem",color:C.textDim,...MN,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:"0.9rem",textAlign:"center"}}>Lettre au Jour 1</div>
-            <div style={{...SF,fontSize:"0.95rem",color:C.textMid,fontStyle:"italic",lineHeight:1.85}}>{cloture.lettre_futur}</div>
-          </div>
-
-          <button onClick={()=>setScreen("home")} style={{...BG,width:"100%",marginTop:"1rem"}}>Retour à l'accueil</button>
-        </div>}
       </div>
     );
   }
@@ -3229,89 +3088,80 @@ export default function App(){
           {[{lbl:"↓ PDF",a:printPDF,bg:C.gold,c:C.bg},{lbl:"↓ Sheets",a:exportSheets,bg:"#3498DB",c:"#fff"},{lbl:"💬 Communauté",a:joinCommunity,bg:"#25D36618",c:"#25D366"}].map(({lbl,a,bg,c})=><button key={lbl} onClick={a} style={{padding:"0.72rem 0.1rem",background:bg,border:"none",color:c,fontSize:"0.68rem",letterSpacing:"0.05em",cursor:"pointer",transition:"all 0.2s"}}>{lbl}</button>)}
         </div>
         <div style={{display:"flex",gap:"0.22rem",marginBottom:"1rem",overflowX:"auto",paddingBottom:"0.22rem"}}>
-          {tabs.map(t=><button key={t} onClick={()=>{setTab(t);if(t==="plan"&&!weeks&&!weeksLoading)generateWeeks(plan);}} style={{padding:"0.55rem 0.7rem",background:"transparent",border:"none",borderBottom:`2px solid ${tab===t?C.gold:"transparent"}`,color:tab===t?C.text:C.textDim,...MN,fontWeight:400,fontSize:"0.58rem",letterSpacing:"0.08em",cursor:"pointer",whiteSpace:"nowrap",textTransform:"uppercase",transition:"all 220ms ease-out"}}>{tLabels[t]}</button>)}
+          {tabs.map(t=><button key={t} onClick={()=>{setTab(t);if(t==="plan"&&!weeks&&!weeksLoading)generateWeeks(plan);}} style={{padding:"0.48rem 0.68rem",background:tab===t?`${C.gold}18`:"transparent",border:`1px solid ${tab===t?C.gold:C.border}`,color:tab===t?C.gold:C.textDim,...MN,fontSize:"0.58rem",letterSpacing:"0.08em",cursor:"pointer",whiteSpace:"nowrap",textTransform:"uppercase",transition:"all 0.2s"}}>{tLabels[t]}</button>)}
         </div>
 
         {tab==="dashboard"&&<div style={{animation:"fadeUp 0.4s ease"}}>
-
-          {s.identite_future&&<div style={{marginBottom:"3rem"}}>
-            <SH icon="◈" label="Identité Future — Jour 90"/>
-            <div style={{display:"flex",flexDirection:"column",gap:"1.3rem",marginTop:"0.6rem"}}>
-              {[["Comment je pense",s.identite_future.comment_pense,C.gold],["Comment j'agis",s.identite_future.comment_agit,C.goldL],["Ce que je ne tolère plus",s.identite_future.ne_tolere_plus,C.red],["Mes nouveaux standards",s.identite_future.nouveaux_standards,C.green]].map(([l,v,c])=><div key={l} style={{paddingLeft:"1rem",borderLeft:`2px solid ${c}`}}><div style={{fontSize:"0.64rem",color:c,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.3rem"}}>{l}</div><div style={{fontSize:"1rem",color:C.text,lineHeight:1.6}}>{v}</div></div>)}
+          {s.identite_future&&<Card><SH icon="◈" label="Identité Future — Jour 90"/>
+            <div style={{display:"grid",gridTemplateColumns:"1fr",gap:"0.5rem"}}>
+              {[["Comment je pense",s.identite_future.comment_pense,C.gold],["Comment j'agis",s.identite_future.comment_agit,C.goldL],["Ce que je ne tolère plus",s.identite_future.ne_tolere_plus,C.red],["Mes nouveaux standards",s.identite_future.nouveaux_standards,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.55rem 0.75rem",background:`${c}0A`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
             </div>
-          </div>}
-
-          <div style={{marginBottom:"3rem"}}>
-            <SH icon="◈" label="Diagnostic Lucide"/>
-            <p style={{color:C.textMid,lineHeight:1.85,fontSize:"1rem",marginTop:"0.6rem",marginBottom:"1.4rem"}}>{s.diagnostic?.resume}</p>
-            <div style={{display:"flex",flexDirection:"column",gap:"1.2rem"}}>
-              {[["Bloquant central",s.diagnostic?.bloquant_central,C.red],["Schéma de sabotage",s.diagnostic?.schema_sabotage,C.gold],["Leçon",s.diagnostic?.lecon_echec,C.green]].map(([l,v,c])=><div key={l} style={{paddingLeft:"1rem",borderLeft:`2px solid ${c}`}}><div style={{fontSize:"0.64rem",color:c,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.3rem"}}>{l}</div><div style={{fontSize:"0.95rem",color:C.text,lineHeight:1.6}}>{v}</div></div>)}
-            </div>
-          </div>
-
-          <Card accent><SH icon="📊" label="Scorecard"/>
+          </Card>}
+          <Card accent><SH icon="◈" label="Diagnostic Lucide"/>
+            <p style={{color:C.textMid,lineHeight:1.78,fontSize:"0.87rem",marginBottom:"0.85rem"}}>{s.diagnostic?.resume}</p>
+            {[["Bloquant central",s.diagnostic?.bloquant_central,C.red],["Schéma de sabotage",s.diagnostic?.schema_sabotage,C.gold],["Leçon",s.diagnostic?.lecon_echec,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.58rem 0.78rem",background:`${c}0A`,border:`1px solid ${c}25`,borderLeft:`3px solid ${c}`,marginBottom:"0.5rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
+          </Card>
+          <Card><SH icon="📊" label="Scorecard"/>
             {scores.map(({k,d})=>d?<ScoreBar key={k} label={k} score={d.score} lecture={d.lecture}/>:null)}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.5rem",marginTop:"0.75rem"}}>
-              <div style={{padding:"0.68rem",background:`${riskColor}0E`,border:`1px solid ${riskColor}35`,borderRadius:"10px"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Risque abandon</div><div style={{...SF,fontSize:"0.92rem",color:C.text}}>{sc.risque_abandon}</div><div style={{fontSize:"0.68rem",color:C.textDim,marginTop:"0.15rem",lineHeight:1.4}}>{sc.facteur_risque}</div></div>
-              <div style={{padding:"0.68rem",background:`${C.green}0A`,border:`1px solid ${C.green}35`,borderRadius:"10px"}}><div style={{fontSize:"0.54rem",color:C.green,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Levier principal</div><div style={{fontSize:"0.77rem",color:C.textMid,lineHeight:1.4}}>{sc.levier_principal}</div></div>
+              <div style={{padding:"0.68rem",background:`${riskColor}0E`,border:`1px solid ${riskColor}35`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Risque abandon</div><div style={{...SF,fontSize:"0.92rem",color:C.text}}>{sc.risque_abandon}</div><div style={{fontSize:"0.68rem",color:C.textDim,marginTop:"0.15rem",lineHeight:1.4}}>{sc.facteur_risque}</div></div>
+              <div style={{padding:"0.68rem",background:`${C.green}0A`,border:`1px solid ${C.green}35`}}><div style={{fontSize:"0.54rem",color:C.green,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Levier principal</div><div style={{fontSize:"0.77rem",color:C.textMid,lineHeight:1.4}}>{sc.levier_principal}</div></div>
             </div>
-            <div style={{marginTop:"0.5rem",padding:"0.75rem",borderLeft:`3px solid ${C.gold}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Mission centrale</div><div style={{...SF,fontSize:"0.92rem",color:C.text,lineHeight:1.5}}>{sc.mission_centrale}</div></div>
+            <div style={{marginTop:"0.5rem",padding:"0.75rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}35`,borderLeft:`3px solid ${C.gold}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Mission centrale</div><div style={{...SF,fontSize:"0.92rem",color:C.text,lineHeight:1.5}}>{sc.mission_centrale}</div></div>
 
             {stats.total>0&&(()=>{
               const s4=computeScore4(logs,plan);
-              return <div style={{marginTop:"1rem",paddingTop:"1rem",borderTop:`1px solid ${C.border}`}}>
-                <div style={{fontSize:"0.85rem",color:C.text,marginBottom:"0.9rem"}}>Aujourd'hui, jour {stats.total} : <strong style={{color:C.gold}}>{s4.global}% de constance réelle.</strong> {s4.global>=60?"Tu tiens la cadence.":"Encore du chemin, mais tu avances."}</div>
+              return <div style={{marginTop:"0.75rem",padding:"0.75rem",background:C.bg3,border:`1px solid ${C.border}`}}>
+                <div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.15em",textTransform:"uppercase",...MN,marginBottom:"0.6rem"}}>Progression réelle — Jour {stats.total}</div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.4rem"}}>
                   {[["⚡ Exécution",s4.execution,C.gold,"Actions réalisées"],[" Identité",s4.identite,C.green,"Rituels accomplis"],["◈ Cohérence",s4.coherence,C.blue,"Jours sans rechute"],["▶ Progression",s4.progression,C.purple,"Distance parcourue"]].map(([lbl,val,col,sub])=>(
-                    <div key={lbl} style={{padding:"0.55rem",background:`${col}08`,border:`1px solid ${col}22`,borderRadius:"10px"}}>
+                    <div key={lbl} style={{padding:"0.55rem",background:`${col}08`,border:`1px solid ${col}22`}}>
                       <div style={{fontSize:"0.6rem",color:C.textDim,letterSpacing:"0.08em",...MN}}>{lbl}</div>
                       <div style={{...SF,fontSize:"1.3rem",color:C.text,margin:"0.15rem 0"}}>{val}<span style={{fontSize:"0.6rem"}}>%</span></div>
                       <div style={{fontSize:"0.58rem",color:C.textDim}}>{sub}</div>
                     </div>
                   ))}
                 </div>
+                <div style={{marginTop:"0.5rem",padding:"0.45rem",background:`${C.gold}08`,borderLeft:`2px solid ${C.gold}`,fontSize:"0.72rem",color:C.text}}>
+                  Score global : <strong>{s4.global}%</strong>
+                </div>
               </div>;
             })()}
           </Card>
-          {stats.total>0&&<Card accent accentColor={C.green}><SH icon="🏆" label="Ce que tu as déjà prouvé"/>
+          {stats.total>0&&<Card><SH icon="🏆" label="Ce que tu as déjà prouvé"/>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.45rem"}}>
-              {[[`${stats.streak}j consécutifs`,"de continuité",stats.streak>=3?C.green:C.gold],[`${stats.done} actions`,"exécutées",C.gold],[`${stats.relapses} rechute${stats.relapses!==1?"s":""}`, "récupérée${stats.relapses!==1?'s':''}",C.green],[`${Math.round(stats.totalMins/60*10)/10}h`,"investies",C.blue]].map(([v,l,c])=><div key={l} style={{padding:"0.65rem",background:`${c}0A`,border:`1px solid ${c}22`,borderRadius:"10px"}}><div style={{...SF,fontSize:"1.05rem",color:C.text,marginBottom:"0.1rem"}}>{v}</div><div style={{fontSize:"0.62rem",color:C.textDim,lineHeight:1.3}}>{l}</div></div>)}
+              {[[`${stats.streak}j consécutifs`,"de continuité",stats.streak>=3?C.green:C.gold],[`${stats.done} actions`,"exécutées",C.gold],[`${stats.relapses} rechute${stats.relapses!==1?"s":""}`, "récupérée${stats.relapses!==1?'s':''}",C.green],[`${Math.round(stats.totalMins/60*10)/10}h`,"investies",C.blue]].map(([v,l,c])=><div key={l} style={{padding:"0.65rem",background:`${c}0A`,border:`1px solid ${c}22`}}><div style={{...SF,fontSize:"1.05rem",color:C.text,marginBottom:"0.1rem"}}>{v}</div><div style={{fontSize:"0.62rem",color:C.textDim,lineHeight:1.3}}>{l}</div></div>)}
             </div>
           </Card>}
           <Card><SH icon="🏆" label="Ma victoire de la semaine" sub="Le cerveau oublie ses progrès — écris le tien"/>
             <WeeklyVictory logs={logs}/>
           </Card>
 
-          <div style={{marginTop:"3.5rem",paddingTop:"2.5rem",borderTop:`1px solid ${C.border}`,textAlign:"center"}}>
-            {s.citations_personnelles?.length>0&&<div style={{marginBottom:"2rem"}}>
-              {s.citations_personnelles.map((c,i)=><div key={i} style={{...SF,fontSize:"1rem",color:C.text,fontStyle:"italic",lineHeight:1.7,marginBottom:"0.9rem"}}>✦ {c}</div>)}
-            </div>}
-            <p style={{...SF,color:C.textMid,lineHeight:1.9,fontSize:"1rem",fontStyle:"italic",maxWidth:"480px",margin:"0 auto 2rem"}}>{s2.message_final}</p>
-            <div style={{fontSize:"0.6rem",color:C.textDim,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.6rem"}}>Contrat</div>
-            <div style={{...SF,fontSize:"1.05rem",color:C.text,fontStyle:"italic",lineHeight:1.7,maxWidth:"480px",margin:"0 auto"}}>{s2.contrat}</div>
-          </div>
+          {s.citations_personnelles?.length>0&&<Card><SH icon="✦" label="Phrases personnelles" sub="Générées à partir de ton profil"/>
+            {s.citations_personnelles.map((c,i)=><div key={i} style={{padding:"0.65rem 0.85rem",borderLeft:`2px solid ${C.goldD}`,marginBottom:"0.45rem",background:C.bg3}}><div style={{...SF,fontSize:"0.92rem",color:C.text,fontStyle:"italic",lineHeight:1.55}}>{c}</div></div>)}
+          </Card>}
+          <Card accent><SH icon="✦" label="Message Final"/>
+            <p style={{color:C.textMid,lineHeight:1.85,fontSize:"0.87rem",fontStyle:"italic"}}>{s2.message_final}</p>
+          </Card>
+          <div style={{padding:"0.95rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`,textAlign:"center",marginBottom:"1rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.25em",textTransform:"uppercase",...MN,marginBottom:"0.4rem"}}>Contrat</div><div style={{...SF,fontSize:"0.97rem",color:C.text,fontStyle:"italic",lineHeight:1.6}}>{s2.contrat}</div></div>
         </div>}
 
         {tab==="rituel"&&<div style={{animation:"fadeUp 0.4s ease"}}>
           <Card accent><SH icon="🌬" label="Rituel d'Activation" sub="< 10 min · Timer intégré · Chaque jour"/>
-            <div style={{padding:"0.85rem 1rem",borderLeft:`2px solid ${C.gold}`,marginBottom:"1.1rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.3rem"}}>Autosuggestion — 3× à voix haute</div><div style={{...SF,fontSize:"1.02rem",color:C.text,fontStyle:"italic",lineHeight:1.6}}>{s2.rituel?.autosuggestion}</div></div>
+            <div style={{padding:"0.82rem 0.95rem",background:`${C.gold}0E`,border:`1px solid ${C.goldD}`,borderLeft:`3px solid ${C.gold}`,marginBottom:"1rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.28rem"}}>Autosuggestion — 3× à voix haute</div><div style={{...SF,fontSize:"1.02rem",color:C.text,fontStyle:"italic",lineHeight:1.6}}>{s2.rituel?.autosuggestion}</div></div>
             {s2.rituel?.matin&&<RituelTimer steps={s2.rituel.matin}/>}
-            <div style={{marginTop:"0.9rem",padding:"0.7rem 0.85rem",borderLeft:`2px solid ${C.green}`}}><div style={{fontSize:"0.54rem",color:C.green,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.2rem"}}>◉ Première action — dans les 2 min</div><div style={{fontSize:"0.83rem",color:C.text,lineHeight:1.5}}>{s2.rituel?.premiere_action_du_jour}</div></div>
-            <div style={{marginTop:"0.6rem",paddingLeft:"1rem",borderLeft:`2px solid ${C.border}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Soir <Tag>{s2.rituel?.soir?.duree}</Tag></div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{s2.rituel?.soir?.action}</div></div>
+            <div style={{marginTop:"0.85rem",padding:"0.68rem 0.82rem",background:`${C.green}0A`,border:`1px solid ${C.green}25`}}><div style={{fontSize:"0.54rem",color:C.green,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>◉ Première action — dans les 2 min</div><div style={{fontSize:"0.83rem",color:C.text,lineHeight:1.5}}>{s2.rituel?.premiere_action_du_jour}</div></div>
+            <div style={{marginTop:"0.5rem",padding:"0.68rem 0.82rem",background:C.bg3,borderLeft:`2px solid ${C.goldD}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>Soir <Tag>{s2.rituel?.soir?.duree}</Tag></div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{s2.rituel?.soir?.action}</div></div>
           </Card>
-
-          <div style={{marginTop:"2.5rem"}}>
-            <SH icon="🛡" label="Protocole de Rechute" sub={`"${s2.protocole_rechute?.contexte||""}"`}/>
-            <div style={{display:"flex",flexDirection:"column",gap:"1.1rem",marginTop:"0.6rem"}}>
-              {[["5 premières minutes",s2.protocole_rechute?.["5_minutes"],C.red],["24 heures",s2.protocole_rechute?.["24h"],C.gold],["48 heures",s2.protocole_rechute?.["48h"],C.green]].map(([l,v,c])=><div key={l} style={{paddingLeft:"1rem",borderLeft:`2px solid ${c}`}}><div style={{fontSize:"0.64rem",color:c,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.3rem"}}>{l}</div><div style={{fontSize:"0.95rem",color:C.text,lineHeight:1.6}}>{v}</div></div>)}
-            </div>
-            <div style={{marginTop:"1.3rem",padding:"0.9rem 1rem",background:`${C.gold}0A`,border:`1px solid ${C.border}`,borderRadius:"12px"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.2rem"}}>Règle du Non-Zéro</div><div style={{fontSize:"0.85rem",color:C.text,lineHeight:1.55}}>{s2.protocole_rechute?.regle_non_zero}</div></div>
-          </div>
+          <Card><SH icon="🛡" label="Protocole de Rechute" sub={`"${s2.protocole_rechute?.contexte||""}"`}/>
+            {[["5 premières minutes",s2.protocole_rechute?.["5_minutes"],C.red],["24 heures",s2.protocole_rechute?.["24h"],C.gold],["48 heures",s2.protocole_rechute?.["48h"],C.green]].map(([l,v,c])=><div key={l} style={{marginBottom:"0.55rem",padding:"0.62rem 0.8rem",background:`${c}08`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
+            <div style={{padding:"0.7rem 0.85rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}35`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>Règle du Non-Zéro</div><div style={{fontSize:"0.81rem",color:C.text,lineHeight:1.5}}>{s2.protocole_rechute?.regle_non_zero}</div></div>
+          </Card>
         </div>}
 
         {tab==="plan"&&<div style={{animation:"fadeUp 0.4s ease"}}>
           {weeksLoading&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"2.5rem 0",gap:"0.9rem"}}><div style={{width:"36px",height:"36px",border:`1px solid ${C.goldD}`,borderTop:`2px solid ${C.gold}`,borderRadius:"50%",animation:"spin 1.1s linear infinite"}}/><div style={{color:C.textDim,fontSize:"0.76rem",...MN}}>Génération des 12 semaines…</div></div>}
-          {!weeksLoading&&weeks!==null&&weeks.length===0&&<Card><div style={{textAlign:"center",padding:"0.75rem",color:C.textDim,fontSize:"0.81rem"}}><div style={{marginBottom:"0.65rem"}}>Impossible de charger.</div><button onClick={()=>{setWeeks(null);generateWeeks(plan);}} style={{padding:"0.52rem 1rem",background:C.gold,border:"none",color:C.onGold,fontSize:"0.7rem",letterSpacing:"0.1em",cursor:"pointer"}}>Réessayer</button></div></Card>}
+          {!weeksLoading&&weeks!==null&&weeks.length===0&&<Card><div style={{textAlign:"center",padding:"0.75rem",color:C.textDim,fontSize:"0.81rem"}}><div style={{marginBottom:"0.65rem"}}>Impossible de charger.</div><button onClick={()=>{setWeeks(null);generateWeeks(plan);}} style={{padding:"0.52rem 1rem",background:C.gold,border:"none",color:C.bg,fontSize:"0.7rem",letterSpacing:"0.1em",cursor:"pointer"}}>Réessayer</button></div></Card>}
           {!weeksLoading&&weeks&&weeks.length>0&&(()=>{
             const nrm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase();
             const getWeekScore=(wn)=>computeWeekScore(wn, logs, startDate);
@@ -3339,27 +3189,25 @@ export default function App(){
         </div>}
 
         {tab==="anti-abandon"&&<div style={{animation:"fadeUp 0.4s ease"}}>
-          <SH icon="🔒" label="Système Anti-Abandon" sub="Le système tient quand la motivation lâche"/>
-          <div style={{marginTop:"0.8rem",marginBottom:"1.8rem"}}><div style={{fontSize:"0.6rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.15em",...MN,marginBottom:"0.6rem"}}>Règles de continuité</div>
-            {(s2.anti_abandon?.regles||[]).map((r,i)=><div key={i} style={{display:"flex",gap:"0.7rem",marginBottom:"0.55rem",alignItems:"flex-start"}}><span style={{...MN,fontSize:"0.63rem",color:C.gold,minWidth:"1.4rem",marginTop:"0.1rem"}}>{String(i+1).padStart(2,"0")}</span><span style={{fontSize:"0.92rem",color:C.text,lineHeight:1.6}}>{r}</span></div>)}
-          </div>
-          <div style={{display:"flex",flexDirection:"column",gap:"1.1rem"}}>
-            {[["Jour difficile",s2.protocole_rechute?.jour_difficile,C.gold],["Motivation basse",s2.protocole_rechute?.motivation_basse,C.red],["Rechute émotionnelle",s2.protocole_rechute?.rechute_emotionnelle,C.purple],["Fatigue mentale",s2.protocole_rechute?.fatigue_mentale,C.blue],["Version minimale",s2.anti_abandon?.version_minimale,C.green]].filter(([,v])=>v).map(([l,v,c])=><div key={l} style={{paddingLeft:"1rem",borderLeft:`2px solid ${c}`}}><div style={{fontSize:"0.64rem",color:c,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.3rem"}}>{l}</div><div style={{fontSize:"0.92rem",color:C.text,lineHeight:1.6}}>{v}</div></div>)}
-          </div>
+          <Card accent><SH icon="🔒" label="Système Anti-Abandon" sub="Le système tient quand la motivation lâche"/>
+            <div style={{marginBottom:"0.85rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.15em",...MN,marginBottom:"0.4rem"}}>Règles de continuité</div>
+              {(s2.anti_abandon?.regles||[]).map((r,i)=><div key={i} style={{display:"flex",gap:"0.6rem",marginBottom:"0.38rem",alignItems:"flex-start"}}><span style={{...MN,fontSize:"0.63rem",color:C.text,minWidth:"1.4rem",marginTop:"0.08rem"}}>{String(i+1).padStart(2,"0")}</span><span style={{fontSize:"0.81rem",color:C.text,lineHeight:1.55}}>{r}</span></div>)}
+            </div>
+            {[["Jour difficile",s2.protocole_rechute?.jour_difficile,C.gold],["Motivation basse",s2.protocole_rechute?.motivation_basse,C.red],["Rechute émotionnelle",s2.protocole_rechute?.rechute_emotionnelle,C.purple],["Fatigue mentale",s2.protocole_rechute?.fatigue_mentale,C.blue],["Version minimale",s2.anti_abandon?.version_minimale,C.green]].filter(([,v])=>v).map(([l,v,c])=><div key={l} style={{marginBottom:"0.6rem",padding:"0.75rem 0.85rem",background:`${c}08`,border:`1px solid ${c}25`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.25rem"}}>{l}</div><div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.6}}>{v}</div></div>)}
+          </Card>
         </div>}
 
         {tab==="lectures"&&<div style={{animation:"fadeUp 0.4s ease"}}>
-          <SH icon="📚" label="Lectures" sub="Sélectionnées pour ce profil précis"/>
-          <div style={{marginTop:"0.8rem"}}>
-            {(s2.lectures||[]).map((l,i)=><div key={i} style={{marginBottom:"1.6rem",paddingBottom:"1.6rem",borderBottom:i<(s2.lectures.length-1)?`1px solid ${C.border}`:"none"}}>
-              <div style={{display:"flex",gap:"0.6rem",alignItems:"flex-start",marginBottom:"0.35rem"}}><span style={{...MN,fontSize:"0.63rem",color:C.gold,minWidth:"1.1rem",marginTop:"0.1rem"}}>0{i+1}</span><div><div style={{...SF,fontSize:"1.05rem",color:C.text,marginBottom:"0.1rem"}}>{l.titre}</div><div style={{fontSize:"0.7rem",color:C.textDim,...MN}}>{l.auteur}</div></div></div>
-              <div style={{fontSize:"0.88rem",color:C.textMid,lineHeight:1.65,paddingLeft:"1.7rem"}}>{l.pourquoi}</div>
+          <Card><SH icon="📚" label="Lectures" sub="Sélectionnées pour ce profil précis"/>
+            {(s2.lectures||[]).map((l,i)=><div key={i} style={{marginBottom:"0.85rem",padding:"0.85rem",background:C.bg3,borderLeft:`2px solid ${C.goldD}`}}>
+              <div style={{display:"flex",gap:"0.52rem",alignItems:"flex-start",marginBottom:"0.28rem"}}><span style={{...MN,fontSize:"0.63rem",color:C.text,minWidth:"1.1rem",marginTop:"0.08rem"}}>0{i+1}</span><div><div style={{...SF,fontSize:"0.95rem",color:C.text,marginBottom:"0.06rem"}}>{l.titre}</div><div style={{fontSize:"0.68rem",color:C.textDim,...MN}}>{l.auteur}</div></div></div>
+              <div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.6,paddingLeft:"1.6rem"}}>{l.pourquoi}</div>
             </div>)}
-          </div>
+          </Card>
         </div>}
 
         {tab==="coach"&&<div style={{animation:"fadeUp 0.4s ease"}}>
-          <CoachChat plan={plan} plan2={plan2} weeks={weeks} dailyLogs={logs} answers={answers}/>
+          <CoachChat plan={plan} plan2={plan2} weeks={weeks} dailyLogs={logs}/>
           <div style={{padding:"0.7rem",background:C.bg2,border:`1px solid ${C.border}`,fontSize:"0.7rem",color:C.textDim,lineHeight:1.6}}>
             <strong style={{color:C.text}}>Exemples :</strong> "J'ai raté 2 jours" · "Mon saboteur s'est déclenché" · "Comment faire l'action S4 ?" · "J'ai envie d'abandonner"
           </div>
@@ -3368,8 +3216,9 @@ export default function App(){
         {tab==="engagement"&&<EngagementTab plan={plan} plan2={plan2} firstName={firstName}/>}
 
         <div style={{textAlign:"center",padding:"2rem 0 0",color:C.textDim,fontSize:"0.66rem",borderTop:`1px solid ${C.border}`,marginTop:"2rem"}}>
-          <div style={{color:C.gold,opacity:0.6,letterSpacing:"0.4rem",marginBottom:"0.65rem"}}>✦ ◈ ✦</div>
-          Créé par <span style={{color:C.goldL,fontStyle:"italic"}}>Lamine Digital Lab</span> · Mon Plan de Vie 90 Jours
+          <div style={{color:C.text,opacity:0.32,letterSpacing:"0.4rem",marginBottom:"0.65rem"}}>✦ ◈ ✦</div>
+          Créé par <span style={{color:C.text}}>Lamine Diabaté</span> · Mon Plan de Vie 90 Jours<br/>
+          <span style={{color:C.text,fontSize:"0.61rem",...MN}}>Auteur · "90 Jours pour Renaître" · "Le Pouvoir d'un Esprit Aligné"</span>
         </div>
       </div>
     );

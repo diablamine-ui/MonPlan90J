@@ -105,10 +105,10 @@ const sbLoadAll = async(userKey) => {
 // PALETTE
 // ══════════════════════════════════════════════════════════════
 const C = {
-  bg:"#FAF8F3",bg1:"#F5F0E6",bg2:"#EFE8D8",bg3:"#E2DDD0",
-  border:"#E2DDD0",gold:"#C9A84C",goldL:"#C9A84C",goldD:"#C9A84C",
-  text:"#1C1A16",textDim:"#5C574C",textMid:"#5C574C",
-  red:"#A8362A",green:"#1A6B3C",blue:"#1F5E8C",purple:"#6B3380",
+  bg:"#080808",bg1:"#0F0F0F",bg2:"#161616",bg3:"#1E1E1E",
+  border:"#2A2A2A",gold:"#C9A84C",goldL:"#E8C97A",goldD:"#8B6914",
+  text:"#F0EAD6",textDim:"#7A7060",textMid:"#A89880",
+  red:"#E74C3C",green:"#27AE60",blue:"#3498DB",purple:"#8E44AD",
 };
 
 // ══════════════════════════════════════════════════════════════
@@ -851,7 +851,7 @@ const SF={fontFamily:"'Cormorant Garamond',serif"};
 
 function Divider(){return <div style={{width:"50px",height:"1px",background:`linear-gradient(90deg,transparent,${C.gold},transparent)`,margin:"0 auto"}}/>;}
 function Card({children,accent=false,style={}}){return <div style={{background:C.bg2,border:`1px solid ${accent?C.goldD:C.border}`,borderTop:`2px solid ${accent?C.gold:C.border}`,padding:"1.4rem",marginBottom:"1rem",...style}}>{children}</div>;}
-function Tag({children,color=C.gold}){return <span style={{display:"inline-block",padding:"0.18rem 0.5rem",background:`${color}18`,border:`1px solid ${color}55`,color:C.text,fontSize:"0.67rem",letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>{children}</span>;}
+function Tag({children,color=C.gold}){return <span style={{display:"inline-block",padding:"0.18rem 0.5rem",background:`${color}18`,border:`1px solid ${color}55`,color,fontSize:"0.67rem",letterSpacing:"0.12em",textTransform:"uppercase",...MN}}>{children}</span>;}
 function SH({icon,label,sub}){return <div style={{marginBottom:"1.1rem"}}><div style={{display:"flex",alignItems:"center",gap:"0.55rem",marginBottom:"0.2rem"}}><span style={{color:C.textDim}}>{icon}</span><span style={{fontSize:"0.58rem",letterSpacing:"0.28em",color:C.textDim,textTransform:"uppercase",...MN}}>{label}</span></div>{sub&&<div style={{fontSize:"0.75rem",color:C.textDim,paddingLeft:"1.35rem"}}>{sub}</div>}</div>;}
 
 function ScoreBar({label,score,lecture}){
@@ -859,7 +859,7 @@ function ScoreBar({label,score,lecture}){
   return <div style={{marginBottom:"1rem"}}>
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:"0.3rem"}}>
       <span style={{fontSize:"0.7rem",letterSpacing:"0.1em",color:C.textMid,textTransform:"uppercase"}}>{label}</span>
-      <span style={{fontSize:"0.82rem",...MN,color:C.text}}>{score}/100</span>
+      <span style={{fontSize:"0.82rem",...MN,color:C.gold}}>{score}/100</span>
     </div>
     <div style={{height:"3px",background:C.bg3,overflow:"hidden"}}>
       <div style={{height:"100%",width:`${score}%`,background:`linear-gradient(90deg,${color}70,${color})`,transition:"width 1.2s ease"}}/>
@@ -876,7 +876,7 @@ function ProgressCircle({day,total=90,size=110}){
       <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={lv.color} strokeWidth="6" strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" style={{transition:"stroke-dasharray 1s ease"}}/>
     </svg>
     <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
-      <div style={{fontSize:"1.5rem",...SF,color:C.text,lineHeight:1}}>{day}</div>
+      <div style={{fontSize:"1.5rem",...SF,color:C.gold,lineHeight:1}}>{day}</div>
       <div style={{fontSize:"0.52rem",color:C.textDim,...MN}}>/ {total}</div>
     </div>
   </div>;
@@ -969,15 +969,15 @@ function BreathingVortex({onDone}){
           zIndex:2,
         }}>
           <div style={{
-            fontSize:"0.6rem",color:C.text,letterSpacing:"0.18em",
+            fontSize:"0.6rem",color:ph.color,letterSpacing:"0.18em",
             textTransform:"uppercase",...MN,marginBottom:"0.2rem",
             opacity:0.9
           }}>{ph.label}</div>
           <div style={{
-            ...SF,fontSize:"2.2rem",color:C.text,lineHeight:1,
+            ...SF,fontSize:"2.2rem",color:ph.color,lineHeight:1,
             textShadow:`0 0 15px ${ph.color}80`
           }}>{secsLeft}</div>
-          <div style={{fontSize:"0.5rem",color:C.textDim,opacity:0.6,...MN,marginTop:"0.15rem"}}>sec</div>
+          <div style={{fontSize:"0.5rem",color:ph.color,opacity:0.6,...MN,marginTop:"0.15rem"}}>sec</div>
         </div>
       </div>
 
@@ -1142,7 +1142,7 @@ function RituelTimer({steps, onComplete, nomGuerre}){
   if(state.phase==="step_done") return(
     <div style={{animation:"fadeUp 0.4s ease",textAlign:"center"}}>
       <div style={{background:`${doneMsg.color}10`,border:`1px solid ${doneMsg.color}30`,borderTop:`4px solid ${doneMsg.color}`,padding:"1.2rem",marginBottom:"0.8rem"}}>
-        <div style={{...SF,fontSize:"1.2rem",color:C.text,marginBottom:"0.5rem"}}>{doneMsg.titre}</div>
+        <div style={{...SF,fontSize:"1.2rem",color:doneMsg.color,marginBottom:"0.5rem"}}>{doneMsg.titre}</div>
         <p style={{fontSize:"0.82rem",color:C.text,lineHeight:1.75,marginBottom:"0.35rem"}}>{doneMsg.msg}</p>
         {doneMsg.sous&&<p style={{fontSize:"0.75rem",color:C.textDim,fontStyle:"italic"}}>{doneMsg.sous}</p>}
       </div>
@@ -1211,7 +1211,7 @@ function RituelTimer({steps, onComplete, nomGuerre}){
       <div style={{background:C.bg3,border:`1px solid ${C.goldD}`,padding:"1rem",animation:"fadeIn 0.3s ease"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.45rem"}}>
           <span style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.18em",textTransform:"uppercase",...MN}}>{step?.etape}</span>
-          <span style={{...MN,fontSize:"1.4rem",color:state.t<=10?C.red:C.text,fontWeight:400,animation:state.t<=10?"pulse 0.8s ease infinite":"none"}}>{fmt(state.t)}</span>
+          <span style={{...MN,fontSize:"1.4rem",color:state.t<=10?C.red:C.gold,fontWeight:400,animation:state.t<=10?"pulse 0.8s ease infinite":"none"}}>{fmt(state.t)}</span>
         </div>
         <div style={{fontSize:"0.81rem",color:C.textMid,lineHeight:1.5,marginBottom:"0.65rem"}}>{step?.action}</div>
         <div style={{height:"4px",background:C.bg,borderRadius:"2px",marginBottom:"0.5rem"}}>
@@ -1366,14 +1366,14 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
       </div>
       <div style={{position:"relative",zIndex:12,background:`${pc}12`,border:`2px solid ${pc}50`,borderTop:`5px solid ${pc}`,padding:"1.8rem 1.2rem",textAlign:"center",marginBottom:"1rem",animation:"popIn 0.6s ease 0.2s both",boxShadow:`0 0 40px ${pc}30`}}>
         <div style={{fontSize:"3rem",marginBottom:"0.6rem"}}>🏆</div>
-        <div style={{...SF,fontSize:"1.2rem",color:C.text,marginBottom:"0.7rem"}}>Semaine {weekNum} — jours complétés</div>
+        <div style={{...SF,fontSize:"1.2rem",color:pc,marginBottom:"0.7rem"}}>Semaine {weekNum} — jours complétés</div>
         <p style={{fontSize:"0.82rem",color:C.text,lineHeight:1.85,marginBottom:"0.6rem"}}>Ton score sera calculé automatiquement dimanche à partir de ton tracker journalier.</p>
         {score&&<div style={{background:`${scoreColor}15`,border:`1px solid ${scoreColor}40`,padding:"0.7rem",marginBottom:"0.7rem"}}>
-          <div style={{fontSize:"0.58rem",color:C.textDim,...MN,letterSpacing:"0.12em",marginBottom:"0.3rem"}}>SCORE SEMAINE {weekNum}</div>
-          <div style={{...SF,fontSize:"1.8rem",color:C.text}}>{scoreTotal}<span style={{fontSize:"0.9rem",color:C.textMid}}>/10</span></div>
+          <div style={{fontSize:"0.58rem",color:C.gold,...MN,letterSpacing:"0.12em",marginBottom:"0.3rem"}}>SCORE SEMAINE {weekNum}</div>
+          <div style={{...SF,fontSize:"1.8rem",color:C.gold}}>{scoreTotal}<span style={{fontSize:"0.9rem",color:C.textMid}}>/10</span></div>
           <div style={{fontSize:"0.7rem",color:scoreTotal>=seuil?C.green:C.red,marginTop:"0.3rem"}}>{scoreTotal>=seuil?`✓ Semaine ${weekNum+1} débloquée`:`✗ Score insuffisant (seuil : ${seuil}/10)`}</div>
         </div>}
-        {weekNum<12&&<p style={{fontSize:"0.78rem",color:C.textDim,lineHeight:1.6,fontStyle:"italic"}}>✦ Continue le tracker chaque jour pour maximiser ton score.</p>}
+        {weekNum<12&&<p style={{fontSize:"0.78rem",color:pc,lineHeight:1.6,fontStyle:"italic"}}>✦ Continue le tracker chaque jour pour maximiser ton score.</p>}
         {weekNum===12&&<p style={{fontSize:"0.85rem",color:C.green,lineHeight:1.6}}>✦ Tu as tenu les 90 jours. Peu de gens peuvent dire ça.</p>}
       </div>
       <button onClick={()=>setShowWeekDone(false)} style={{position:"relative",zIndex:1,width:"100%",padding:"0.9rem",background:pc,border:"none",color:C.bg,fontSize:"0.74rem",letterSpacing:"0.15em",textTransform:"uppercase",fontWeight:500,cursor:"pointer"}}>
@@ -1408,7 +1408,7 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
       <span style={{...MN,fontSize:"0.63rem",color:C.textDim,minWidth:"2rem"}}>S{weekNum}</span>
       <Tag color={pc}>{ph}</Tag>
       <span style={{flex:1,color:C.text,fontSize:"0.83rem"}}>{w.titre||w.t}</span>
-      {scoreTotal!==null&&<span style={{...MN,fontSize:"0.65rem",color:C.text,fontWeight:500}}>{scoreTotal}/10</span>}
+      {scoreTotal!==null&&<span style={{...MN,fontSize:"0.65rem",color:C.gold,fontWeight:500}}>{scoreTotal}/10</span>}
       {daysDone>0&&scoreTotal===null&&<span style={{...MN,fontSize:"0.58rem",color:C.text}}>{daysDone}/4j</span>}
       <span style={{color:C.textDim,fontSize:"0.78rem",flexShrink:0}}>{open?"−":"+"}</span>
     </button>
@@ -1438,7 +1438,7 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
             <span style={{color:done?C.green:C.textDim,fontSize:"0.72rem",marginTop:"0.05rem",flexShrink:0}}>{done?"✓":"○"}</span>
             <div style={{flex:1}}>
               <div style={{display:"flex",gap:"0.5rem",alignItems:"center",marginBottom:"0.2rem"}}>
-                <span style={{fontSize:"0.58rem",color:isDimanche?C.text:C.textMid,...MN,letterSpacing:"0.08em"}}>{emoji} {label}</span>
+                <span style={{fontSize:"0.58rem",color:isDimanche?C.gold:pc,...MN,letterSpacing:"0.08em"}}>{emoji} {label}</span>
                 {dayData.h&&<span style={{fontSize:"0.56rem",color:C.textDim,...MN}}>{dayData.h}</span>}
                 {dayData.dur&&<span style={{fontSize:"0.54rem",color:C.textDim,...MN}}>· {dayData.dur}</span>}
               </div>
@@ -1452,9 +1452,9 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
 
       {score&&(
         <div style={{marginTop:"0.75rem",background:`${scoreColor}0A`,border:`1px solid ${scoreColor}25`,padding:"0.65rem 0.8rem"}}>
-          <div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.4rem"}}>Score automatique — Semaine {weekNum}</div>
+          <div style={{fontSize:"0.54rem",color:C.gold,textTransform:"uppercase",letterSpacing:"0.12em",...MN,marginBottom:"0.4rem"}}>Score automatique — Semaine {weekNum}</div>
           <div style={{display:"flex",gap:"0.5rem",alignItems:"baseline",marginBottom:"0.4rem"}}>
-            <span style={{...SF,fontSize:"1.6rem",color:C.text}}>{scoreTotal}</span>
+            <span style={{...SF,fontSize:"1.6rem",color:C.gold}}>{scoreTotal}</span>
             <span style={{fontSize:"0.7rem",color:C.textMid}}>/10 · seuil {seuil}/10</span>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.3rem",fontSize:"0.66rem",color:C.textMid}}>
@@ -1463,7 +1463,7 @@ function WeekCard({w, checked, onCheck, isLocked, prevWeekScore, weekNum: wNum, 
             <span>Énergie : {score.ePts}/2</span>
             <span>Rechutes : {score.rechutePts}/1</span>
           </div>
-          <div style={{marginTop:"0.4rem",fontSize:"0.7rem",color:C.text,fontWeight:500}}>
+          <div style={{marginTop:"0.4rem",fontSize:"0.7rem",color:C.gold,fontWeight:500}}>
             {debloque?`✓ Semaine ${weekNum+1} débloquée`:`✗ Score insuffisant — continue le tracker`}
           </div>
           {score.logsCount<7&&<div style={{fontSize:"0.62rem",color:C.textDim,marginTop:"0.3rem",fontStyle:"italic"}}>({score.logsCount}/7 jours loggués — score provisoire)</div>}
@@ -2349,9 +2349,9 @@ Règles absolues :
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Jost',sans-serif",overflowX:"hidden"}}>
       <link rel="stylesheet" href={FONT}/>
       <script defer data-domain="monplan90.vercel.app" src="https://plausible.io/js/script.js"/>
-      <meta name="theme-color" content="#FAF7F0"/>
+      <meta name="theme-color" content="#0A0A0A"/>
       <meta name="apple-mobile-web-app-capable" content="yes"/>
-      <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
       <meta name="apple-mobile-web-app-title" content="Plan 90"/>
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
       <style>{CSS}</style>
@@ -2376,7 +2376,7 @@ Règles absolues :
             <div key={name} style={{padding:"0.5rem 0.9rem",background:`${cfg.color}10`,border:`1px solid ${cfg.color}30`,display:"flex",alignItems:"center",gap:"0.4rem"}}>
               <span style={{fontSize:"0.9rem"}}>{cfg.icon}</span>
               <div style={{textAlign:"left"}}>
-                <div style={{fontSize:"0.75rem",color:C.text,fontWeight:400}}>{name}</div>
+                <div style={{fontSize:"0.75rem",color:cfg.color,fontWeight:400}}>{name}</div>
                 <div style={{fontSize:"0.58rem",color:C.textDim,...MN}}>{cfg.desc}</div>
               </div>
             </div>
@@ -2482,7 +2482,7 @@ Règles absolues :
           </p>
 
           <div style={{display:"flex",gap:"1.2rem",justifyContent:"center",margin:"1.2rem 0"}}>
-            {[["Pas 30 jours.",C.textDim],["Pas 45.",C.textDim],["90.",C.text]].map(([t,c])=>(
+            {[["Pas 30 jours.",C.textDim],["Pas 45.",C.textDim],["90.",C.gold]].map(([t,c])=>(
               <span key={t} style={{...SF,fontSize:"1.1rem",color:c,fontStyle:"italic"}}>{t}</span>
             ))}
           </div>
@@ -2561,8 +2561,8 @@ Règles absolues :
 
         <div style={{animation:"fadeUp 0.4s ease",marginBottom:"1.5rem",textAlign:"center"}}>
           <div style={{display:"inline-flex",alignItems:"center",gap:"0.5rem",padding:"0.4rem 1rem",background:`${prevColor}15`,border:`1px solid ${prevColor}40`,marginBottom:"0.8rem"}}>
-            <span style={{color:C.textMid,fontSize:"0.9rem"}}>{prevSeg?.icon}</span>
-            <span style={{fontSize:"0.58rem",color:C.textMid,letterSpacing:"0.2em",textTransform:"uppercase",...MN}}>{prevSeg?.label} · Complété ✓</span>
+            <span style={{color:prevColor,fontSize:"0.9rem"}}>{prevSeg?.icon}</span>
+            <span style={{fontSize:"0.58rem",color:prevColor,letterSpacing:"0.2em",textTransform:"uppercase",...MN}}>{prevSeg?.label} · Complété ✓</span>
           </div>
         </div>
 
@@ -2596,7 +2596,7 @@ Règles absolues :
         }}>
           <span style={{fontSize:"1.5rem"}}>{nextSeg?.icon}</span>
           <div>
-            <div style={{fontSize:"0.58rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.2rem"}}>Prochain bloc</div>
+            <div style={{fontSize:"0.58rem",color:nextColor,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.2rem"}}>Prochain bloc</div>
             <div style={{fontSize:"0.9rem",color:C.text,fontWeight:400}}>{nextSeg?.label}</div>
             <div style={{fontSize:"0.68rem",color:C.textDim,marginTop:"0.15rem"}}>{nextSeg?.subtitle} · {nextSeg?.questions.length} questions</div>
           </div>
@@ -2809,7 +2809,7 @@ Règles absolues :
       <div style={{...SF,fontSize:"1.4rem",color:C.text,marginBottom:"0.35rem",textAlign:"center"}}>Ton système se construit</div>
       <div style={{color:C.textDim,fontSize:"0.76rem",marginBottom:"2.2rem",...MN}}>~20 secondes · 2 appels parallèles</div>
       <div style={{width:"100%",maxWidth:"290px"}}>{LOAD_STEPS.map((s,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:"0.6rem",padding:"0.42rem 0",borderBottom:`1px solid ${C.bg3}`,opacity:i<=loadStep?1:0.18,transition:"opacity 0.5s"}}>
-        <span style={{color:i<=loadStep?C.text:C.textDim,animation:i===loadStep?"pulse 1.1s ease-in-out infinite":"none",minWidth:"11px",fontSize:"0.76rem"}}>✦</span>
+        <span style={{color:i<=loadStep?C.gold:C.textDim,animation:i===loadStep?"pulse 1.1s ease-in-out infinite":"none",minWidth:"11px",fontSize:"0.76rem"}}>✦</span>
         <span style={{fontSize:"0.76rem",color:i===loadStep?C.text:C.textDim,...(i!==loadStep?MN:{})}}>{s}</span>
         {i<loadStep&&<span style={{marginLeft:"auto",color:C.green,fontSize:"0.68rem"}}>✓</span>}
       </div>)}</div>
@@ -2908,10 +2908,10 @@ Règles absolues :
           borderLeft:`4px solid ${retourMsg.color}`,
           animation:"fadeUp 0.4s ease"
         }}>
-          <div style={{fontSize:"0.56rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.5rem"}}>
+          <div style={{fontSize:"0.56rem",color:retourMsg.color,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.5rem"}}>
             Bienvenue de retour
           </div>
-          <div style={{...SF,fontSize:"1.1rem",color:C.text,marginBottom:"0.5rem"}}>{retourMsg.titre}</div>
+          <div style={{...SF,fontSize:"1.1rem",color:retourMsg.color,marginBottom:"0.5rem"}}>{retourMsg.titre}</div>
           <p style={{fontSize:"0.85rem",color:C.textMid,lineHeight:1.75,marginBottom:"0.65rem"}}>{retourMsg.corps}</p>
           <div style={{padding:"0.6rem 0.85rem",background:`${retourMsg.color}10`,borderLeft:`2px solid ${retourMsg.color}`,fontSize:"0.82rem",color:C.text,lineHeight:1.6}}>
             ✦ {retourMsg.action}
@@ -3005,7 +3005,7 @@ Règles absolues :
           <div style={{display:"flex",gap:"0.9rem",alignItems:"center",marginBottom:"0.9rem"}}>
             <ProgressCircle day={Math.min(dn,90)} size={105}/>
             <div style={{flex:1}}>
-              <div style={{fontSize:"0.54rem",color:C.textDim,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.25rem"}}>Niveau — {lv.label}</div>
+              <div style={{fontSize:"0.54rem",color:C.goldD,letterSpacing:"0.2em",textTransform:"uppercase",...MN,marginBottom:"0.25rem"}}>Niveau — {lv.label}</div>
               <div style={{...SF,fontSize:"0.95rem",color:C.textDim,lineHeight:1.4,marginBottom:"0.5rem"}}>{sc.mission_centrale}</div>
               <div style={{fontSize:"0.56rem",color:C.textDim,...MN,marginBottom:"0.2rem"}}>Exécution — {stats.execRate}%</div>
               <div style={{height:"4px",background:C.bg3,marginBottom:"0.25rem"}}><div style={{height:"100%",width:`${stats.execRate}%`,background:`linear-gradient(90deg,${C.goldD},${C.gold})`,transition:"width 1s ease"}}/></div>
@@ -3013,7 +3013,7 @@ Règles absolues :
             </div>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"0.35rem",paddingTop:"0.7rem",borderTop:`1px solid ${C.border}`}}>
-            {[{val:`${stats.streak}j`,lbl:"Streak",color:stats.streak>=3?C.green:C.textDim},{val:`${stats.done}`,lbl:"Actions ✓",color:stats.done>0?C.text:C.textDim},{val:`${stats.relapses}`,lbl:"Rechutes",color:C.textDim},{val:`${Math.round(stats.totalMins/60*10)/10}h`,lbl:"Investies",color:C.blue}].map(({val,lbl,color})=><div key={lbl} style={{textAlign:"center",padding:"0.4rem 0.1rem",background:C.bg3}}>
+            {[{val:`${stats.streak}j`,lbl:"Streak",color:stats.streak>=3?C.green:C.gold},{val:`${stats.done}`,lbl:"Actions ✓",color:stats.done>0?C.gold:C.textDim},{val:`${stats.relapses}`,lbl:"Rechutes",color:C.textDim},{val:`${Math.round(stats.totalMins/60*10)/10}h`,lbl:"Investies",color:C.blue}].map(({val,lbl,color})=><div key={lbl} style={{textAlign:"center",padding:"0.4rem 0.1rem",background:C.bg3}}>
               <div style={{...SF,fontSize:"1rem",color}}>{val}</div>
               <div style={{fontSize:"0.52rem",color:C.textDim,letterSpacing:"0.08em",textTransform:"uppercase",...MN,marginTop:"0.08rem"}}>{lbl}</div>
             </div>)}
@@ -3094,17 +3094,17 @@ Règles absolues :
         {tab==="dashboard"&&<div style={{animation:"fadeUp 0.4s ease"}}>
           {s.identite_future&&<Card><SH icon="◈" label="Identité Future — Jour 90"/>
             <div style={{display:"grid",gridTemplateColumns:"1fr",gap:"0.5rem"}}>
-              {[["Comment je pense",s.identite_future.comment_pense,C.gold],["Comment j'agis",s.identite_future.comment_agit,C.goldL],["Ce que je ne tolère plus",s.identite_future.ne_tolere_plus,C.red],["Mes nouveaux standards",s.identite_future.nouveaux_standards,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.55rem 0.75rem",background:`${c}0A`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
+              {[["Comment je pense",s.identite_future.comment_pense,C.gold],["Comment j'agis",s.identite_future.comment_agit,C.goldL],["Ce que je ne tolère plus",s.identite_future.ne_tolere_plus,C.red],["Mes nouveaux standards",s.identite_future.nouveaux_standards,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.55rem 0.75rem",background:`${c}0A`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:c,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
             </div>
           </Card>}
           <Card accent><SH icon="◈" label="Diagnostic Lucide"/>
             <p style={{color:C.textMid,lineHeight:1.78,fontSize:"0.87rem",marginBottom:"0.85rem"}}>{s.diagnostic?.resume}</p>
-            {[["Bloquant central",s.diagnostic?.bloquant_central,C.red],["Schéma de sabotage",s.diagnostic?.schema_sabotage,C.gold],["Leçon",s.diagnostic?.lecon_echec,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.58rem 0.78rem",background:`${c}0A`,border:`1px solid ${c}25`,borderLeft:`3px solid ${c}`,marginBottom:"0.5rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
+            {[["Bloquant central",s.diagnostic?.bloquant_central,C.red],["Schéma de sabotage",s.diagnostic?.schema_sabotage,C.gold],["Leçon",s.diagnostic?.lecon_echec,C.green]].map(([l,v,c])=><div key={l} style={{padding:"0.58rem 0.78rem",background:`${c}0A`,border:`1px solid ${c}25`,borderLeft:`3px solid ${c}`,marginBottom:"0.5rem"}}><div style={{fontSize:"0.54rem",color:c,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
           </Card>
           <Card><SH icon="📊" label="Scorecard"/>
             {scores.map(({k,d})=>d?<ScoreBar key={k} label={k} score={d.score} lecture={d.lecture}/>:null)}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.5rem",marginTop:"0.75rem"}}>
-              <div style={{padding:"0.68rem",background:`${riskColor}0E`,border:`1px solid ${riskColor}35`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Risque abandon</div><div style={{...SF,fontSize:"0.92rem",color:C.text}}>{sc.risque_abandon}</div><div style={{fontSize:"0.68rem",color:C.textDim,marginTop:"0.15rem",lineHeight:1.4}}>{sc.facteur_risque}</div></div>
+              <div style={{padding:"0.68rem",background:`${riskColor}0E`,border:`1px solid ${riskColor}35`}}><div style={{fontSize:"0.54rem",color:riskColor,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Risque abandon</div><div style={{...SF,fontSize:"0.92rem",color:riskColor}}>{sc.risque_abandon}</div><div style={{fontSize:"0.68rem",color:C.textDim,marginTop:"0.15rem",lineHeight:1.4}}>{sc.facteur_risque}</div></div>
               <div style={{padding:"0.68rem",background:`${C.green}0A`,border:`1px solid ${C.green}35`}}><div style={{fontSize:"0.54rem",color:C.green,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Levier principal</div><div style={{fontSize:"0.77rem",color:C.textMid,lineHeight:1.4}}>{sc.levier_principal}</div></div>
             </div>
             <div style={{marginTop:"0.5rem",padding:"0.75rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}35`,borderLeft:`3px solid ${C.gold}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.18rem"}}>Mission centrale</div><div style={{...SF,fontSize:"0.92rem",color:C.text,lineHeight:1.5}}>{sc.mission_centrale}</div></div>
@@ -3116,8 +3116,8 @@ Règles absolues :
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.4rem"}}>
                   {[["⚡ Exécution",s4.execution,C.gold,"Actions réalisées"],[" Identité",s4.identite,C.green,"Rituels accomplis"],["◈ Cohérence",s4.coherence,C.blue,"Jours sans rechute"],["▶ Progression",s4.progression,C.purple,"Distance parcourue"]].map(([lbl,val,col,sub])=>(
                     <div key={lbl} style={{padding:"0.55rem",background:`${col}08`,border:`1px solid ${col}22`}}>
-                      <div style={{fontSize:"0.6rem",color:C.textDim,letterSpacing:"0.08em",...MN}}>{lbl}</div>
-                      <div style={{...SF,fontSize:"1.3rem",color:C.text,margin:"0.15rem 0"}}>{val}<span style={{fontSize:"0.6rem"}}>%</span></div>
+                      <div style={{fontSize:"0.6rem",color:col,letterSpacing:"0.08em",...MN}}>{lbl}</div>
+                      <div style={{...SF,fontSize:"1.3rem",color:col,margin:"0.15rem 0"}}>{val}<span style={{fontSize:"0.6rem"}}>%</span></div>
                       <div style={{fontSize:"0.58rem",color:C.textDim}}>{sub}</div>
                     </div>
                   ))}
@@ -3130,7 +3130,7 @@ Règles absolues :
           </Card>
           {stats.total>0&&<Card><SH icon="🏆" label="Ce que tu as déjà prouvé"/>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.45rem"}}>
-              {[[`${stats.streak}j consécutifs`,"de continuité",stats.streak>=3?C.green:C.gold],[`${stats.done} actions`,"exécutées",C.gold],[`${stats.relapses} rechute${stats.relapses!==1?"s":""}`, "récupérée${stats.relapses!==1?'s':''}",C.green],[`${Math.round(stats.totalMins/60*10)/10}h`,"investies",C.blue]].map(([v,l,c])=><div key={l} style={{padding:"0.65rem",background:`${c}0A`,border:`1px solid ${c}22`}}><div style={{...SF,fontSize:"1.05rem",color:C.text,marginBottom:"0.1rem"}}>{v}</div><div style={{fontSize:"0.62rem",color:C.textDim,lineHeight:1.3}}>{l}</div></div>)}
+              {[[`${stats.streak}j consécutifs`,"de continuité",stats.streak>=3?C.green:C.gold],[`${stats.done} actions`,"exécutées",C.gold],[`${stats.relapses} rechute${stats.relapses!==1?"s":""}`, "récupérée${stats.relapses!==1?'s':''}",C.green],[`${Math.round(stats.totalMins/60*10)/10}h`,"investies",C.blue]].map(([v,l,c])=><div key={l} style={{padding:"0.65rem",background:`${c}0A`,border:`1px solid ${c}22`}}><div style={{...SF,fontSize:"1.05rem",color:c,marginBottom:"0.1rem"}}>{v}</div><div style={{fontSize:"0.62rem",color:C.textDim,lineHeight:1.3}}>{l}</div></div>)}
             </div>
           </Card>}
           <Card><SH icon="🏆" label="Ma victoire de la semaine" sub="Le cerveau oublie ses progrès — écris le tien"/>
@@ -3154,7 +3154,7 @@ Règles absolues :
             <div style={{marginTop:"0.5rem",padding:"0.68rem 0.82rem",background:C.bg3,borderLeft:`2px solid ${C.goldD}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>Soir <Tag>{s2.rituel?.soir?.duree}</Tag></div><div style={{fontSize:"0.8rem",color:C.textMid,lineHeight:1.5}}>{s2.rituel?.soir?.action}</div></div>
           </Card>
           <Card><SH icon="🛡" label="Protocole de Rechute" sub={`"${s2.protocole_rechute?.contexte||""}"`}/>
-            {[["5 premières minutes",s2.protocole_rechute?.["5_minutes"],C.red],["24 heures",s2.protocole_rechute?.["24h"],C.gold],["48 heures",s2.protocole_rechute?.["48h"],C.green]].map(([l,v,c])=><div key={l} style={{marginBottom:"0.55rem",padding:"0.62rem 0.8rem",background:`${c}08`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
+            {[["5 premières minutes",s2.protocole_rechute?.["5_minutes"],C.red],["24 heures",s2.protocole_rechute?.["24h"],C.gold],["48 heures",s2.protocole_rechute?.["48h"],C.green]].map(([l,v,c])=><div key={l} style={{marginBottom:"0.55rem",padding:"0.62rem 0.8rem",background:`${c}08`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:c,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>{l}</div><div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.5}}>{v}</div></div>)}
             <div style={{padding:"0.7rem 0.85rem",background:`${C.gold}08`,border:`1px solid ${C.goldD}35`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.15rem"}}>Règle du Non-Zéro</div><div style={{fontSize:"0.81rem",color:C.text,lineHeight:1.5}}>{s2.protocole_rechute?.regle_non_zero}</div></div>
           </Card>
         </div>}
@@ -3193,7 +3193,7 @@ Règles absolues :
             <div style={{marginBottom:"0.85rem"}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.15em",...MN,marginBottom:"0.4rem"}}>Règles de continuité</div>
               {(s2.anti_abandon?.regles||[]).map((r,i)=><div key={i} style={{display:"flex",gap:"0.6rem",marginBottom:"0.38rem",alignItems:"flex-start"}}><span style={{...MN,fontSize:"0.63rem",color:C.text,minWidth:"1.4rem",marginTop:"0.08rem"}}>{String(i+1).padStart(2,"0")}</span><span style={{fontSize:"0.81rem",color:C.text,lineHeight:1.55}}>{r}</span></div>)}
             </div>
-            {[["Jour difficile",s2.protocole_rechute?.jour_difficile,C.gold],["Motivation basse",s2.protocole_rechute?.motivation_basse,C.red],["Rechute émotionnelle",s2.protocole_rechute?.rechute_emotionnelle,C.purple],["Fatigue mentale",s2.protocole_rechute?.fatigue_mentale,C.blue],["Version minimale",s2.anti_abandon?.version_minimale,C.green]].filter(([,v])=>v).map(([l,v,c])=><div key={l} style={{marginBottom:"0.6rem",padding:"0.75rem 0.85rem",background:`${c}08`,border:`1px solid ${c}25`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.25rem"}}>{l}</div><div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.6}}>{v}</div></div>)}
+            {[["Jour difficile",s2.protocole_rechute?.jour_difficile,C.gold],["Motivation basse",s2.protocole_rechute?.motivation_basse,C.red],["Rechute émotionnelle",s2.protocole_rechute?.rechute_emotionnelle,C.purple],["Fatigue mentale",s2.protocole_rechute?.fatigue_mentale,C.blue],["Version minimale",s2.anti_abandon?.version_minimale,C.green]].filter(([,v])=>v).map(([l,v,c])=><div key={l} style={{marginBottom:"0.6rem",padding:"0.75rem 0.85rem",background:`${c}08`,border:`1px solid ${c}25`,borderLeft:`3px solid ${c}`}}><div style={{fontSize:"0.54rem",color:c,textTransform:"uppercase",letterSpacing:"0.1em",...MN,marginBottom:"0.25rem"}}>{l}</div><div style={{fontSize:"0.79rem",color:C.textMid,lineHeight:1.6}}>{v}</div></div>)}
           </Card>
         </div>}
 
@@ -3254,10 +3254,10 @@ Règles absolues :
             return(
               <button key={d} onClick={()=>switchDomain(d)} style={{padding:"1rem 1.2rem",background:isActive?`${C.gold}12`:C.bg2,border:`1px solid ${isActive?C.gold:C.border}`,textAlign:"left",cursor:"pointer",transition:"all 0.2s"}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.4rem"}}>
-                  <div style={{fontSize:"0.56rem",color:C.textDim,textTransform:"uppercase",letterSpacing:"0.15em",...MN}}>{d} {isActive&&"· ACTIF"}</div>
+                  <div style={{fontSize:"0.56rem",color:isActive?C.gold:C.goldD,textTransform:"uppercase",letterSpacing:"0.15em",...MN}}>{d} {isActive&&"· ACTIF"}</div>
                   <div style={{fontSize:"0.6rem",color:C.textDim,...MN}}>J{Math.min(dn,90)}/90</div>
                 </div>
-                <div style={{...SF,fontSize:"0.95rem",color:C.text}}>{ng}</div>
+                <div style={{...SF,fontSize:"0.95rem",color:isActive?C.gold:C.text}}>{ng}</div>
                 {data?.plan?.scorecard?.mission_centrale&&<div style={{fontSize:"0.72rem",color:C.textMid,marginTop:"0.3rem",lineHeight:1.5}}>{data.plan.scorecard.mission_centrale.slice(0,80)}…</div>}
               </button>
             );
